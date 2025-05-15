@@ -36,15 +36,21 @@ class ProductRepositoryImpl implements ProductRepository {
     return _handle(() => remoteDataSource.getProductById(id));
   }
 
-  // Generic error handler
   Future<Either<Failure, T>> _handle<T>(Future<T> Function() task) async {
     try {
       final result = await task();
       return Right(result);
     } on ProductFailure catch (e) {
-      return Left(Failure(e.message));
+      return Left(e); // Just return the caught ProductFailure directly
+    } on AuthFailure catch (e) {
+      return Left(e); // Handle AuthFailure if needed
+    } on StoreFailure catch (e) {
+      return Left(e); // Handle StoreFailure if needed
     } catch (e) {
-      return Left(Failure(e.toString()));
+      // For unexpected errors, create a generic Failure subtype
+      return Left(ProductFailure(message: e.toString()));
+      // Or create a new GenericFailure class if you prefer:
+      // return Left(GenericFailure(message: e.toString()));
     }
   }
 }

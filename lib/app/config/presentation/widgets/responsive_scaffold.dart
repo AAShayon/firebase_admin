@@ -1,4 +1,3 @@
-// lib/core/presentation/widgets/responsive_scaffold.dart
 import 'package:flutter/material.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
@@ -24,13 +23,14 @@ class ResponsiveScaffold extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(title),
-          actions: actions,
+          actions: [
+            IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
+            IconButton(icon: const Icon(Icons.person), onPressed: () {}),
+            ...?actions,
+          ],
         ),
         body: Row(
-          children: [
-            const NavigationRailSection(),
-            Expanded(child: body),
-          ],
+          children: [const NavigationRailSection(), Expanded(child: body)],
         ),
         floatingActionButton: floatingActionButton,
       );
@@ -38,7 +38,14 @@ class ResponsiveScaffold extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(title),
-          actions: actions,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {},
+            ), // 🔔
+            IconButton(icon: const Icon(Icons.person), onPressed: () {}), // 👤
+            ...?actions,
+          ],
         ),
         drawer: const NavigationDrawerSection(),
         body: body,
@@ -65,8 +72,20 @@ class NavigationRailSection extends StatelessWidget {
           label: Text('Products'),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.store),
-          label: Text('Stores'),
+          icon: Icon(Icons.shopping_cart),
+          label: Text('Orders'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.people),
+          label: Text('Customers'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.notifications),
+          label: Text('Push Notifications'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.settings),
+          label: Text('Settings'),
         ),
       ],
       selectedIndex: 0,
@@ -82,19 +101,16 @@ class NavigationDrawerSection extends StatelessWidget {
     return Drawer(
       child: ListView(
         children: const [
-          DrawerHeader(child: Text('Admin Panel')),
+          DrawerHeader(child: Text('eCommerce Admin')),
+          ListTile(leading: Icon(Icons.dashboard), title: Text('Dashboard')),
+          ListTile(leading: Icon(Icons.inventory_2), title: Text('Products')),
+          ListTile(leading: Icon(Icons.shopping_cart), title: Text('Orders')),
+          ListTile(leading: Icon(Icons.people), title: Text('Customers')),
           ListTile(
-            leading: Icon(Icons.dashboard),
-            title: Text('Dashboard'),
+            leading: Icon(Icons.notifications),
+            title: Text('Push Notifications'),
           ),
-          ListTile(
-            leading: Icon(Icons.inventory_2),
-            title: Text('Products'),
-          ),
-          ListTile(
-            leading: Icon(Icons.store),
-            title: Text('Stores'),
-          ),
+          ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
         ],
       ),
     );
