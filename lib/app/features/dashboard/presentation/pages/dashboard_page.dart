@@ -335,15 +335,15 @@ class DashboardPage extends StatelessWidget {
               ),
             ),
           );
-        } else {
+        }else {
           return GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: isTablet ? 2 : 4,
-            childAspectRatio: constraints.maxWidth < 800 ? 1.5 : 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            childAspectRatio: isTablet ? 1.2 : 1.5, // Adjusted aspect ratio
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            padding: const EdgeInsets.all(8),
             children: [
               _buildStatCard('📦', 'Total Products', '125'),
               _buildStatCard('💰', 'Total Sales', '\$12,500', color: Colors.green),

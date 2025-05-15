@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
@@ -18,7 +20,7 @@ class ResponsiveScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 1024;
     final isTablet = MediaQuery.of(context).size.width >= 768;
-
+    log("Size of width =================> ${MediaQuery.of(context).size.width}");
     if (isDesktop || isTablet) {
       return Scaffold(
         appBar: AppBar(
