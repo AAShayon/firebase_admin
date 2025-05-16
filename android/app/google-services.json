@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "777980235435",
+    "project_id": "fir-admin-4f1fd",
+    "storage_bucket": "fir-admin-4f1fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777980235435:android:55a7067bbbcc2e64c531ee",
+        "android_client_info": {
+          "package_name": "com.devans.firebase_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "777980235435-np92ammav0viev446mbjict68u2jnhaa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.devans.firebase_admin",
+            "certificate_hash": "f81f5b1b23fc81b3af0f751c840dbaad21dccfd3"
+          }
+        },
+        {
+          "client_id": "777980235435-c68h0d0p1kjkg6aq2esft230q06to28s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxP-FibxINH5lL4NjvK7R8woxN-mPyg48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "777980235435-c68h0d0p1kjkg6aq2esft230q06to28s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "777980235435-o4aaggnknm94o2vi74d4j1c0snsoa0df.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.devans.firebaseAdmin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

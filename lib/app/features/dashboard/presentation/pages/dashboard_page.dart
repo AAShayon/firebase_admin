@@ -269,8 +269,10 @@
 //   }
 // }
 import 'package:flutter/material.dart';
-import 'package:firebase_admin/app/config/presentation/widgets/responsive_scaffold.dart';
-import 'package:firebase_admin/app/config/presentation/widgets/stats_card.dart';
+
+import '../../../../config/widgets/responsive_scaffold.dart';
+import '../../../../config/widgets/stats_card.dart';
+
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});

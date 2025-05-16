@@ -1,4 +1,3 @@
-
 import '../repositories/auth_repository.dart';
 
 class SignInWithEmailAndPassword {
@@ -6,8 +5,7 @@ class SignInWithEmailAndPassword {
 
   SignInWithEmailAndPassword(this.repository);
 
-  Future<void> call(String email, String password) async {
-    return await repository.signInWithEmailAndPassword(email, password);
+  Future<void> call(String email, String password) {
+    return repository.signInWithEmailAndPassword(email, password);
   }
 }
-

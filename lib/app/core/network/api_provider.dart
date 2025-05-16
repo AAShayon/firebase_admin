@@ -18,7 +18,7 @@ class ApiProvider {
   Future<Response> get(String path, {Map<String, dynamic>? params}) async {
     try {
       return await _dio.get(path, queryParameters: params);
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       throw _handleError(e);
     }
   }
@@ -26,7 +26,7 @@ class ApiProvider {
   Future<Response> post(String path, {dynamic data}) async {
     try {
       return await _dio.post(path, data: data);
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       throw _handleError(e);
     }
   }

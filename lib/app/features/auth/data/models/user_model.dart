@@ -1,11 +1,24 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
 import '../../domain/entities/user_entity.dart';
 
-class UserModel extends UserEntity {
-  UserModel({required super.id, required super.isAdmin});
+class UserModel {
+  final String id;
+  final bool isAdmin;
 
-  factory UserModel.fromFirebase(User user) {
-    return UserModel(id: user.uid, isAdmin: false);
+  UserModel({required this.id, required this.isAdmin});
+
+  UserEntity toEntity() => UserEntity(id: id, isAdmin: isAdmin);
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'],
+      isAdmin: json['isAdmin'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'isAdmin': isAdmin,
+    };
   }
 }

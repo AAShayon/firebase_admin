@@ -1,5 +1,5 @@
 // lib/features/stores/domain/repositories/store_repository.dart
-import 'package:fpdart/fpdart.dart';
+import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/store_entity.dart';
 
