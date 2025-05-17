@@ -84,6 +84,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: const Text('Login'),
                   ),
                   const SizedBox(height: 16),
+                  Divider(),
+
                   TextButton(
                     onPressed: () {
                       Navigator.push(
