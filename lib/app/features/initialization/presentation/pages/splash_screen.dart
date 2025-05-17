@@ -3,9 +3,8 @@ import 'dart:developer';
 import 'package:animated_splash_plus/animated_splash_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../config/widgets/loading_screen.dart';
-import '../../../auth/presentation/pages/login_page.dart';
-import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../providers/splash_provider.dart';
 
 class SplashScreen extends ConsumerWidget {
@@ -17,11 +16,11 @@ class SplashScreen extends ConsumerWidget {
     return splashAsync.when(
       data: (user) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => user != null ? const DashboardPage() : const LoginPage(),
-            ),
-          );
+          if (user != null) {
+            context.goNamed('dashboard'); // Uses GoRouter
+          } else {
+            context.goNamed('login'); // Uses GoRouter
+          }
         });
 
         // This fallback will only show briefly

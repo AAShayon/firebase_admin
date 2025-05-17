@@ -15,7 +15,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await ref.read(signInWithEmailProvider).call(email, password);
       final isAdmin = await ref.read(isAdminProvider).call();
       state = state.copyWith(
-        user: UserEntity(id: 'current', isAdmin: isAdmin), // replace 'current' with UID if needed
+        user: UserEntity(id: 'current', isAdmin: isAdmin),
         isLoading: false,
       );
     } catch (e) {

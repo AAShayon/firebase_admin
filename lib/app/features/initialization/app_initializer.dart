@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/theme/app_theme.dart';
+import '../../core/routes/app_router.dart';
 import '../settings/presentation/helpers/theme_mapper.dart';
 import '../settings/presentation/providers/settings_notifier_provider.dart';
 
@@ -16,13 +17,13 @@ class AdminDashboardAppInitializer extends ConsumerWidget {
     return settingsAsync.when(
       data: (settings) {
         final themeMode = convertTheme(settings.themeMode);
-        return MaterialApp(
+        return MaterialApp.router(
+          routerConfig: appRouter,
           title: 'Admin Dashboard',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           debugShowCheckedModeBanner: false,
-          home: const SplashScreen(),
         );
       },
       loading: () =>  MaterialApp(
