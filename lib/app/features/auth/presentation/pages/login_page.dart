@@ -38,7 +38,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const FlutterLogo(size: 100),
+                  Image.asset('assets/images/app_icon.png',height: 100,width: 100,),
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: _emailController,
