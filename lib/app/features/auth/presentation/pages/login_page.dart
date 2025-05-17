@@ -1,12 +1,12 @@
-import 'package:firebase_admin/app/config/widgets/custom_button.dart';
-import 'package:firebase_admin/app/config/widgets/divider_with_text.dart';
-import 'package:firebase_admin/app/config/widgets/loading_screen.dart';
-import 'package:firebase_admin/app/core/utils/custom_size_space.dart';
-import 'package:firebase_admin/app/features/auth/presentation/pages/registration_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:firebase_admin/app/config/widgets/custom_button.dart';
+import 'package:firebase_admin/app/config/widgets/divider_with_text.dart';
+import 'package:firebase_admin/app/core/utils/custom_size_space.dart';
 import '../providers/auth_notifier_provider.dart';
+
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -31,12 +31,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
 
-    // Show full-screen loading if isLoading
-    if (authState.isLoading) {
-      return const CustomLoadingScreen();
-    }
+    // Navigate after frame completes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      authState.maybeWhen(
+        authenticated: (_) => context.goNamed('dashboard'),
+        orElse: () {},
+      );
+    });
 
-    // Otherwise show normal login UI
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -85,48 +87,66 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     },
                   ),
                   CustomSizeSpace.vMedium16,
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ref.read(authNotifierProvider.notifier).signInWithEmail(
-                          _emailController.text.trim(),
-                          _passwordController.text.trim(),
-                        );
-                      }
-                    },
-                    child: const Text('Login'),
+
+                  // ✅ Login Button using CustomButton
+                  CustomButton(
+                    text: 'Login',
+                    icon: authState.maybeMap(
+                      loading: (_) => const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                      orElse: () => null,
+                    ),
+                    onPressed: authState.maybeWhen(
+                      orElse: () => () {
+                        if (_formKey.currentState!.validate()) {
+                          ref.read(authNotifierProvider.notifier).signInWithEmail(
+                            _emailController.text.trim(),
+                            _passwordController.text.trim(),
+                          );
+                        }
+                      },
+                      loading: () => () {}, // Disabled when loading
+                    ),
                   ),
+
                   CustomSizeSpace.vMedium16,
                   const DividerWithText(text: 'Or'),
                   CustomSizeSpace.vSmall8,
+
                   CustomButton(
                     text: 'Sign in with Google',
                     icon: Image.asset('assets/images/google.png', height: 20),
-                    onPressed: () =>
-                        ref.read(authNotifierProvider.notifier).signInWithGoogle(),
+                    onPressed: authState.maybeWhen(
+                      orElse: () => () {
+                        ref.read(authNotifierProvider.notifier).signInWithGoogle();
+                      },
+                      loading: () => () {}, // Disabled when loading
+                    ),
                   ),
+
                   TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegistrationPage(),
-                        ),
-                      );
-                    },
+                    onPressed: authState.maybeWhen(
+                      orElse: () => () => context.goNamed('register'),
+                      loading: () => null,
+                    ),
                     child: const Text('Create an account'),
                   ),
-                  if (authState.error != null)
-                    Padding(
+
+                  authState.maybeMap(
+                    loading: (_) => const Center(child: CircularProgressIndicator()),
+                    error: (e) => Padding(
                       padding: const EdgeInsets.only(top: 16.0),
                       child: Text(
-                        authState.error!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                        e.message,
+                        style: TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     ),
+                    orElse: () => const SizedBox(),
+                  ),
                 ],
               ),
             ),

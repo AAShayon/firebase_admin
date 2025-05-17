@@ -1,6 +1,7 @@
-// lib/features/auth/presentation/pages/registration_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../config/widgets/custom_button.dart';
 import '../providers/auth_notifier_provider.dart';
 
 class RegistrationPage extends ConsumerStatefulWidget {
@@ -33,7 +34,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
         title: const Text('Create Account'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: Navigator.of(context).pop,
         ),
       ),
       body: SingleChildScrollView(
@@ -46,6 +47,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
+
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -60,7 +62,9 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 16),
+
                 TextFormField(
                   controller: _passwordController,
                   decoration: const InputDecoration(
@@ -78,7 +82,9 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 16),
+
                 TextFormField(
                   controller: _confirmPasswordController,
                   decoration: const InputDecoration(
@@ -93,39 +99,57 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: authState.isLoading
-                      ? null
-                      : () async {
-                    if (_formKey.currentState!.validate()) {
-                      await ref
-                          .read(authNotifierProvider.notifier)
-                          .signInWithEmail(
-                        _emailController.text.trim(),
-                        _passwordController.text.trim(),
-                      );
-                      // Handle successful registration
-                      if (mounted && authState.user != null) {
-                        Navigator.pop(context);
+
+                CustomButton(
+                  text: 'Create Account',
+                  icon: authState.maybeMap(
+                    loading: (_) => SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                      ),
+                    ),
+                    orElse: () => null,
+                  ),
+                  onPressed: authState.maybeWhen(
+                    orElse: () => () async {
+                      if (_formKey.currentState!.validate()) {
+                        await ref.read(authNotifierProvider.notifier).signInWithEmail(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim(),
+                        );
+
+                        if (context.mounted &&
+                            authState.maybeMap(
+                              authenticated: (_) => true,
+                              orElse: () => false,
+                            )) {
+                          Navigator.pop(context);
+                        }
                       }
-                    }
-                  },
-                  child: const Text('Create Account'),
+                    },
+                    loading: () => () {}, // Disabled when loading
+                  ),
                 ),
-                if (authState.isLoading)
-                  const Center(child: CircularProgressIndicator()),
-                if (authState.error != null)
-                  Padding(
+
+                // ✅ Show loading or error UI conditionally
+                authState.map(
+                  loading: (_) => const Center(child: CircularProgressIndicator()),
+                  error: (e) => Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: Text(
-                      authState.error!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                      e.message,
+                      style: TextStyle(color: Colors.red),
                       textAlign: TextAlign.center,
                     ),
                   ),
+                  authenticated: (_) => const SizedBox(),
+                  unauthenticated: (_) => const SizedBox(),
+                  initial: (_) => const SizedBox(),
+                ),
               ],
             ),
           ),

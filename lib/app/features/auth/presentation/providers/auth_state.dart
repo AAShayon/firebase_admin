@@ -1,23 +1,17 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/user_entity.dart';
 
+part 'auth_state.freezed.dart'; // This generates the .g.dart file
 
+@freezed
+class AuthState with _$AuthState {
+  const factory AuthState.initial() = Initial;
 
-class AuthState {
-  final UserEntity? user;
-  final bool isLoading;
-  final String? error;
+  const factory AuthState.authenticated(UserEntity user) = Authenticated;
 
-  AuthState({this.user, this.isLoading = false, this.error});
+  const factory AuthState.unauthenticated() = Unauthenticated;
 
-  AuthState copyWith({
-    UserEntity? user,
-    bool? isLoading,
-    String? error,
-  }) {
-    return AuthState(
-      user: user ?? this.user,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-    );
-  }
+  const factory AuthState.loading() = Loading;
+
+  const factory AuthState.error(String message) = Error;
 }

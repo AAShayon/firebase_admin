@@ -1,6 +1,11 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/auth/presentation/providers/auth_notifier_provider.dart';
+
 
 class ResponsiveScaffold extends StatelessWidget {
   final Widget body;
@@ -21,6 +26,7 @@ class ResponsiveScaffold extends StatelessWidget {
     final isDesktop = MediaQuery.of(context).size.width >= 1024;
     final isTablet = MediaQuery.of(context).size.width >= 768;
     log("Size of width =================> ${MediaQuery.of(context).size.width}");
+
     if (isDesktop || isTablet) {
       return Scaffold(
         appBar: AppBar(
@@ -44,8 +50,8 @@ class ResponsiveScaffold extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.notifications),
               onPressed: () {},
-            ), // 🔔
-            IconButton(icon: const Icon(Icons.person), onPressed: () {}), // 👤
+            ),
+            IconButton(icon: const Icon(Icons.person), onPressed: () {}),
             ...?actions,
           ],
         ),
@@ -57,64 +63,91 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 }
 
-class NavigationRailSection extends StatelessWidget {
+class NavigationRailSection extends ConsumerWidget {
   const NavigationRailSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return NavigationRail(
       extended: MediaQuery.of(context).size.width >= 1024,
-      destinations: const [
-        NavigationRailDestination(
+      destinations: [
+        const NavigationRailDestination(
           icon: Icon(Icons.dashboard),
           label: Text('Dashboard'),
         ),
-        NavigationRailDestination(
+        const NavigationRailDestination(
           icon: Icon(Icons.inventory_2),
           label: Text('Products'),
         ),
-        NavigationRailDestination(
+        const NavigationRailDestination(
           icon: Icon(Icons.shopping_cart),
           label: Text('Orders'),
         ),
-        NavigationRailDestination(
+        const NavigationRailDestination(
           icon: Icon(Icons.people),
           label: Text('Customers'),
         ),
-        NavigationRailDestination(
+        const NavigationRailDestination(
           icon: Icon(Icons.notifications),
           label: Text('Push Notifications'),
         ),
-        NavigationRailDestination(
+        const NavigationRailDestination(
           icon: Icon(Icons.settings),
           label: Text('Settings'),
         ),
+        const NavigationRailDestination(
+          icon: Icon(Icons.logout),
+          label: Text('Sign Out'),
+        ),
       ],
       selectedIndex: 0,
+      onDestinationSelected: (index) {
+        if (index == 5) {
+          // When "Sign Out" is selected
+          ref.read(authNotifierProvider.notifier).signOut();
+          context.goNamed('login');
+        }
+      },
     );
   }
 }
 
-class NavigationDrawerSection extends StatelessWidget {
+class NavigationDrawerSection extends ConsumerWidget {
   const NavigationDrawerSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
       child: ListView(
-        children: const [
-          DrawerHeader(child: Text('eCommerce Admin')),
-          ListTile(leading: Icon(Icons.dashboard), title: Text('Dashboard')),
-          ListTile(leading: Icon(Icons.inventory_2), title: Text('Products')),
-          ListTile(leading: Icon(Icons.shopping_cart), title: Text('Orders')),
-          ListTile(leading: Icon(Icons.people), title: Text('Customers')),
-          ListTile(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(child: Text('eCommerce Admin')),
+          const ListTile(leading: Icon(Icons.dashboard), title: Text('Dashboard')),
+          const ListTile(leading: Icon(Icons.inventory_2), title: Text('Products')),
+          const ListTile(leading: Icon(Icons.shopping_cart), title: Text('Orders')),
+          const ListTile(leading: Icon(Icons.people), title: Text('Customers')),
+          const ListTile(
             leading: Icon(Icons.notifications),
             title: Text('Push Notifications'),
           ),
-          ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
+          const ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Sign Out'),
+            onTap:(){
+              ref.read(authNotifierProvider.notifier).signOut();
+              context.goNamed('login');
+            },
+          ),
         ],
       ),
     );
   }
+
+  // static void _handleSignOut(BuildContext context) {
+  //   final ref = context.ref;
+  //   ref.read(authNotifierProvider.notifier).signOut();
+  //   context.goNamed('login');
+  // }
 }

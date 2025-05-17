@@ -7,34 +7,32 @@ import '../providers/auth_providers.dart';
 class AuthNotifier extends StateNotifier<AuthState> {
   final Ref ref;
 
-  AuthNotifier(this.ref) : super(AuthState());
+  AuthNotifier(this.ref) : super(AuthState.initial());
 
   Future<void> signInWithEmail(String email, String password) async {
-    state = state.copyWith(isLoading: true);
+    state = AuthState.loading();
     try {
       await ref.read(signInWithEmailProvider).call(email, password);
       final isAdmin = await ref.read(isAdminProvider).call();
-      state = state.copyWith(
-        user: UserEntity(id: 'current', isAdmin: isAdmin),
-        isLoading: false,
-      );
+      final user = UserEntity(id: 'current', isAdmin: isAdmin);
+      state = AuthState.authenticated(user);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = AuthState.error(e.toString());
     }
   }
 
   Future<void> signInWithGoogle() async {
-    state = state.copyWith(isLoading: true);
+    state = AuthState.loading();
     try {
       final user = await ref.read(signInWithGoogleProvider).call();
-      state = state.copyWith(user: user, isLoading: false);
+      state = AuthState.authenticated(user);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = AuthState.error(e.toString());
     }
   }
 
   Future<void> signOut() async {
     await ref.read(signOutProvider).call();
-    state = AuthState();
+    state = AuthState.unauthenticated();
   }
 }
