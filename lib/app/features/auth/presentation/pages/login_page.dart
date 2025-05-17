@@ -1,6 +1,11 @@
+import 'package:firebase_admin/app/config/widgets/custom_button.dart';
+import 'package:firebase_admin/app/config/widgets/divider_with_text.dart';
+import 'package:firebase_admin/app/config/widgets/loading_screen.dart';
+import 'package:firebase_admin/app/core/utils/custom_size_space.dart';
 import 'package:firebase_admin/app/features/auth/presentation/pages/registration_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../providers/auth_notifier_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -26,6 +31,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
 
+    // Show full-screen loading if isLoading
+    if (authState.isLoading) {
+      return const CustomLoadingScreen();
+    }
+
+    // Otherwise show normal login UI
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -38,8 +49,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset('assets/images/app_icon.png',height: 100,width: 100,),
-                  const SizedBox(height: 32),
+                  Image.asset(
+                    'assets/images/app_icon.png',
+                    height: 100,
+                    width: 100,
+                  ),
+                  CustomSizeSpace.vXL32,
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -54,7 +69,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  CustomSizeSpace.vMedium16,
                   TextFormField(
                     controller: _passwordController,
                     decoration: const InputDecoration(
@@ -69,11 +84,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  CustomSizeSpace.vMedium16,
                   ElevatedButton(
-                    onPressed: authState.isLoading
-                        ? null
-                        : () {
+                    onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         ref.read(authNotifierProvider.notifier).signInWithEmail(
                           _emailController.text.trim(),
@@ -83,9 +96,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     },
                     child: const Text('Login'),
                   ),
-                  const SizedBox(height: 16),
-                  Divider(),
-
+                  CustomSizeSpace.vMedium16,
+                  const DividerWithText(text: 'Or'),
+                  CustomSizeSpace.vSmall8,
+                  CustomButton(
+                    text: 'Sign in with Google',
+                    icon: Image.asset('assets/images/google.png', height: 20),
+                    onPressed: () =>
+                        ref.read(authNotifierProvider.notifier).signInWithGoogle(),
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -97,8 +116,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     },
                     child: const Text('Create an account'),
                   ),
-                  if (authState.isLoading)
-                    const Center(child: CircularProgressIndicator()),
                   if (authState.error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
