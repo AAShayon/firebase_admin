@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:animated_splash_plus/animated_splash_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/firebase_provider.dart';
+import '../../../../config/widgets/loading_screen.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../providers/splash_provider.dart';
@@ -15,19 +15,17 @@ class SplashScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final splashAsync = ref.watch(splashProvider);
     return splashAsync.when(
-      data: (_) {
-        final user = FirebaseProvider.auth.currentUser;
-
+      data: (user) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) =>
-              user != null ? const DashboardPage() : const LoginPage(),
+              builder: (context) => user != null ? const DashboardPage() : const LoginPage(),
             ),
           );
         });
 
-        return const SizedBox(); // return empty widget while redirecting
+        // This fallback will only show briefly
+        return const CustomLoadingScreen();
       },
     loading: () => Scaffold(
       body: AnimatedSplashPlus(
