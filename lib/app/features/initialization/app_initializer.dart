@@ -1,3 +1,4 @@
+import 'package:firebase_admin/app/config/widgets/loading_screen.dart';
 import 'package:firebase_admin/app/features/initialization/presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,9 +15,11 @@ class AdminDashboardAppInitializer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsNotifierProvider);
 
-    return settingsAsync.when(
-      data: (settings) {
-        final themeMode = convertTheme(settings.themeMode);
+    return settingsAsync.map(
+      initial: (_) => MaterialApp(home: SplashScreen()),
+      loading: (_) => MaterialApp(home: CustomLoadingScreen()),
+      loaded: (state) {
+        final themeMode = convertTheme(state.themeMode);
         return MaterialApp.router(
           routerConfig: appRouter,
           title: 'Admin Dashboard',
@@ -26,14 +29,11 @@ class AdminDashboardAppInitializer extends ConsumerWidget {
           debugShowCheckedModeBanner: false,
         );
       },
-      loading: () =>  MaterialApp(
+      error: (error) => MaterialApp(
         home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      ),
-      error: (e, _) => MaterialApp(
-        home: Scaffold(
-          body: Center(child: Text('Error initializing app: $e')),
+          body: Center(
+            child: Text('Failed to initialize app: ${error.message}'),
+          ),
         ),
       ),
     );
