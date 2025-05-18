@@ -30,4 +30,14 @@ class AuthRepositoryImpl implements AuthRepository {
     if (user == null) return false;
     return await remoteDataSource.isAdmin(user.uid);
   }
+
+  @override
+  Future<void> registerWithEmail(String email, String password)async {
+    return await remoteDataSource.registerWithEmail(email, password);
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword, [String? currentPassword]) async {
+    return await remoteDataSource.updatePassword(newPassword, currentPassword);
+  }
 }

@@ -22,7 +22,7 @@ class AppTheme {
       onError: AppColors.neutralWhite,
     ),
     scaffoldBackgroundColor: AppColors.lightBackground,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
