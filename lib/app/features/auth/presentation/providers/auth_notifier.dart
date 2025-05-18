@@ -30,6 +30,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState.error(e.toString());
     }
   }
+  Future<void> signUpWithEmail(String email, String password) async {
+    state = AuthState.loading();
+    try {
+      await ref.read(signUpWithEmailPasswordProvider).call(email, password);
+      final isAdmin = await ref.read(isAdminProvider).call();
+      final user = UserEntity(id: 'current', isAdmin: isAdmin);
+      state = AuthState.authenticated(user);
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
+
+
+  Future<void> updatePassword(String newPassword, String? currentPassword) async {
+    state = AuthState.loading();
+    try {
+      await ref.read(updatePasswordProvider).call(newPassword, currentPassword);
+      final currentUser = (state as Authenticated).user;
+      state = AuthState.authenticated(currentUser);
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
 
   Future<void> signOut() async {
     await ref.read(signOutProvider).call();

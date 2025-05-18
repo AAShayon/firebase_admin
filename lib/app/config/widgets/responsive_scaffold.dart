@@ -102,11 +102,15 @@ class NavigationRailSection extends ConsumerWidget {
       ],
       selectedIndex: 0,
       onDestinationSelected: (index) {
+        if(index == 4){
+          context.goNamed('settings');
+        }
         if (index == 5) {
           // When "Sign Out" is selected
           ref.read(authNotifierProvider.notifier).signOut();
           context.goNamed('login');
         }
+
       },
     );
   }
@@ -130,7 +134,10 @@ class NavigationDrawerSection extends ConsumerWidget {
             leading: Icon(Icons.notifications),
             title: Text('Push Notifications'),
           ),
-          const ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
+           ListTile(leading: Icon(Icons.settings), title: Text('Settings'),
+            onTap: (){
+              context.goNamed('settings');
+            },),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),

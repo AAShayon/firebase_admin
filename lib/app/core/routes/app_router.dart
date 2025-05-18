@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/initialization/presentation/pages/splash_screen.dart';
@@ -47,6 +47,16 @@ final GoRouter appRouter = GoRouter(
         context: context,
         state: state,
         child: const DashboardPage(),
+        transitionType: AppRouteTransitionType.scale,
+      ),
+    ),
+    GoRoute(
+      name: 'settings',
+      path: '/settings',
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child:  SettingsPage(),
         transitionType: AppRouteTransitionType.scale,
       ),
     ),
