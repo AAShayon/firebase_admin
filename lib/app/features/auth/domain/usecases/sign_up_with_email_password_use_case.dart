@@ -6,6 +6,6 @@ class SignUpWithEmailPasswordUseCase {
   SignUpWithEmailPasswordUseCase(this.repository);
 
   Future<void> call(String email, String password) {
-    return repository.registerWithEmail(email, password);
+    return repository.signUpWithEmailAndPassword(email, password);
   }
 }

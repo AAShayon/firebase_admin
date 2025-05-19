@@ -1,7 +1,11 @@
+import 'package:firebase_admin/app/features/auth/domain/usecases/assign_admin_role_use_case.dart';
+import 'package:firebase_admin/app/features/auth/domain/usecases/get_current_user_use_case.dart';
+import 'package:firebase_admin/app/features/auth/domain/usecases/sub_admin_use_case.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/injector.dart';
-import '../../domain/usecases/admin_useCase.dart';
+import '../../domain/usecases/admin_use_case.dart';
+import '../../domain/usecases/assign_sub_admin_use_case.dart';
 import '../../domain/usecases/sign_in_with_email_passWord_useCase.dart';
 import '../../domain/usecases/sign_in_with_google.dart';
 import '../../domain/usecases/sign_out.dart';
@@ -30,4 +34,16 @@ final isAdminProvider = Provider<IsAdmin>((ref) {
 });
 final updatePasswordProvider = Provider<UpdatePasswordUseCase>((ref) {
   return locator<UpdatePasswordUseCase>();
+});
+final isSubAdminProvider = Provider<IsSubAdminUseCase>((ref) {
+  return locator<IsSubAdminUseCase>();
+});
+final assignAdminRoleProvider = Provider<AssignAdminRole>((ref) {
+  return locator<AssignAdminRole>();
+});
+final assignSubAdminRoleProvider = Provider<AssignSubAdminRole>((ref) {
+  return locator<AssignSubAdminRole>();
+});
+final getCurrentUserProvider = Provider<CurrentUserUseCase>((ref) {
+  return locator<CurrentUserUseCase>();
 });

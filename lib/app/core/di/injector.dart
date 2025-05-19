@@ -1,7 +1,7 @@
 // lib/core/di/injector.dart
 import 'package:firebase_admin/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:firebase_admin/app/features/auth/domain/repositories/auth_repository.dart';
-import 'package:firebase_admin/app/features/auth/domain/usecases/admin_useCase.dart';
+import 'package:firebase_admin/app/features/auth/domain/usecases/admin_use_case.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_in_with_email_passWord_useCase.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_out.dart';
@@ -10,7 +10,9 @@ import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../features/auth/domain/usecases/get_current_user_use_case.dart';
 import '../../features/auth/domain/usecases/sign_up_with_email_password_use_case.dart';
+import '../../features/auth/domain/usecases/sub_admin_use_case.dart';
 import '../../features/settings/data/datasources/settings_local_data_source.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/settings_repository.dart';
@@ -49,4 +51,6 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<IsAdmin>(()=>IsAdmin(locator<AuthRepository>()));
   locator.registerLazySingleton<SignUpWithEmailPasswordUseCase>(()=>SignUpWithEmailPasswordUseCase(locator<AuthRepository>()));
   locator.registerLazySingleton<UpdatePasswordUseCase>(()=>UpdatePasswordUseCase(locator<AuthRepository>()));
+  locator.registerLazySingleton<IsSubAdminUseCase>(()=>IsSubAdminUseCase(locator<AuthRepository>()));
+  locator.registerLazySingleton<CurrentUserUseCase>(()=>CurrentUserUseCase(locator<AuthRepository>()));
 }
