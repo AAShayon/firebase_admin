@@ -1,5 +1,6 @@
 import '../../../../core/network/firebase_provider.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/user_roles.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
 
@@ -24,14 +25,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final model = await remoteDataSource.signInWithGoogle();
     return model.toEntity();
   }
-
-  @override
-  Future<bool> isAdmin() async {
-    final user = FirebaseProvider.auth.currentUser;
-    if (user == null) return false;
-    return await remoteDataSource.isAdmin(user.uid);
-  }
-
+  
   @override
   Future<void> signUpWithEmailAndPassword(String email, String password)async {
     return await remoteDataSource.signUpWithEmailAndPassword(email, password);
@@ -47,20 +41,11 @@ class AuthRepositoryImpl implements AuthRepository {
     return model.toEntity();
 
   }
-  @override
-  Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
-    return await remoteDataSource.assignAdminRole(userId, isAdmin: isAdmin);
-  }
-  @override
-  Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
-    return await remoteDataSource.assignSubAdminRole(userId, isSubAdmin: isSubAdmin);
-  }
 
   @override
-  Future<bool> isSubAdmin() async{
-    final user = FirebaseProvider.auth.currentUser;
-    if (user == null) return false;
-    return await remoteDataSource.isSubAdmin(user.uid);
+  Future<UserRole> checkUserRole(String userId) {
+    return remoteDataSource.checkUserRole(userId);
   }
+
 
 }

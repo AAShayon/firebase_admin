@@ -55,27 +55,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.unauthenticated();
   }
 
-  Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
-    state = AuthState.loading();
-    try {
-      await ref.read(assignAdminRoleProvider).call(userId, isAdmin: isAdmin);
-      final currentUser = await ref.read(getCurrentUserProvider).call();
-      state = AuthState.authenticated(currentUser);
-    } catch (e) {
-      state = AuthState.error(e.toString());
-    }
-  }
-
-  Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
-    state = AuthState.loading();
-    try {
-      await ref.read(assignSubAdminRoleProvider).call(userId, isSubAdmin: isSubAdmin);
-      final currentUser = await ref.read(getCurrentUserProvider).call();
-      state = AuthState.authenticated(currentUser);
-    } catch (e) {
-      state = AuthState.error(e.toString());
-    }
-  }
+  // Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
+  //   state = AuthState.loading();
+  //   try {
+  //     await ref.read(assignAdminRoleProvider).call(userId, isAdmin: isAdmin);
+  //     final currentUser = await ref.read(getCurrentUserProvider).call();
+  //     state = AuthState.authenticated(currentUser);
+  //   } catch (e) {
+  //     state = AuthState.error(e.toString());
+  //   }
+  // }
+  //
+  // Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
+  //   state = AuthState.loading();
+  //   try {
+  //     await ref.read(assignSubAdminRoleProvider).call(userId, isSubAdmin: isSubAdmin);
+  //     final currentUser = await ref.read(getCurrentUserProvider).call();
+  //     state = AuthState.authenticated(currentUser);
+  //   } catch (e) {
+  //     state = AuthState.error(e.toString());
+  //   }
+  // }
 
   Future<void> checkCurrentUser() async {
     state = AuthState.loading();
@@ -91,19 +91,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> isCurrentUserAdmin() async {
-    try {
-      return await ref.read(isAdminProvider).call();
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<bool> isCurrentUserSubAdmin() async {
-    try {
-      return await ref.read(isSubAdminProvider).call();
-    } catch (e) {
-      return false;
-    }
-  }
+  // Future<bool> isCurrentUserAdmin() async {
+  //   try {
+  //     return await ref.read(isAdminProvider).call();
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
+  //
+  // Future<bool> isCurrentUserSubAdmin() async {
+  //   try {
+  //     return await ref.read(isSubAdminProvider).call();
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
 }

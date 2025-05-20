@@ -1,6 +1,7 @@
 import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/admin/presentation/pages/user_management_page.dart';
 import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
@@ -58,6 +59,17 @@ final GoRouter appRouter = GoRouter(
         state: state,
         child:  SettingsPage(),
         transitionType: AppRouteTransitionType.scale,
+      ),
+    ),
+    // Add to your app_router.dart
+    GoRoute(
+      name: 'user-management',
+      path: '/admin/users',
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const UserManagementPage(),
+        transitionType: AppRouteTransitionType.slideFromLeft,
       ),
     ),
   ],
