@@ -39,7 +39,13 @@ class SettingsPage extends ConsumerWidget {
                     CustomSizeSpace.vMedium16,
                     ListTile(
                       leading: const Icon(Icons.person),
-                      title:  Text(user!.displayName ?? 'Guest'),
+                      // title:  Text(user!.displayName ?? 'Guest'),
+                      title:  Text(
+                        authState.maybeMap(
+                          authenticated: (auth) => auth.user.displayName.toString(),
+                          orElse: () => 'Guest',
+                        ),
+                      ),
                       subtitle: Text(
                         authState.maybeMap(
                           authenticated: (auth) => auth.user.id,

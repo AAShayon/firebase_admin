@@ -5,41 +5,47 @@ import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/domain/entities/user_roles.dart';
 import '../../domain/usecases/get_users_usecase.dart';
 import '../../domain/usecases/update_user_role_usecase.dart';
+import 'admin_providers.dart';
 import 'admin_state.dart';
 
 class AdminNotifier extends StateNotifier<AdminState> {
-  final GetUsersUseCase getUsers;
-  final UpdateUserRoleUseCase updateUserRole;
+  final Ref ref;
 
-  AdminNotifier({
-    required this.getUsers,
-    required this.updateUserRole,
-  }) : super(AdminState.initial());
+  AdminNotifier(this.ref) : super(const AdminState.initial());
 
   Future<void> fetchUsers() async {
-    state = AdminState.loading();
+    state = const AdminState.loading();
     try {
-      final users = await getUsers();
+      final getUsersUseCase = ref.read(getUsersProvider);
+      final users = await getUsersUseCase.call();
       state = AdminState.loaded(users);
     } catch (e) {
-      state = AdminState.error(e.toString());
+      state = AdminState.error('Failed to fetch users: ${e.toString()}');
     }
   }
 
   Future<void> changeUserRole(UserEntity user, UserRole newRole) async {
     try {
-      await updateUserRole(user.id, newRole);
-      final updatedUser = UserEntity(
-        id: user.id,
-        email: user.email,
-        displayName: user.displayName,
-        photoUrl: user.photoUrl,
-        isAdmin: newRole != UserRole.user,
-        role: newRole,
-      );
+      final updateUserRoleUseCase = ref.read(updateUserRoleProvider);
+      final updatedUser = await updateUserRoleUseCase.call();
       state = AdminState.roleUpdated(updatedUser);
+      // Refresh users after update (optional)
+      await fetchUsers();
     } catch (e) {
-      state = AdminState.error(e.toString());
+      state = AdminState.error('Failed to update user role: ${e.toString()}');
     }
   }
+  Future<void> getAdminDetails(String userId) async {
+    try {
+      final getAdminDetailsUseCase = ref.read(adminDetailsProvider);
+      final adminDetails = await getAdminDetailsUseCase.call(userId);
+      state =AdminState.loaded(adminDetails);
+
+    } catch (e) {
+      // Handle errors
+
+  }
+
+
 }
+
