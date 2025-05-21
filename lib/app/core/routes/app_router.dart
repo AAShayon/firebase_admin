@@ -1,6 +1,9 @@
 import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/providers/auth_notifier_provider.dart';
 import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
@@ -9,6 +12,36 @@ import 'app_transitions.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',
+  redirect: (BuildContext context, GoRouterState state) async {
+    final authNotifier = ProviderScope.containerOf(context).read(authNotifierProvider);
+
+    // Check auth state
+    final isLoggedIn = authNotifier.maybeMap(
+      authenticated: (_) => true,
+      orElse: () => false,
+    );
+
+    final isRestrictedRoute = [
+      '/dashboard',
+      '/settings',
+    ].contains(state.uri.toString());
+
+    if (!isLoggedIn && isRestrictedRoute) {
+      return '/login';
+    }
+
+    // Check if trying to access login/register while already logged in
+    final isAuthRoute = [
+      '/login',
+      '/register',
+    ].contains(state.uri.toString());
+
+    if (isLoggedIn && isAuthRoute) {
+      return '/dashboard';
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(
       name: 'splash',
@@ -53,12 +86,33 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: 'settings',
       path: '/settings',
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child:  SettingsPage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
+      pageBuilder: (context, state) {
+        final authNotifier = ProviderScope.containerOf(context).read(authNotifierProvider);
+
+        // Check if user is admin
+        final isAdmin = authNotifier.maybeMap(
+          authenticated: (auth) => auth.user.isAdmin,
+          orElse: () => false,
+        );
+
+        if (!isAdmin) {
+          // Redirect non-admin users to dashboard
+          return buildPageRoute(
+            context: context,
+            state: state,
+            child: const DashboardPage(),
+            transitionType: AppRouteTransitionType.scale,
+          );
+        }
+
+        // Allow admin to access settings
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: const SettingsPage(),
+          transitionType: AppRouteTransitionType.scale,
+        );
+      },
     ),
   ],
 );

@@ -63,11 +63,116 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 }
 
+// class NavigationRailSection extends ConsumerWidget {
+//   const NavigationRailSection({super.key});
+//
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     return NavigationRail(
+//       extended: MediaQuery.of(context).size.width >= 1024,
+//       destinations: [
+//         const NavigationRailDestination(
+//           icon: Icon(Icons.dashboard),
+//           label: Text('Dashboard'),
+//         ),
+//         const NavigationRailDestination(
+//           icon: Icon(Icons.inventory_2),
+//           label: Text('Products'),
+//         ),
+//         const NavigationRailDestination(
+//           icon: Icon(Icons.shopping_cart),
+//           label: Text('Orders'),
+//         ),
+//         const NavigationRailDestination(
+//           icon: Icon(Icons.people),
+//           label: Text('Customers'),
+//         ),
+//         const NavigationRailDestination(
+//           icon: Icon(Icons.notifications),
+//           label: Text('Push Notifications'),
+//         ),
+//         const NavigationRailDestination(
+//           icon: Icon(Icons.settings),
+//           label: Text('Settings'),
+//         ),
+//         const NavigationRailDestination(
+//           icon: Icon(Icons.logout),
+//           label: Text('Sign Out'),
+//         ),
+//       ],
+//       selectedIndex: 0,
+//       onDestinationSelected: (index) {
+//         if(index == 4){
+//           context.goNamed('settings');
+//         }
+//         if (index == 5) {
+//           // When "Sign Out" is selected
+//           ref.read(authNotifierProvider.notifier).signOut();
+//           context.goNamed('login');
+//         }
+//
+//       },
+//     );
+//   }
+// }
+//
+// class NavigationDrawerSection extends ConsumerWidget {
+//   const NavigationDrawerSection({super.key});
+//
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     return Drawer(
+//       child: ListView(
+//         padding: EdgeInsets.zero,
+//         children: [
+//           const DrawerHeader(child: Text('eCommerce Admin')),
+//           const ListTile(leading: Icon(Icons.dashboard), title: Text('Dashboard')),
+//           const ListTile(leading: Icon(Icons.inventory_2), title: Text('Products')),
+//           const ListTile(leading: Icon(Icons.shopping_cart), title: Text('Orders')),
+//           const ListTile(leading: Icon(Icons.people), title: Text('Customers')),
+//           const ListTile(
+//             leading: Icon(Icons.notifications),
+//             title: Text('Push Notifications'),
+//           ),
+//            ListTile(leading: Icon(Icons.settings), title: Text('Settings'),
+//             onTap: (){
+//               context.goNamed('settings');
+//             },),
+//           const Divider(),
+//           ListTile(
+//             leading: const Icon(Icons.logout),
+//             title: const Text('Sign Out'),
+//             onTap:(){
+//               ref.read(authNotifierProvider.notifier).signOut();
+//               context.goNamed('login');
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+//
+//   // static void _handleSignOut(BuildContext context) {
+//   //   final ref = context.ref;
+//   //   ref.read(authNotifierProvider.notifier).signOut();
+//   //   context.goNamed('login');
+//   // }
+// }
 class NavigationRailSection extends ConsumerWidget {
   const NavigationRailSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
+    final isAdmin = authState.maybeMap(
+      authenticated: (auth) => auth.user.isAdmin,
+      orElse: () => false,
+    );
+    final isSigningOut = authState.maybeMap(
+      loading: (_) => true,
+      orElse: () => false,
+    );
+
     return NavigationRail(
       extended: MediaQuery.of(context).size.width >= 1024,
       destinations: [
@@ -91,28 +196,46 @@ class NavigationRailSection extends ConsumerWidget {
           icon: Icon(Icons.notifications),
           label: Text('Push Notifications'),
         ),
-        const NavigationRailDestination(
+        if (isAdmin) const NavigationRailDestination(
           icon: Icon(Icons.settings),
           label: Text('Settings'),
         ),
-        const NavigationRailDestination(
-          icon: Icon(Icons.logout),
-          label: Text('Sign Out'),
+        NavigationRailDestination(
+          icon: isSigningOut
+              ? const CircularProgressIndicator()
+              : const Icon(Icons.logout),
+          label: isSigningOut
+              ? const Text('Signing out...')
+              : const Text('Sign Out'),
         ),
       ],
       selectedIndex: 0,
-      onDestinationSelected: (index) {
-        if(index == 4){
+      onDestinationSelected: isSigningOut
+          ? null
+          : (index) async {
+        if (isAdmin && index == 5) {
           context.goNamed('settings');
+        } else if (!isAdmin && index == 5) {
+          await _handleSignOut(ref, context);
+        } else if (index == 6) {
+          await _handleSignOut(ref, context);
         }
-        if (index == 5) {
-          // When "Sign Out" is selected
-          ref.read(authNotifierProvider.notifier).signOut();
-          context.goNamed('login');
-        }
-
       },
     );
+  }
+  Future<void> _handleSignOut(WidgetRef ref, BuildContext context) async {
+    try {
+      await ref.read(authNotifierProvider.notifier).signOut();
+      if (context.mounted) {
+        context.go('/login');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign out failed: $e')),
+        );
+      }
+    }
   }
 }
 
@@ -121,6 +244,12 @@ class NavigationDrawerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
+    final isAdmin = authState.maybeMap(
+      authenticated: (auth) => auth.user.isAdmin,
+      orElse: () => false,
+    );
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -134,27 +263,49 @@ class NavigationDrawerSection extends ConsumerWidget {
             leading: Icon(Icons.notifications),
             title: Text('Push Notifications'),
           ),
-           ListTile(leading: Icon(Icons.settings), title: Text('Settings'),
-            onTap: (){
+          if (isAdmin) ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
+            onTap: () {
               context.goNamed('settings');
-            },),
+            },
+          ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Sign Out'),
-            onTap:(){
-              ref.read(authNotifierProvider.notifier).signOut();
-              context.goNamed('login');
+          Consumer(
+            builder: (context, ref, child) {
+              final isSigningOut = ref.watch(authNotifierProvider).maybeMap(
+                loading: (_) => true,
+                orElse: () => false,
+              );
+
+              return ListTile(
+                leading: isSigningOut
+                    ? const CircularProgressIndicator()
+                    : const Icon(Icons.logout),
+                title: isSigningOut
+                    ? const Text('Signing out...')
+                    : const Text('Sign Out'),
+                onTap: isSigningOut
+                    ? null
+                    : () async {
+                  try {
+                    await ref.read(authNotifierProvider.notifier).signOut();
+                    if (context.mounted) {
+                      context.go('/login');
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Sign out failed: $e')),
+                      );
+                    }
+                  }
+                },
+              );
             },
           ),
         ],
       ),
     );
   }
-
-  // static void _handleSignOut(BuildContext context) {
-  //   final ref = context.ref;
-  //   ref.read(authNotifierProvider.notifier).signOut();
-  //   context.goNamed('login');
-  // }
 }

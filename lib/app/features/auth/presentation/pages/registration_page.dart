@@ -117,7 +117,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                   onPressed: authState.maybeWhen(
                     orElse: () => () async {
                       if (_formKey.currentState!.validate()) {
-                        await ref.read(authNotifierProvider.notifier).signInWithEmail(
+                        await ref.read(authNotifierProvider.notifier).signUpWithEmail(
                           _emailController.text.trim(),
                           _passwordController.text.trim(),
                         );
