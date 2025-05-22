@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../config/widgets/custom_button.dart';
 import '../providers/auth_notifier_provider.dart';
@@ -28,6 +29,10 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
+    final isLoading = authState.maybeMap(
+      loading: (_) => true,
+      orElse: () => false,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -102,50 +107,69 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
 
                 const SizedBox(height: 32),
 
-                CustomButton(
-                  text: 'Create Account',
-                  icon: authState.maybeMap(
-                    loading: (_) => SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                      ),
-                    ),
-                    orElse: () => null,
-                  ),
-                  onPressed: authState.maybeWhen(
-                    orElse: () => () async {
-                      if (_formKey.currentState!.validate()) {
-                        await ref.read(authNotifierProvider.notifier).signUpWithEmail(
-                          _emailController.text.trim(),
-                          _passwordController.text.trim(),
-                        );
-
-                        if (context.mounted &&
-                            authState.maybeMap(
-                              authenticated: (_) => true,
-                              orElse: () => false,
-                            )) {
-                          Navigator.pop(context);
+                isLoading
+                    ? Center(child: Text('Creating Account...'))
+                    : CustomButton(
+                      text: 'Create Account',
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          ref
+                              .read(authNotifierProvider.notifier)
+                              .signUpWithEmail(
+                                _emailController.text.trim(),
+                                _passwordController.text.trim(),
+                              )
+                              .then((_) {
+                                final authState = ref.read(
+                                  authNotifierProvider,
+                                );
+                                if (context.mounted) {
+                                  if (authState.maybeMap(
+                                    authenticated: (_) => true,
+                                    orElse: () => false,
+                                  )) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Registration successful!',
+                                        ),
+                                      ),
+                                    );
+                                   context.go('/login');
+                                  } else if (authState.maybeMap(
+                                    error: (error) => true,
+                                    orElse: () => false,
+                                  )) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          authState.maybeMap(
+                                            error: (error) => error.message,
+                                            orElse: () => 'Registration failed',
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              });
                         }
-                      }
-                    },
-                    loading: () => () {}, // Disabled when loading
-                  ),
-                ),
+                      },
+                    ),
 
                 // ✅ Show loading or error UI conditionally
                 authState.map(
-                  loading: (_) => const Center(child: CircularProgressIndicator()),
-                  error: (e) => Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: Text(
-                      e.message,
-                      style: TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+                  loading:
+                      (_) => const Center(child: CircularProgressIndicator()),
+                  error:
+                      (e) => Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: Text(
+                          e.message,
+                          style: TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                   authenticated: (_) => const SizedBox(),
                   unauthenticated: (_) => const SizedBox(),
                   initial: (_) => const SizedBox(),

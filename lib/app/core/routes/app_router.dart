@@ -15,26 +15,37 @@ final GoRouter appRouter = GoRouter(
   redirect: (BuildContext context, GoRouterState state) async {
     final authNotifier = ProviderScope.containerOf(context).read(authNotifierProvider);
 
+    final isSplashRoute = state.uri.path == '/splash';
+
+    // If we're already on splash screen, no redirect needed
+    if (isSplashRoute) return null;
+
     // Check auth state
     final isLoggedIn = authNotifier.maybeMap(
       authenticated: (_) => true,
       orElse: () => false,
     );
 
+    // Handle initial route after sign-out
+    if (state.uri.path == '/') {
+      return isLoggedIn ? '/dashboard' : '/login';
+    }
+
+    // Restrict access to protected routes
     final isRestrictedRoute = [
       '/dashboard',
       '/settings',
-    ].contains(state.uri.toString());
+    ].contains(state.uri.path);
 
     if (!isLoggedIn && isRestrictedRoute) {
       return '/login';
     }
 
-    // Check if trying to access login/register while already logged in
+    // Redirect away from auth routes if already logged in
     final isAuthRoute = [
       '/login',
       '/register',
-    ].contains(state.uri.toString());
+    ].contains(state.uri.path);
 
     if (isLoggedIn && isAuthRoute) {
       return '/dashboard';

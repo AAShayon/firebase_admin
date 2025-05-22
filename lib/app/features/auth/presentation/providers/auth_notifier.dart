@@ -51,8 +51,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
-    await ref.read(signOutProvider).call();
-    state = AuthState.unauthenticated();
+    state = AuthState.loading();
+    try {
+      await ref.read(signOutProvider).call();
+      state = AuthState.unauthenticated();
+    } catch (e) {
+      state = AuthState.error(e.toString());
+      rethrow;
+    }
   }
 
   Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
