@@ -1,16 +1,16 @@
-// lib/features/stores/data/datasources/store_remote_data_source.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/firebase_provider.dart';
-import '../../../products/domain/entities/product_entity.dart';
+
 import '../../domain/entities/store_entity.dart';
 
 abstract class StoreRemoteDataSource {
   Future<String> createStore(StoreEntity store);
   Future<List<StoreEntity>> getStores();
   Future<void> linkProductToStore(String storeId, String productId);
-  Future<List<ProductEntity>> getStoreProducts(String storeId);
+  // Future<List<ProductEntity>> getStoreProducts(String storeId);
 }
 
 class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
@@ -84,65 +84,65 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     }
   }
 
-  @override
-  Future<List<ProductEntity>> getStoreProducts(String storeId) async {
-    try {
-      // First get the store to verify it exists
-      final storeDoc = await _firestore.collection('stores').doc(storeId).get();
-      if (!storeDoc.exists) {
-        throw const StoreFailure(message: 'Store not found');
-      }
-
-      // Get all products referenced in the store
-      final productIds = List<String>.from(storeDoc['productIds'] ?? []);
-      if (productIds.isEmpty) return [];
-
-      // Fetch all products in parallel
-      final products = await Future.wait(
-        productIds.map((productId) async {
-          final productDoc = await _firestore
-              .collection('products')
-              .doc(productId)
-              .get();
-
-          if (!productDoc.exists) {
-            throw const StoreFailure(message: 'Product not found');
-          }
-
-          // Get sizes subcollection
-          final sizesSnapshot = await productDoc.reference
-              .collection('sizes')
-              .get();
-
-          final sizes = sizesSnapshot.docs.map((sizeDoc) {
-            return ProductSizeEntity(
-              size: sizeDoc['size'],
-              price: sizeDoc['price'].toDouble(),
-              quantity: sizeDoc['quantity'],
-            );
-          }).toList();
-
-          return ProductEntity(
-            id: productDoc.id,
-            name: productDoc['name'],
-            description: productDoc['description'],
-            imageUrl: productDoc['imageUrl'],
-            sizes: sizes,
-            createdAt: (productDoc['createdAt'] as Timestamp).toDate(),
-            updatedAt: (productDoc['updatedAt'] as Timestamp).toDate(),
-          );
-        }),
-      );
-
-      return products;
-    } on FirebaseException catch (e) {
-      throw StoreFailure.fromCode(e.code);
-    } on StoreFailure {
-      rethrow;
-    } catch (_) {
-      throw const StoreFailure();
-    }
-  }
+  // @override
+  // Future<List<ProductEntity>> getStoreProducts(String storeId) async {
+  //   try {
+  //     // First get the store to verify it exists
+  //     final storeDoc = await _firestore.collection('stores').doc(storeId).get();
+  //     if (!storeDoc.exists) {
+  //       throw const StoreFailure(message: 'Store not found');
+  //     }
+  //
+  //     // Get all products referenced in the store
+  //     final productIds = List<String>.from(storeDoc['productIds'] ?? []);
+  //     if (productIds.isEmpty) return [];
+  //
+  //     // Fetch all products in parallel
+  //     final products = await Future.wait(
+  //       productIds.map((productId) async {
+  //         final productDoc = await _firestore
+  //             .collection('products')
+  //             .doc(productId)
+  //             .get();
+  //
+  //         if (!productDoc.exists) {
+  //           throw const StoreFailure(message: 'Product not found');
+  //         }
+  //
+  //         // Get sizes subcollection
+  //         final sizesSnapshot = await productDoc.reference
+  //             .collection('sizes')
+  //             .get();
+  //
+  //         final sizes = sizesSnapshot.docs.map((sizeDoc) {
+  //           return ProductSizeEntity(
+  //             size: sizeDoc['size'],
+  //             price: sizeDoc['price'].toDouble(),
+  //             quantity: sizeDoc['quantity'],
+  //           );
+  //         }).toList();
+  //
+  //         return ProductEntity(
+  //           id: productDoc.id,
+  //           name: productDoc['name'],
+  //           description: productDoc['description'],
+  //           imageUrl: productDoc['imageUrl'],
+  //           sizes: sizes,
+  //           createdAt: (productDoc['createdAt'] as Timestamp).toDate(),
+  //           updatedAt: (productDoc['updatedAt'] as Timestamp).toDate(),
+  //         );
+  //       }),
+  //     );
+  //
+  //     return products;
+  //   } on FirebaseException catch (e) {
+  //     throw StoreFailure.fromCode(e.code);
+  //   } on StoreFailure {
+  //     rethrow;
+  //   } catch (_) {
+  //     throw const StoreFailure();
+  //   }
+  // }
 
   // Additional useful methods
   Future<List<StoreEntity>> getStoresContainingProduct(String productId) async {

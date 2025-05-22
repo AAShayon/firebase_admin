@@ -83,11 +83,16 @@ class NavigationRailSection extends ConsumerWidget {
         return NavigationRail(
           extended: MediaQuery.of(context).size.width >= 1024,
           destinations: [
+            NavigationRailDestination(
+              icon: const Icon(Icons.home),
+              label: const Text('Home'),
+            ),
+
             const NavigationRailDestination(
               icon: Icon(Icons.dashboard),
               label: Text('Dashboard'),
             ),
-            const NavigationRailDestination(
+            if (isAdmin)   const NavigationRailDestination(
               icon: Icon(Icons.inventory_2),
               label: Text('Products'),
             ),
@@ -120,17 +125,41 @@ class NavigationRailSection extends ConsumerWidget {
                   : const Text('Sign Out'),
             ),
           ],
-          selectedIndex: 0,
+          selectedIndex: 0, // You can manage state for this to make it dynamic
+
           onDestinationSelected: isSigningOut
               ? null
               : (index) async {
-            final settingsIndex = isAdmin ? 5 : 4;
-            final signOutIndex = isAdmin ? 6 : 5;
+            if (isSigningOut) return;
 
-            if (isAdmin && index == settingsIndex) {
-              context.goNamed('settings');
-            } else if (index == signOutIndex) {
-              await _handleSignOut(ref, context);
+            final settingsIndex = isAdmin ? 6 : 5;
+            final signOutIndex = isAdmin ? 7 : 6;
+
+            switch (index) {
+              case 0:
+                context.goNamed('homepage'); // Navigate to home
+                break;
+              case 1:
+                context.goNamed('dashboard');
+                break;
+              case 2:
+                if (isAdmin) context.goNamed('products');
+                break;
+              case 3:
+                context.goNamed('orders');
+                break;
+              case 4:
+                context.goNamed('customers');
+                break;
+              case 5:
+                context.goNamed('notifications');
+                break;
+              case 6:
+                if (isAdmin) context.goNamed('settings');
+                break;
+              case 7:
+                await _handleSignOut(ref, context);
+                break;
             }
           },
         );
@@ -170,8 +199,21 @@ class NavigationDrawerSection extends ConsumerWidget {
         padding: EdgeInsets.zero,
         children: [
           const DrawerHeader(child: Text('eCommerce Admin')),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () {
+              context.goNamed('homepage');
+            },
+          ),
+
           const ListTile(leading: Icon(Icons.dashboard), title: Text('Dashboard')),
-          const ListTile(leading: Icon(Icons.inventory_2), title: Text('Products')),
+          if(isAdmin) ListTile(leading: Icon(Icons.inventory_2), title: Text('Products'),
+          onTap: (){
+            context.go('products');
+          },
+
+          ),
           const ListTile(leading: Icon(Icons.shopping_cart), title: Text('Orders')),
           const ListTile(leading: Icon(Icons.people), title: Text('Customers')),
           const ListTile(

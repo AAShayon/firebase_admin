@@ -16,7 +16,7 @@ class SplashScreen extends ConsumerWidget {
     return splashAsync.when(
       data: (user) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (user != null) {
+          if (user != null ) {
             context.goNamed('dashboard'); // Uses GoRouter
           } else {
             context.goNamed('login'); // Uses GoRouter
