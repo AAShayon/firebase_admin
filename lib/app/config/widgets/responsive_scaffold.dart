@@ -92,7 +92,7 @@ class NavigationRailSection extends ConsumerWidget {
               icon: Icon(Icons.dashboard),
               label: Text('Dashboard'),
             ),
-            if (isAdmin)   const NavigationRailDestination(
+            if (isAdmin) const NavigationRailDestination(
               icon: Icon(Icons.inventory_2),
               label: Text('Products'),
             ),
@@ -108,39 +108,35 @@ class NavigationRailSection extends ConsumerWidget {
               icon: Icon(Icons.notifications),
               label: Text('Push Notifications'),
             ),
-            if (isAdmin) const NavigationRailDestination(
+            const NavigationRailDestination(
               icon: Icon(Icons.settings),
               label: Text('Settings'),
             ),
             NavigationRailDestination(
               icon: isSigningOut
-                  ? const SizedBox(
+                  ? SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-                  : const Icon(Icons.logout),
+                  : Icon(Icons.logout),
               label: isSigningOut
-                  ? const Text('Signing out...')
-                  : const Text('Sign Out'),
+                  ? Text('Signing out...')
+                  : Text('Sign Out'),
             ),
           ],
-          selectedIndex: 0, // You can manage state for this to make it dynamic
-
+          selectedIndex: 0,
           onDestinationSelected: isSigningOut
               ? null
               : (index) async {
             if (isSigningOut) return;
 
-            final settingsIndex = isAdmin ? 6 : 5;
-            final signOutIndex = isAdmin ? 7 : 6;
-
             switch (index) {
               case 0:
-                context.goNamed('homepage'); // Navigate to home
+                context.goNamed('homepage');
                 break;
               case 1:
-                context.goNamed('dashboard');
+                if (isAdmin) context.goNamed('dashboard');
                 break;
               case 2:
                 if (isAdmin) context.goNamed('products');
@@ -155,7 +151,7 @@ class NavigationRailSection extends ConsumerWidget {
                 context.goNamed('notifications');
                 break;
               case 6:
-                if (isAdmin) context.goNamed('settings');
+                context.goNamed('settings');
                 break;
               case 7:
                 await _handleSignOut(ref, context);
@@ -175,9 +171,8 @@ class NavigationRailSection extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sign out failed: $e')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Sign out failed: $e')));
       }
     }
   }
@@ -202,30 +197,36 @@ class NavigationDrawerSection extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Home'),
-            onTap: () {
-              context.goNamed('homepage');
-            },
+            onTap: () => context.goNamed('homepage'),
           ),
-
-          const ListTile(leading: Icon(Icons.dashboard), title: Text('Dashboard')),
-          if(isAdmin) ListTile(leading: Icon(Icons.inventory_2), title: Text('Products'),
-          onTap: (){
-            context.go('products');
-          },
-
+          if (isAdmin)
+            ListTile(
+              leading: const Icon(Icons.dashboard),
+              title: const Text('Dashboard'),
+              onTap: () => context.go('/dashboard'),
+            ),
+          if (isAdmin)
+            ListTile(
+              leading: const Icon(Icons.inventory_2),
+              title: const Text('Products'),
+              onTap: () => context.go('/products'),
+            ),
+          const ListTile(
+            leading: Icon(Icons.shopping_cart),
+            title: Text('Orders'),
           ),
-          const ListTile(leading: Icon(Icons.shopping_cart), title: Text('Orders')),
-          const ListTile(leading: Icon(Icons.people), title: Text('Customers')),
+          const ListTile(
+            leading: Icon(Icons.people),
+            title: Text('Customers'),
+          ),
           const ListTile(
             leading: Icon(Icons.notifications),
             title: Text('Push Notifications'),
           ),
-          if (isAdmin) ListTile(
+          ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
-            onTap: () {
-              context.goNamed('settings');
-            },
+            onTap: () => context.goNamed('settings'),
           ),
           const Divider(),
           Consumer(
@@ -250,14 +251,17 @@ class NavigationDrawerSection extends ConsumerWidget {
                     ? null
                     : () async {
                   try {
-                    await ref.read(authNotifierProvider.notifier).signOut();
+                    await ref
+                        .read(authNotifierProvider.notifier)
+                        .signOut();
                     if (context.mounted) {
                       context.go('/login');
                     }
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Sign out failed: $e')),
+                        SnackBar(
+                            content: Text('Sign out failed: $e')),
                       );
                     }
                   }
@@ -270,103 +274,3 @@ class NavigationDrawerSection extends ConsumerWidget {
     );
   }
 }
-
-
-
-
-///
-// class NavigationRailSection extends ConsumerWidget {
-//   const NavigationRailSection({super.key});
-//
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     return NavigationRail(
-//       extended: MediaQuery.of(context).size.width >= 1024,
-//       destinations: [
-//         const NavigationRailDestination(
-//           icon: Icon(Icons.dashboard),
-//           label: Text('Dashboard'),
-//         ),
-//         const NavigationRailDestination(
-//           icon: Icon(Icons.inventory_2),
-//           label: Text('Products'),
-//         ),
-//         const NavigationRailDestination(
-//           icon: Icon(Icons.shopping_cart),
-//           label: Text('Orders'),
-//         ),
-//         const NavigationRailDestination(
-//           icon: Icon(Icons.people),
-//           label: Text('Customers'),
-//         ),
-//         const NavigationRailDestination(
-//           icon: Icon(Icons.notifications),
-//           label: Text('Push Notifications'),
-//         ),
-//         const NavigationRailDestination(
-//           icon: Icon(Icons.settings),
-//           label: Text('Settings'),
-//         ),
-//         const NavigationRailDestination(
-//           icon: Icon(Icons.logout),
-//           label: Text('Sign Out'),
-//         ),
-//       ],
-//       selectedIndex: 0,
-//       onDestinationSelected: (index) {
-//         if(index == 4){
-//           context.goNamed('settings');
-//         }
-//         if (index == 5) {
-//           // When "Sign Out" is selected
-//           ref.read(authNotifierProvider.notifier).signOut();
-//           context.goNamed('login');
-//         }
-//
-//       },
-//     );
-//   }
-// }
-//
-// class NavigationDrawerSection extends ConsumerWidget {
-//   const NavigationDrawerSection({super.key});
-//
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     return Drawer(
-//       child: ListView(
-//         padding: EdgeInsets.zero,
-//         children: [
-//           const DrawerHeader(child: Text('eCommerce Admin')),
-//           const ListTile(leading: Icon(Icons.dashboard), title: Text('Dashboard')),
-//           const ListTile(leading: Icon(Icons.inventory_2), title: Text('Products')),
-//           const ListTile(leading: Icon(Icons.shopping_cart), title: Text('Orders')),
-//           const ListTile(leading: Icon(Icons.people), title: Text('Customers')),
-//           const ListTile(
-//             leading: Icon(Icons.notifications),
-//             title: Text('Push Notifications'),
-//           ),
-//            ListTile(leading: Icon(Icons.settings), title: Text('Settings'),
-//             onTap: (){
-//               context.goNamed('settings');
-//             },),
-//           const Divider(),
-//           ListTile(
-//             leading: const Icon(Icons.logout),
-//             title: const Text('Sign Out'),
-//             onTap:(){
-//               ref.read(authNotifierProvider.notifier).signOut();
-//               context.goNamed('login');
-//             },
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   // static void _handleSignOut(BuildContext context) {
-//   //   final ref = context.ref;
-//   //   ref.read(authNotifierProvider.notifier).signOut();
-//   //   context.goNamed('login');
-//   // }
-// }
