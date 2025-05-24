@@ -12,44 +12,65 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final splashAsync = ref.watch(splashProvider);
-    return splashAsync.when(
-      data: (user) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (user != null ) {
-            context.goNamed('dashboard'); // Uses GoRouter
-          } else {
-            context.goNamed('login'); // Uses GoRouter
-          }
-        });
-
-        // This fallback will only show briefly
-        return const CustomLoadingScreen();
-      },
-    loading: () => Scaffold(
-      body: AnimatedSplashPlus(
-        config:  SplashConfig(
-          appName: 'Admin Dashboard',
-          appNamePart1: 'Admin',
-          appNamePart2: 'Dashboard',
-          subtitle: 'Management Console',
-          welcomeText: 'Loading...',
-          sunsetDuration: const Duration(seconds: 2),
-          textAnimationDuration: const Duration(seconds: 1),
-          sunStartColor: Colors.blueAccent,
-          sunEndColor: Colors.blue.shade900,
-          skyEndBottomColor: Theme.of(context).primaryColor,
-          skyEndMiddleColor: Theme.of(context).primaryColorLight,
-          skyEndTopColor: Theme.of(context).primaryColorDark,
-        ),
-        onAnimationComplete: (){
-           log('Complete Splash ');
-        },
-      ),
-    ),
-      error: (err, _) => Center(child: Text('Error: $err')),
-    );
-
+    // final splashAsync = ref.watch(splashProvider);
+    // return splashAsync.when(
+    //   data: (user) {
+    //     WidgetsBinding.instance.addPostFrameCallback((_) {
+    //       if (user != null ) {
+    //         context.goNamed('dashboard');
+    //       } else {
+    //         context.goNamed('login'); // Uses GoRouter
+    //       }
+    //     });
+    //
+    //     // This fallback will only show briefly
+    //     return const CustomLoadingScreen();
+    //   },
+    // loading: () =>
+    //     Scaffold(
+    //   body: AnimatedSplashPlus(
+    //     config:  SplashConfig(
+    //       appName: 'Admin Dashboard',
+    //       appNamePart1: 'Admin',
+    //       appNamePart2: 'Dashboard',
+    //       subtitle: 'Management Console',
+    //       welcomeText: 'Loading...',
+    //       sunsetDuration: const Duration(seconds: 2),
+    //       textAnimationDuration: const Duration(seconds: 1),
+    //       sunStartColor: Colors.blueAccent,
+    //       sunEndColor: Colors.blue.shade900,
+    //       skyEndBottomColor: Theme.of(context).primaryColor,
+    //       skyEndMiddleColor: Theme.of(context).primaryColorLight,
+    //       skyEndTopColor: Theme.of(context).primaryColorDark,
+    //     ),
+    //     onAnimationComplete: (){
+    //        log('Complete Splash ');
+    //     },
+    //   ),
+    // ),
+    //   error: (err, _) => Center(child: Text('Error: $err')),
+    // );
+   return   Scaffold(
+     body: AnimatedSplashPlus(
+       config:  SplashConfig(
+         appName: 'Admin Dashboard',
+         appNamePart1: 'Admin',
+         appNamePart2: 'Dashboard',
+         subtitle: 'Management Console',
+         welcomeText: 'Loading...',
+         sunsetDuration: const Duration(seconds: 2),
+         textAnimationDuration: const Duration(seconds: 1),
+         sunStartColor: Colors.blueAccent,
+         sunEndColor: Colors.blue.shade900,
+         skyEndBottomColor: Theme.of(context).primaryColor,
+         skyEndMiddleColor: Theme.of(context).primaryColorLight,
+         skyEndTopColor: Theme.of(context).primaryColorDark,
+       ),
+       onAnimationComplete: (){
+         log('Complete Splash ');
+       },
+     ),
+   );
   }
 
 }

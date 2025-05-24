@@ -197,7 +197,7 @@ class NavigationDrawerSection extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Home'),
-            onTap: () => context.goNamed('homepage'),
+            onTap: () => context.goNamed('/homepage'),
           ),
           if (isAdmin)
             ListTile(
