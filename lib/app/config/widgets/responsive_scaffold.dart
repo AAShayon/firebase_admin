@@ -136,22 +136,22 @@ class NavigationRailSection extends ConsumerWidget {
                 context.goNamed('homepage');
                 break;
               case 1:
-                if (isAdmin) context.goNamed('dashboard');
+                if (isAdmin) context.pushNamed('dashboard');
                 break;
               case 2:
-                if (isAdmin) context.goNamed('products');
+                if (isAdmin) context.pushNamed('products');
                 break;
               case 3:
-                context.goNamed('orders');
+                context.pushNamed('orders');
                 break;
               case 4:
-                context.goNamed('customers');
+                context.pushNamed('customers');
                 break;
               case 5:
-                context.goNamed('notifications');
+                context.pushNamed('notifications');
                 break;
               case 6:
-                context.goNamed('settings');
+                context.pushNamed('settings');
                 break;
               case 7:
                 await _handleSignOut(ref, context);
@@ -203,13 +203,13 @@ class NavigationDrawerSection extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.dashboard),
               title: const Text('Dashboard'),
-              onTap: () => context.go('/dashboard'),
+              onTap: () => context.pushNamed('/dashboard'),
             ),
           if (isAdmin)
             ListTile(
               leading: const Icon(Icons.inventory_2),
               title: const Text('Products'),
-              onTap: () => context.go('/products'),
+              onTap: () => context.pushNamed('/products'),
             ),
           const ListTile(
             leading: Icon(Icons.shopping_cart),
@@ -226,7 +226,7 @@ class NavigationDrawerSection extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
-            onTap: () => context.goNamed('settings'),
+            onTap: () => context.pushNamed('settings'),
           ),
           const Divider(),
           Consumer(
