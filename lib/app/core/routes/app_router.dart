@@ -1,13 +1,16 @@
+import 'package:firebase_admin/app/config/widgets/loading_screen.dart';
 import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/providers/auth_notifier_provider.dart';
+import '../../features/home_page/presentation/pages/home_page.dart';
 import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/products/presentation/widgets/products_table.dart';
 import 'app_transitions.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -28,7 +31,7 @@ final GoRouter appRouter = GoRouter(
 
     // Handle initial route after sign-out
     if (state.uri.path == '/') {
-      return isLoggedIn ? '/dashboard' : '/login';
+      return isLoggedIn ? '/homePage' : '/login';
     }
 
     // Restrict access to protected routes
@@ -48,7 +51,7 @@ final GoRouter appRouter = GoRouter(
     ].contains(state.uri.path);
 
     if (isLoggedIn && isAuthRoute) {
-      return '/dashboard';
+      return '/homePage';
     }
 
     return null;
@@ -64,6 +67,17 @@ final GoRouter appRouter = GoRouter(
         transitionType: AppRouteTransitionType.fade,
       ),
     ),
+    GoRoute(
+      name: 'loading',
+      path: '/loading',
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const CustomLoadingScreen(),
+        transitionType: AppRouteTransitionType.fade,
+      ),
+    ),
+
     GoRoute(
       name: 'login',
       path: '/login',
@@ -91,6 +105,26 @@ final GoRouter appRouter = GoRouter(
         context: context,
         state: state,
         child: const DashboardPage(),
+        transitionType: AppRouteTransitionType.scale,
+      ),
+    ),
+    GoRoute(
+      name: 'homePage',
+      path: '/homePage',
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const HomePage(),
+        transitionType: AppRouteTransitionType.scale,
+      ),
+    ),
+    GoRoute(
+      name: 'product',
+      path: '/product',
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const ProductsTable(),
         transitionType: AppRouteTransitionType.scale,
       ),
     ),
