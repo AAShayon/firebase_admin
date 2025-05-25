@@ -12,6 +12,7 @@ import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/landing/presentation/landing.dart';
 import '../../features/products/presentation/widgets/products_table.dart';
 import 'app_transitions.dart';
 // lib/config/routes/app_routes.dart
@@ -77,6 +78,16 @@ final GoRouter appRouter = GoRouter(
         context: context,
         state: state,
         child: const CustomLoadingScreen(),
+        transitionType: AppRouteTransitionType.fade,
+      ),
+    ),
+    GoRoute(
+      name: AppRoutes.landing,
+      path: AppRoutes.landingPath,
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const LandingPage(),
         transitionType: AppRouteTransitionType.fade,
       ),
     ),

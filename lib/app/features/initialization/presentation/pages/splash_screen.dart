@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../config/widgets/loading_screen.dart';
+import '../../../../core/routes/app_router.dart';
 import '../providers/splash_provider.dart';
 
 class SplashScreen extends ConsumerWidget {
@@ -12,65 +13,41 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final splashAsync = ref.watch(splashProvider);
-    // return splashAsync.when(
-    //   data: (user) {
-    //     WidgetsBinding.instance.addPostFrameCallback((_) {
-    //       if (user != null ) {
-    //         context.goNamed('dashboard');
-    //       } else {
-    //         context.goNamed('login'); // Uses GoRouter
-    //       }
-    //     });
-    //
-    //     // This fallback will only show briefly
-    //     return const CustomLoadingScreen();
-    //   },
-    // loading: () =>
-    //     Scaffold(
-    //   body: AnimatedSplashPlus(
-    //     config:  SplashConfig(
-    //       appName: 'Admin Dashboard',
-    //       appNamePart1: 'Admin',
-    //       appNamePart2: 'Dashboard',
-    //       subtitle: 'Management Console',
-    //       welcomeText: 'Loading...',
-    //       sunsetDuration: const Duration(seconds: 2),
-    //       textAnimationDuration: const Duration(seconds: 1),
-    //       sunStartColor: Colors.blueAccent,
-    //       sunEndColor: Colors.blue.shade900,
-    //       skyEndBottomColor: Theme.of(context).primaryColor,
-    //       skyEndMiddleColor: Theme.of(context).primaryColorLight,
-    //       skyEndTopColor: Theme.of(context).primaryColorDark,
-    //     ),
-    //     onAnimationComplete: (){
-    //        log('Complete Splash ');
-    //     },
-    //   ),
-    // ),
-    //   error: (err, _) => Center(child: Text('Error: $err')),
-    // );
-   return   Scaffold(
-     body: AnimatedSplashPlus(
-       config:  SplashConfig(
-         appName: 'Admin Dashboard',
-         appNamePart1: 'Admin',
-         appNamePart2: 'Dashboard',
-         subtitle: 'Management Console',
-         welcomeText: 'Loading...',
-         sunsetDuration: const Duration(seconds: 2),
-         textAnimationDuration: const Duration(seconds: 1),
-         sunStartColor: Colors.blueAccent,
-         sunEndColor: Colors.blue.shade900,
-         skyEndBottomColor: Theme.of(context).primaryColor,
-         skyEndMiddleColor: Theme.of(context).primaryColorLight,
-         skyEndTopColor: Theme.of(context).primaryColorDark,
-       ),
-       onAnimationComplete: (){
-         log('Complete Splash ');
-       },
-     ),
-   );
-  }
+    return Scaffold(
+      body: AnimatedSplashPlus(
+        config: SplashConfig(
+          appName: 'Admin Dashboard',
+          appNamePart1: 'Admin',
+          appNamePart2: 'Dashboard',
+          subtitle: 'Management Console',
+          welcomeText: 'Loading...',
+          sunsetDuration: const Duration(seconds: 2),
+          textAnimationDuration: const Duration(seconds: 1),
+          sunStartColor: Colors.blueAccent,
+          sunEndColor: Colors.blue.shade900,
+          skyEndBottomColor: Theme.of(context).primaryColor,
+          skyEndMiddleColor: Theme.of(context).primaryColorLight,
+          skyEndTopColor: Theme.of(context).primaryColorDark,
+        ),
+        onAnimationComplete: () {
+          log('Splash animation complete');
 
+          // Delay navigation slightly to avoid context issues
+          Future.delayed(const Duration(milliseconds: 300), () async {
+            final splashAsync = await ref.read(splashProvider.future);
+
+            if (!context.mounted) return;
+
+            if (splashAsync != null) {
+              log('User is authenticated: ${splashAsync.displayName}');
+              context.go(AppRoutes.landingPath);
+            } else {
+              log('No user found, redirecting to login');
+              context.go(AppRoutes.loginPath);
+            }
+          });
+        },
+      ),
+    );
+  }
 }

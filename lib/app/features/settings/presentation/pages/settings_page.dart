@@ -18,12 +18,12 @@ class SettingsPage extends ConsumerWidget {
     final settingsState = ref.watch(settingsNotifierProvider);
     final user = FirebaseProvider.auth.currentUser;
 
-    return ResponsiveScaffold(
-      title: 'Settings',
+    return Scaffold(
+      // title: 'Settings',
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // User Profile Section
             Card(

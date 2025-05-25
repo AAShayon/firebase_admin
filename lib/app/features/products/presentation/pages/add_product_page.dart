@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../config/widgets/responsive_scaffold.dart';
 import '../../data/model/product_model.dart';
 import '../../domain/entities/product_entity.dart';
 
@@ -82,8 +81,8 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveScaffold(
-      title: 'Add Product',
+    return Scaffold(
+      // title: 'Add Product',
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(

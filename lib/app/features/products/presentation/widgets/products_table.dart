@@ -62,8 +62,8 @@ class ProductsTable extends StatelessWidget {
       ),
     ];
 
-    return ResponsiveScaffold(
-      title: 'Product Table',
+    return Scaffold(
+      // title: 'Product Table',
       body: isMobile
           ? ListView.builder(
         itemCount: products.length,

@@ -9,8 +9,8 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveScaffold(
-      title: 'eCommerce Admin',
+    return Scaffold(
+      // title: 'eCommerce Admin',
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(

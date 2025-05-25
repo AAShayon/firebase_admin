@@ -1,8 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../config/widgets/responsive_scaffold.dart';
 import '../../../products/domain/entities/product_entity.dart';
 import '../../../products/presentation/providers/product_notifier_provider.dart';
 
@@ -15,8 +13,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final productsState = ref.watch(productNotifierProvider);
 
-    return ResponsiveScaffold(
-      title: 'Our Products',
+    return Scaffold(
       body: productsState.when(
         initial: () => const Center(child: Text('Loading products...')),
         loading: () => const Center(child: CircularProgressIndicator()),
