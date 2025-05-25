@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/routes/app_router.dart';
 import '../../auth/presentation/providers/auth_notifier_provider.dart';
 import '../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../home_page/presentation/pages/home_page.dart';
@@ -51,6 +52,21 @@ class _LandingPageState extends ConsumerState<LandingPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(_getTitle(_currentIndex)),
+          actions: [
+            if (_currentIndex == 2 && _isAdmin)
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => context.pushNamed(AppRoutes.addProduct),
+              ),
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () {},
+            ),
+          ],
         ),
         drawer: Drawer(
           child: ListView(

@@ -2,6 +2,7 @@ import 'package:firebase_admin/app/config/widgets/loading_screen.dart';
 import 'package:firebase_admin/app/features/customer/presentation/customers_page.dart';
 import 'package:firebase_admin/app/features/notifications/presentation/notifications_page.dart';
 import 'package:firebase_admin/app/features/order/presentation/order.dart';
+import 'package:firebase_admin/app/features/products/presentation/pages/add_product_page.dart';
 import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +28,7 @@ class AppRoutes {
   static const dashboard = 'dashboard';
   static const home = 'homePage';
   static const product = 'product';
+  static const addProduct = 'addProduct';
   static const order = 'order';
   static const customer = 'customer';
   static const notifications = 'notifications';
@@ -40,6 +42,7 @@ class AppRoutes {
   static const dashboardPath = '/dashboard';
   static const homePath = '/homePage';
   static const productPath = '/product';
+  static const addProductPath = '/addProduct';
   static const orderPath = '/order';
   static const customerPath = '/customer';
   static const notificationsPath = '/notifications';
@@ -143,6 +146,16 @@ final GoRouter appRouter = GoRouter(
         context: context,
         state: state,
         child: const ProductsTable(),
+        transitionType: AppRouteTransitionType.scale,
+      ),
+    ),
+    GoRoute(
+      name: AppRoutes.addProduct,
+      path: AppRoutes.addProductPath,
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const AddProductPage(),
         transitionType: AppRouteTransitionType.scale,
       ),
     ),

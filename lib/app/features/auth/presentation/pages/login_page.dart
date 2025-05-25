@@ -1,3 +1,4 @@
+import 'package:firebase_admin/app/core/routes/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_admin/app/config/widgets/custom_button.dart';
 import 'package:firebase_admin/app/config/widgets/divider_with_text.dart';
 import 'package:firebase_admin/app/core/utils/custom_size_space.dart';
 import '../providers/auth_notifier_provider.dart';
+import '../providers/auth_state.dart';
 
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -30,15 +32,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
-
-    // Navigate after frame completes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      authState.maybeWhen(
-        authenticated: (_) => context.goNamed('dashboard'),
-        orElse: () {},
-      );
+    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
+      if (next is Authenticated) {
+        context.go(AppRoutes.landingPath);
+      }
     });
-
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -129,7 +127,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                   TextButton(
                     onPressed: authState.maybeWhen(
-                      orElse: () => () => context.goNamed('register'),
+                      orElse: () => () => context.pushNamed('register'),
                       loading: () => null,
                     ),
                     child: const Text('Create an account'),

@@ -82,79 +82,83 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // title: 'Add Product',
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Product Title'),
-                validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<ProductCategory>(
-                value: _selectedCategory,
-                decoration: const InputDecoration(labelText: 'Category'),
-                items: ProductCategory.values.map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category.toString().split('.').last),
-                  );
-                }).toList(),
-                onChanged: (value) => setState(() => _selectedCategory = value!),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('Available'),
-                value: _availability,
-                onChanged: (value) => setState(() => _availability = value),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _pickImage,
-                child: const Text('Upload Product Image'),
-              ),
-              if (_image != null) ...[
+      appBar: AppBar(
+        title: const Text('Add Product'),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(labelText: 'Product Title'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                ),
                 const SizedBox(height: 16),
-                Image.file(_image!, height: 150, fit: BoxFit.cover),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<ProductCategory>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: ProductCategory.values.map((category) {
+                    return DropdownMenuItem(
+                      value: category,
+                      child: Text(category.toString().split('.').last),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedCategory = value!),
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('Available'),
+                  value: _availability,
+                  onChanged: (value) => setState(() => _availability = value),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _pickImage,
+                  child: const Text('Upload Product Image'),
+                ),
+                if (_image != null) ...[
+                  const SizedBox(height: 16),
+                  Image.file(_image!, height: 150, fit: BoxFit.cover),
+                ],
+                const SizedBox(height: 24),
+                const Text('Product Variants', style: TextStyle(fontSize: 18)),
+                ..._variants.map((variant) => ListTile(
+                  title: Text('Size: ${variant.size}'),
+                  subtitle: Text(
+                    'Color: ${variant.color.toString().split('.').last}\n'
+                        'Price: \$${variant.price.toStringAsFixed(2)}\n'
+                        'Quantity: ${variant.quantity}',
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => setState(() => _variants.remove(variant)),
+                  ),
+                )).toList(),
+                ElevatedButton(
+                  onPressed: _addVariant,
+                  child: const Text('Add Variant'),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Save Product'),
+                ),
               ],
-              const SizedBox(height: 24),
-              const Text('Product Variants', style: TextStyle(fontSize: 18)),
-              ..._variants.map((variant) => ListTile(
-                title: Text('Size: ${variant.size}'),
-                subtitle: Text(
-                  'Color: ${variant.color.toString().split('.').last}\n'
-                      'Price: \$${variant.price.toStringAsFixed(2)}\n'
-                      'Quantity: ${variant.quantity}',
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => setState(() => _variants.remove(variant)),
-                ),
-              )).toList(),
-              ElevatedButton(
-                onPressed: _addVariant,
-                child: const Text('Add Variant'),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submitForm,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text('Save Product'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
