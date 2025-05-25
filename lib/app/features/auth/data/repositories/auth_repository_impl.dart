@@ -47,20 +47,20 @@ class AuthRepositoryImpl implements AuthRepository {
     return model.toEntity();
 
   }
-  @override
-  Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
-    return await remoteDataSource.assignAdminRole(userId, isAdmin: isAdmin);
-  }
-  @override
-  Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
-    return await remoteDataSource.assignSubAdminRole(userId, isSubAdmin: isSubAdmin);
-  }
-
-  @override
-  Future<bool> isSubAdmin() async{
-    final user = FirebaseProvider.auth.currentUser;
-    if (user == null) return false;
-    return await remoteDataSource.isSubAdmin(user.uid);
-  }
+  // @override
+  // Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
+  //   return await remoteDataSource.assignAdminRole(userId, isAdmin: isAdmin);
+  // }
+  // @override
+  // Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
+  //   return await remoteDataSource.assignSubAdminRole(userId, isSubAdmin: isSubAdmin);
+  // }
+  //
+  // @override
+  // Future<bool> isSubAdmin() async{
+  //   final user = FirebaseProvider.auth.currentUser;
+  //   if (user == null) return false;
+  //   return await remoteDataSource.isSubAdmin(user.uid);
+  // }
 
 }

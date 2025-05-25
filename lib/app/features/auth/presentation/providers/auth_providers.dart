@@ -35,15 +35,15 @@ final isAdminProvider = Provider<IsAdmin>((ref) {
 final updatePasswordProvider = Provider<UpdatePasswordUseCase>((ref) {
   return locator<UpdatePasswordUseCase>();
 });
-final isSubAdminProvider = Provider<IsSubAdminUseCase>((ref) {
-  return locator<IsSubAdminUseCase>();
-});
-final assignAdminRoleProvider = Provider<AssignAdminRole>((ref) {
-  return locator<AssignAdminRole>();
-});
-final assignSubAdminRoleProvider = Provider<AssignSubAdminRole>((ref) {
-  return locator<AssignSubAdminRole>();
-});
+// final isSubAdminProvider = Provider<IsSubAdminUseCase>((ref) {
+//   return locator<IsSubAdminUseCase>();
+// });
+// final assignAdminRoleProvider = Provider<AssignAdminRole>((ref) {
+//   return locator<AssignAdminRole>();
+// });
+// final assignSubAdminRoleProvider = Provider<AssignSubAdminRole>((ref) {
+//   return locator<AssignSubAdminRole>();
+// });
 final getCurrentUserProvider = Provider<CurrentUserUseCase>((ref) {
   return locator<CurrentUserUseCase>();
 });

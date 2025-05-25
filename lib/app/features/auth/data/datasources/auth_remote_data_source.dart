@@ -18,13 +18,13 @@ abstract class AuthRemoteDataSource {
 
   Future<bool> isAdmin(String userId);
 
-  Future<bool> isSubAdmin(String userId);
+  // Future<bool> isSubAdmin(String userId);
 
   Future<UserModel> getCurrentUser();
 
-  Future<void> assignAdminRole(String userId, {bool isAdmin});
-
-  Future<void> assignSubAdminRole(String userId, {bool isSubAdmin});
+  // Future<void> assignAdminRole(String userId, {bool isAdmin});
+  //
+  // Future<void> assignSubAdminRole(String userId, {bool isSubAdmin});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -53,12 +53,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (user == null) throw const AuthFailure(message: 'User not found');
 
       final adminStatus = await isAdmin(user.uid);
-      final subAdminStatus = await isSubAdmin(user.uid);
+      // final subAdminStatus = await isSubAdmin(user.uid);
 
       return UserModel(
         id: user.uid,
         isAdmin: adminStatus,
-        isSubAdmin: subAdminStatus,
+        // isSubAdmin: subAdminStatus,
         email: user.email,
         displayName: user.displayName,
         photoUrl: user.photoURL,
@@ -99,14 +99,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (user == null) throw const AuthFailure(message: 'User not found');
 
       final adminStatus = await isAdmin(user.uid); // Renamed variable
-      final subAdminStatus = await isSubAdmin(user.uid); // Renamed variable
+      // final subAdminStatus = await isSubAdmin(user.uid); // Renamed variable
       return UserModel(
         id: user.uid,
         isAdmin: adminStatus,
         email: user.email,
         displayName: user.displayName,
         photoUrl: user.photoURL,
-        isSubAdmin: subAdminStatus,);
+        // isSubAdmin: subAdminStatus,
+      );
     } on FirebaseAuthException catch (e) {
       throw AuthFailure.fromCode(e.code);
     } catch (e) {
@@ -120,14 +121,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     if (user == null) throw const AuthFailure(message: 'No authenticated user');
 
     final adminStatus = await isAdmin(user.uid);
-    final subAdminStatus = await isSubAdmin(user.uid);
+    // final subAdminStatus = await isSubAdmin(user.uid);
     return UserModel(
       id: user.uid,
       isAdmin: adminStatus,
       displayName: user.displayName,
       email: user.email,
       photoUrl: user.photoURL,
-      isSubAdmin: subAdminStatus,
+      // isSubAdmin: subAdminStatus,
     );
   }
 
@@ -142,16 +143,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  @override
-  Future<bool> isSubAdmin(String userId) async {
-    try {
-      final doc = await _firestore.collection('subAdmins').doc(userId).get();
-      return doc.exists;
-    } catch (e) {
-      throw AuthFailure(
-          message: 'Failed to check sub-admin status: ${e.toString()}');
-    }
-  }
+  // @override
+  // Future<bool> isSubAdmin(String userId) async {
+  //   try {
+  //     final doc = await _firestore.collection('subAdmins').doc(userId).get();
+  //     return doc.exists;
+  //   } catch (e) {
+  //     throw AuthFailure(
+  //         message: 'Failed to check sub-admin status: ${e.toString()}');
+  //   }
+  // }
 
 
   @override
@@ -208,34 +209,34 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  @override
-  Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
-    try {
-      if (isAdmin) {
-        await _firestore.collection('admins').doc(userId).set(
-            {'assignedAt': DateTime.now()});
-      } else {
-        await _firestore.collection('admins').doc(userId).delete();
-      }
-    } catch (e) {
-      throw AuthFailure(
-          message: 'Failed to update admin role: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<void> assignSubAdminRole(String userId,
-      {bool isSubAdmin = true}) async {
-    try {
-      if (isSubAdmin) {
-        await _firestore.collection('subAdmins').doc(userId).set(
-            {'assignedAt': DateTime.now()});
-      } else {
-        await _firestore.collection('subAdmins').doc(userId).delete();
-      }
-    } catch (e) {
-      throw AuthFailure(
-          message: 'Failed to update sub-admin role: ${e.toString()}');
-    }
-  }
+  // @override
+  // Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
+  //   try {
+  //     if (isAdmin) {
+  //       await _firestore.collection('admins').doc(userId).set(
+  //           {'assignedAt': DateTime.now()});
+  //     } else {
+  //       await _firestore.collection('admins').doc(userId).delete();
+  //     }
+  //   } catch (e) {
+  //     throw AuthFailure(
+  //         message: 'Failed to update admin role: ${e.toString()}');
+  //   }
+  // }
+  //
+  // @override
+  // Future<void> assignSubAdminRole(String userId,
+  //     {bool isSubAdmin = true}) async {
+  //   try {
+  //     if (isSubAdmin) {
+  //       await _firestore.collection('subAdmins').doc(userId).set(
+  //           {'assignedAt': DateTime.now()});
+  //     } else {
+  //       await _firestore.collection('subAdmins').doc(userId).delete();
+  //     }
+  //   } catch (e) {
+  //     throw AuthFailure(
+  //         message: 'Failed to update sub-admin role: ${e.toString()}');
+  //   }
+  // }
 }

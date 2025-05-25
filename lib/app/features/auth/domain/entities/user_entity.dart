@@ -15,3 +15,14 @@ class UserEntity {
     this.isSubAdmin = false,
   });
 }
+extension UserEntityCopyWith on UserEntity {
+  UserEntity copyWith({bool? isAdmin}) {
+    return UserEntity(
+      id: id,
+      isAdmin: isAdmin ?? this.isAdmin,
+      email: email,
+      displayName: displayName,
+      photoUrl: photoUrl,
+    );
+  }
+}

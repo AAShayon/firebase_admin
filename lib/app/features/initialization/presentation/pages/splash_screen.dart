@@ -1,11 +1,13 @@
 import 'dart:developer';
 
 import 'package:animated_splash_plus/animated_splash_plus.dart';
+import 'package:firebase_admin/app/features/auth/presentation/providers/auth_state_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../config/widgets/loading_screen.dart';
 import '../../../../core/routes/app_router.dart';
+import '../../../auth/presentation/providers/auth_notifier_provider.dart';
 import '../providers/splash_provider.dart';
 
 class SplashScreen extends ConsumerWidget {
@@ -29,24 +31,29 @@ class SplashScreen extends ConsumerWidget {
           skyEndMiddleColor: Theme.of(context).primaryColorLight,
           skyEndTopColor: Theme.of(context).primaryColorDark,
         ),
-        onAnimationComplete: () {
-          log('Splash animation complete');
+          onAnimationComplete: () {
+            log('Splash animation complete');
 
-          // Delay navigation slightly to avoid context issues
-          Future.delayed(const Duration(milliseconds: 300), () async {
-            final splashAsync = await ref.read(splashProvider.future);
+            Future.delayed(const Duration(milliseconds: 300), () async {
+              try {
+                final authNotifier = ref.read(authNotifierProvider.notifier);
+                await authNotifier.checkCurrentUser();
 
-            if (!context.mounted) return;
+                final authState = ref.watch(authNotifierProvider);
 
-            if (splashAsync != null) {
-              log('User is authenticated: ${splashAsync.displayName}');
-              context.go(AppRoutes.landingPath);
-            } else {
-              log('No user found, redirecting to login');
-              context.go(AppRoutes.loginPath);
-            }
-          });
-        },
+                if (!context.mounted) return;
+
+                if (authState.isAuthenticated) {
+                  context.go(AppRoutes.landingPath);
+                } else {
+                  context.go(AppRoutes.loginPath);
+                }
+              } catch (e) {
+                log('Error during splash check: $e');
+                context.go(AppRoutes.loginPath);
+              }
+            });
+          }
       ),
     );
   }
