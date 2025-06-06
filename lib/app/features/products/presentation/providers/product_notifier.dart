@@ -23,10 +23,13 @@ class ProductNotifier extends StateNotifier<ProductState> {
   Future<void> getProducts() async {
     state = const ProductState.loading();
     try {
-        ref.read(getProductProvider).call();
-    state = const ProductState.loaded([]);
+      final productStream = ref.read(getProductProvider).call(); // This is a Stream
+      await for (final products in productStream) {
+        state = ProductState.loaded(products);  // Update state when data arrives
+      }
     } catch (e) {
       state = ProductState.error(e.toString());
     }
   }
+
 }

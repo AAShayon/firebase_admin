@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../products/domain/entities/product_entity.dart';
-import '../../../products/presentation/providers/product_notifier_provider.dart';
+import '../../../products/presentation/providers/product_providers.dart';
 
 
 
@@ -11,13 +11,11 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsState = ref.watch(productNotifierProvider);
-
+    final productsState = ref.watch(productsStreamProvider);
     return Scaffold(
+      appBar: AppBar(title: const Text('Products')),
       body: productsState.when(
-        initial: () => const Center(child: Text('Loading products...')),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        loaded: (products) => products.isEmpty
+        data: (products) => products.isEmpty
             ? const Center(child: Text('No products available'))
             : GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -30,11 +28,11 @@ class HomePage extends ConsumerWidget {
           itemCount: products.length,
           itemBuilder: (context, index) {
             final product = products[index];
-            return ProductCard(product: product);
+            return ProductCard(product: product); // Custom widget to display product
           },
         ),
-        error: (message) => Center(child: Text(message)),
-        added: () => const HomePage(),
+        loading: () => const Center(child: CircularProgressIndicator()),  // Show loading spinner
+        error: (e, stackTrace) => Center(child: Text('Error: $e')),
       ),
     );
   }
