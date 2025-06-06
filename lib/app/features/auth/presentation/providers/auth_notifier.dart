@@ -1,5 +1,7 @@
+// lib/app/features/auth/presentation/providers/auth_notifier.dart
 import 'package:firebase_admin/app/features/auth/domain/entities/user_entity.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/errors/failures.dart';
 import 'auth_state.dart';
 import '../providers/auth_providers.dart';
 
@@ -62,19 +64,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-
+// In your AuthNotifier class
   Future<void> checkCurrentUser() async {
     state = AuthState.loading();
-
     try {
       final currentUser = await ref.read(getCurrentUserProvider).call();
       final adminStatus = await ref.read(isAdminProvider).call();
+      final subAdminStatus = await ref.read(isSubAdminProvider).call();
+
       final updatedUser = currentUser.copyWith(
         isAdmin: adminStatus,
+        isSubAdmin: subAdminStatus,
       );
 
       state = AuthState.authenticated(updatedUser);
-
+    } on AuthFailure catch (_) {
+      state = AuthState.unauthenticated();
     } catch (e) {
       state = AuthState.error(e.toString());
     }
@@ -88,35 +93,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> isCurrentUserSubAdmin() async {
+    try {
+      return await ref.read(isSubAdminProvider).call();
+    } catch (e) {
+      return false;
+    }
+  }
 
+  Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
+    state = AuthState.loading();
+    try {
+      await ref.read(assignAdminRoleProvider).call(userId, isAdmin: isAdmin);
+      final currentUser = await ref.read(getCurrentUserProvider).call();
+      state = AuthState.authenticated(currentUser);
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
+
+  Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
+    state = AuthState.loading();
+    try {
+      await ref.read(assignSubAdminRoleProvider).call(userId, isSubAdmin: isSubAdmin);
+      final currentUser = await ref.read(getCurrentUserProvider).call();
+      state = AuthState.authenticated(currentUser);
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
 }
-
-//
-// Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
-//   state = AuthState.loading();
-//   try {
-//     await ref.read(assignAdminRoleProvider).call(userId, isAdmin: isAdmin);
-//     final currentUser = await ref.read(getCurrentUserProvider).call();
-//     state = AuthState.authenticated(currentUser);
-//   } catch (e) {
-//     state = AuthState.error(e.toString());
-//   }
-// }
-//
-// Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
-//   state = AuthState.loading();
-//   try {
-//     await ref.read(assignSubAdminRoleProvider).call(userId, isSubAdmin: isSubAdmin);
-//     final currentUser = await ref.read(getCurrentUserProvider).call();
-//     state = AuthState.authenticated(currentUser);
-//   } catch (e) {
-//     state = AuthState.error(e.toString());
-//   }
-// }
-// Future<bool> isCurrentUserSubAdmin() async {
-//   try {
-//     return await ref.read(isSubAdminProvider).call();
-//   } catch (e) {
-//     return false;
-//   }
-// }

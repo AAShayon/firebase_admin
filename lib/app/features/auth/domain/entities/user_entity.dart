@@ -12,14 +12,15 @@ class UserEntity {
     this.email,
     this.displayName,
     this.photoUrl,
-    this.isSubAdmin = false,
+    required this.isSubAdmin ,
   });
 }
 extension UserEntityCopyWith on UserEntity {
-  UserEntity copyWith({bool? isAdmin}) {
+  UserEntity copyWith({bool? isAdmin , bool? isSubAdmin }) {
     return UserEntity(
       id: id,
       isAdmin: isAdmin ?? this.isAdmin,
+      isSubAdmin: isSubAdmin ??   this.isSubAdmin ,
       email: email,
       displayName: displayName,
       photoUrl: photoUrl,

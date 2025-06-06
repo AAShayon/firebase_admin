@@ -1,14 +1,11 @@
 import 'dart:developer';
 
 import 'package:animated_splash_plus/animated_splash_plus.dart';
-import 'package:firebase_admin/app/features/auth/presentation/providers/auth_state_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../config/widgets/loading_screen.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../auth/presentation/providers/auth_notifier_provider.dart';
-import '../providers/splash_provider.dart';
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
@@ -39,18 +36,27 @@ class SplashScreen extends ConsumerWidget {
                 final authNotifier = ref.read(authNotifierProvider.notifier);
                 await authNotifier.checkCurrentUser();
 
-                final authState = ref.watch(authNotifierProvider);
+                // final authState = ref.watch(authNotifierProvider);
 
                 if (!context.mounted) return;
-
-                if (authState.isAuthenticated) {
-                  context.go(AppRoutes.landingPath);
-                } else {
-                  context.go(AppRoutes.loginPath);
-                }
+                final authState=ref.watch(authNotifierProvider);
+                //
+                // if (authState.isAuthenticated) {
+                //   context.go(AppRoutes.landingPath);
+                // } else {
+                //   context.go(AppRoutes.loginPath);
+                // }
+                authState.whenOrNull(
+                  authenticated: (_)=>context.go(AppRoutes.landingPath),
+                    loading: () => context.go(AppRoutes.loadingPath),
+                  unauthenticated: ()=>context.go(AppRoutes.loginPath),
+                  error: (e){
+                    context.go(AppRoutes.loginPath);
+                  }
+                );
               } catch (e) {
                 log('Error during splash check: $e');
-                context.go(AppRoutes.loginPath);
+                if(context.mounted)context.go(AppRoutes.loginPath);
               }
             });
           }
