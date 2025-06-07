@@ -3,29 +3,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_admin/app/config/widgets/custom_button.dart';
 import 'package:firebase_admin/app/core/utils/custom_size_space.dart';
 import 'package:firebase_admin/app/features/auth/presentation/providers/auth_notifier_provider.dart';
-import 'package:firebase_admin/app/features/settings/domain/entities/settings_entity.dart';
 import 'package:firebase_admin/app/features/settings/presentation/providers/settings_notifier_provider.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/network/firebase_provider.dart';
 import '../../../../core/routes/app_router.dart';
+import '../../../user_profile/presentation/providers/user_profile_notifier_provider.dart';
+import '../../domain/entities/settings_entity.dart';
 
-class SettingsPage extends ConsumerWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authNotifierProvider);
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends ConsumerState<SettingsPage> {
+  late String userId;
+
+  @override
+  void initState() {
+    super.initState();
+    userId = FirebaseProvider.auth.currentUser!.uid;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfile();
+    });
+  }
+
+  Future<void> _loadProfile() async {
+    await ref.read(userProfileNotifierProvider.notifier).loadUserProfile(userId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settingsState = ref.watch(settingsNotifierProvider);
-    final user = FirebaseProvider.auth.currentUser;
+    final profileState = ref.watch(userProfileNotifierProvider);
 
     return Scaffold(
-      // title: 'Settings',
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
-          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Profile Section
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -37,20 +55,25 @@ class SettingsPage extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     CustomSizeSpace.vMedium16,
-                    ListTile(
-                      leading: const Icon(Icons.person),
-                      title:  Text(user!.displayName ?? 'Guest'),
-                      subtitle: Text(
-                        authState.maybeMap(
-                          authenticated: (auth) => auth.user.id,
-                          orElse: () => 'Guest',
-                        ),style: TextStyle(color: Colors.black),
+                    // Display user profile information
+                    profileState.when(
+                      initial: () => const CircularProgressIndicator(),
+                      loading: () => Center(child: const CircularProgressIndicator()),
+                      error: (message) => Text('Error: $message'),
+                      loaded: (userProfile) => ListTile(
+                        leading: const Icon(Icons.person),
+                        title: Text(userProfile.displayName ?? 'No name provided'),
+                        subtitle: Text(
+                          userProfile.id,
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        onTap: () {
+                          context.pushNamed(AppRoutes.profile);
+                        },
                       ),
-                    onTap: (){
-                      context.pushNamed(AppRoutes.profile);
-                    },
+                      addressUpdated: () => const CircularProgressIndicator(),
+                      contactUpdated: () => const CircularProgressIndicator(),
                     ),
-
                   ],
                 ),
               ),
