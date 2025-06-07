@@ -5,9 +5,9 @@ import 'package:firebase_admin/app/core/utils/custom_size_space.dart';
 import 'package:firebase_admin/app/features/auth/presentation/providers/auth_notifier_provider.dart';
 import 'package:firebase_admin/app/features/settings/domain/entities/settings_entity.dart';
 import 'package:firebase_admin/app/features/settings/presentation/providers/settings_notifier_provider.dart';
-
-import '../../../../config/widgets/responsive_scaffold.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/network/firebase_provider.dart';
+import '../../../../core/routes/app_router.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -44,9 +44,13 @@ class SettingsPage extends ConsumerWidget {
                         authState.maybeMap(
                           authenticated: (auth) => auth.user.id,
                           orElse: () => 'Guest',
-                        ),
+                        ),style: TextStyle(color: Colors.black),
                       ),
+                    onTap: (){
+                      context.pushNamed(AppRoutes.profile);
+                    },
                     ),
+
                   ],
                 ),
               ),

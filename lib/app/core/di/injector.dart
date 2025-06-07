@@ -23,6 +23,13 @@ import '../../features/settings/data/repositories/settings_repository_impl.dart'
 import '../../features/settings/domain/repositories/settings_repository.dart';
 import '../../features/settings/domain/usecases/get_settings.dart';
 import '../../features/settings/domain/usecases/update_theme_mode.dart';
+import '../../features/user_profile/data/datasources/user_profile_remote_data_source.dart';
+import '../../features/user_profile/data/repositories/user_profile_repository_impl.dart';
+import '../../features/user_profile/domain/repositories/user_profile_repository.dart';
+import '../../features/user_profile/domain/usecases/get_user_profile_usecase.dart';
+import '../../features/user_profile/domain/usecases/manage_user_address_usecase.dart';
+import '../../features/user_profile/domain/usecases/update_user_contact_use_case.dart';
+import '../../features/user_profile/domain/usecases/update_user_profile_usecase.dart';
 import '../network/api_provider.dart';
 import '../network/firebase_provider.dart';
 
@@ -58,6 +65,16 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdatePasswordUseCase>(()=>UpdatePasswordUseCase(locator<AuthRepository>()));
   locator.registerLazySingleton<IsSubAdminUseCase>(()=>IsSubAdminUseCase(locator<AuthRepository>()));
   locator.registerLazySingleton<CurrentUserUseCase>(()=>CurrentUserUseCase(locator<AuthRepository>()));
+  //userProfile
+  locator.registerLazySingleton<UserProfileRemoteDataSource>(()=>UserProfileRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<UserProfileRepository>(()=>UserProfileRepositoryImpl(remoteDataSource: locator<UserProfileRemoteDataSource>()));
+  locator.registerLazySingleton<GetUserProfileUseCase>(()=>GetUserProfileUseCase(locator<UserProfileRepository>()));
+  locator.registerLazySingleton<UpdateUserProfileUseCase>(()=>UpdateUserProfileUseCase(locator<UserProfileRepository>()));
+  locator.registerLazySingleton<ManageUserAddressUseCase>(()=>ManageUserAddressUseCase(locator<UserProfileRepository>()));
+  locator.registerLazySingleton<UpdateUserContactNoUseCase>(()=>UpdateUserContactNoUseCase(locator<UserProfileRepository>()));
+
+
+
   //Product
   locator.registerLazySingleton<ProductRemoteDataSource>(()=>ProductRemoteDataSourceImpl(firestore: FirebaseProvider.firestore, storage:FirebaseProvider.storage));
   locator.registerLazySingleton<ProductRepository>(()=>ProductRepositoryImpl(remoteDataSource: locator<ProductRemoteDataSource>()));

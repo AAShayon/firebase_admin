@@ -4,6 +4,9 @@ import 'package:firebase_admin/app/features/notifications/presentation/notificat
 import 'package:firebase_admin/app/features/order/presentation/order.dart';
 import 'package:firebase_admin/app/features/products/presentation/pages/add_product_page.dart';
 import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
+import 'package:firebase_admin/app/features/user_profile/presentation/pages/edit_profile_page.dart';
+import 'package:firebase_admin/app/features/user_profile/presentation/pages/user_profile_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,6 +18,7 @@ import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/landing/presentation/landing.dart';
 import '../../features/products/presentation/widgets/products_table.dart';
+import '../../features/user_profile/presentation/providers/user_profile_notifier_provider.dart';
 import 'app_transitions.dart';
 // lib/config/routes/app_routes.dart
 
@@ -33,7 +37,10 @@ class AppRoutes {
   static const customer = 'customer';
   static const notifications = 'notifications';
   static const settings = 'settings';
+  static const profile = 'profile';
+  static const editProfile = 'editProfile';
 
+  // Route paths
   static const splashPath = '/splash';
   static const loadingPath = '/loading';
   static const loginPath = '/login';
@@ -47,6 +54,8 @@ class AppRoutes {
   static const customerPath = '/customer';
   static const notificationsPath = '/notifications';
   static const settingsPath = '/settings';
+  static const profilePath = '/profile';
+  static const editProfilePath = '/profile/edit';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -55,7 +64,9 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/',
       redirect: (context, state) {
-        final authState = ProviderScope.containerOf(context).read(authNotifierProvider);
+        final authState = ProviderScope.containerOf(
+          context,
+        ).read(authNotifierProvider);
         return authState.maybeMap(
           authenticated: (_) => AppRoutes.homePath,
           orElse: () => AppRoutes.loginPath,
@@ -66,136 +77,220 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: AppRoutes.splash,
       path: AppRoutes.splashPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const SplashScreen(),
-        transitionType: AppRouteTransitionType.fade,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const SplashScreen(),
+            transitionType: AppRouteTransitionType.fade,
+          ),
     ),
 
     GoRoute(
       name: AppRoutes.loading,
       path: AppRoutes.loadingPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const CustomLoadingScreen(),
-        transitionType: AppRouteTransitionType.fade,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const CustomLoadingScreen(),
+            transitionType: AppRouteTransitionType.fade,
+          ),
     ),
     GoRoute(
       name: AppRoutes.landing,
       path: AppRoutes.landingPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const LandingPage(),
-        transitionType: AppRouteTransitionType.fade,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const LandingPage(),
+            transitionType: AppRouteTransitionType.fade,
+          ),
     ),
 
     GoRoute(
       name: AppRoutes.login,
       path: AppRoutes.loginPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const LoginPage(),
-        transitionType: AppRouteTransitionType.slideFromRight,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const LoginPage(),
+            transitionType: AppRouteTransitionType.slideFromRight,
+          ),
     ),
 
     GoRoute(
       name: AppRoutes.register,
       path: AppRoutes.registerPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const RegistrationPage(),
-        transitionType: AppRouteTransitionType.slideFromLeft,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const RegistrationPage(),
+            transitionType: AppRouteTransitionType.slideFromLeft,
+          ),
     ),
 
     GoRoute(
       name: AppRoutes.dashboard,
       path: AppRoutes.dashboardPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const DashboardPage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const DashboardPage(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
     ),
 
     GoRoute(
       name: AppRoutes.home,
       path: AppRoutes.homePath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const HomePage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const HomePage(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
     ),
 
     GoRoute(
       name: AppRoutes.product,
       path: AppRoutes.productPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const ProductsTable(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const ProductsTable(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
     ),
     GoRoute(
       name: AppRoutes.addProduct,
       path: AppRoutes.addProductPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const AddProductPage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const AddProductPage(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
+    ),
+    // GoRoute(
+    //   name: AppRoutes.profile,
+    //   path: AppRoutes.profilePath,
+    //   pageBuilder: (context, state) {
+    //
+    //     final userId = state.pathParameters['userId']!;
+    //     return buildPageRoute(
+    //       context: context,
+    //       state: state,
+    //       child: UserProfilePage(userId: userId),
+    //       transitionType: AppRouteTransitionType.scale,
+    //     );
+    //   },
+    // ),
+    // GoRoute(
+    //   name: AppRoutes.editProfile,
+    //   path: AppRoutes.editProfilePath,
+    //   pageBuilder: (context, state) => buildPageRoute(
+    //     context: context,
+    //     state: state,
+    //     child: const EditProfilePage(user: null,),
+    //     transitionType: AppRouteTransitionType.scale,
+    //   ),
+    // ),
+    GoRoute(
+      name: AppRoutes.profile,
+      path: AppRoutes.profilePath,
+      pageBuilder: (context, state) {
+        // Get userId from auth state or parameters
+        final authState = ProviderScope.containerOf(context).read(authNotifierProvider);
+        final userId = authState.maybeWhen(
+          authenticated: (user) => user.id,
+          orElse: () => '',
+        );
+
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: UserProfilePage(userId: userId),
+          transitionType: AppRouteTransitionType.scale,
+        );
+      },
+      routes: [
+        // Nested edit profile route
+        GoRoute(
+          name: AppRoutes.editProfile,
+          path: 'edit',
+          pageBuilder: (context, state) {
+            final profileState = ProviderScope.containerOf(context)
+                .read(userProfileNotifierProvider);
+
+            return profileState.maybeWhen(
+              loaded: (user) => buildPageRoute(
+                context: context,
+                state: state,
+                child: EditProfilePage(user: user),
+                transitionType: AppRouteTransitionType.scale,
+              ),
+              orElse: () => buildPageRoute(
+                context: context,
+                state: state,
+                child: const SizedBox(), // Fallback empty widget
+                transitionType: AppRouteTransitionType.scale,
+              ),
+            );
+          },
+        ),
+      ],
     ),
     GoRoute(
       name: AppRoutes.order,
       path: AppRoutes.orderPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const OrderPage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
-    ),    GoRoute(
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const OrderPage(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
+    ),
+    GoRoute(
       name: AppRoutes.customer,
       path: AppRoutes.customerPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const CustomersPage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
-    ),    GoRoute(
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const CustomersPage(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
+    ),
+    GoRoute(
       name: AppRoutes.notifications,
       path: AppRoutes.notificationsPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const NotificationsPage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const NotificationsPage(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
     ),
     GoRoute(
       name: AppRoutes.settings,
       path: AppRoutes.settingsPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const SettingsPage(),
-        transitionType: AppRouteTransitionType.scale,
-      ),
+      pageBuilder:
+          (context, state) => buildPageRoute(
+            context: context,
+            state: state,
+            child: const SettingsPage(),
+            transitionType: AppRouteTransitionType.scale,
+          ),
     ),
   ],
 );
