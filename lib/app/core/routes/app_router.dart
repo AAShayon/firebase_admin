@@ -17,6 +17,8 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/landing/presentation/landing.dart';
+import '../../features/products/domain/entities/product_entity.dart';
+import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/products/presentation/widgets/products_table.dart';
 import '../../features/user_profile/presentation/providers/user_profile_notifier_provider.dart';
 import 'app_transitions.dart';
@@ -39,6 +41,7 @@ class AppRoutes {
   static const settings = 'settings';
   static const profile = 'profile';
   static const editProfile = 'editProfile';
+  static const productDetail = 'productDetail';
 
   // Route paths
   static const splashPath = '/splash';
@@ -56,6 +59,7 @@ class AppRoutes {
   static const settingsPath = '/settings';
   static const profilePath = '/profile';
   static const editProfilePath = '/profile/edit';
+  static const productDetailPath = '/product-detail';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -171,38 +175,33 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: AppRoutes.addProduct,
       path: AppRoutes.addProductPath,
-      pageBuilder:
-          (context, state) => buildPageRoute(
-            context: context,
-            state: state,
-            child: const AddProductPage(),
-            transitionType: AppRouteTransitionType.scale,
-          ),
+      pageBuilder: (context, state) {
+        // This now handles both adding (extra is null) and editing (extra is a ProductEntity)
+        final product = state.extra as ProductEntity?;
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: AddProductPage(productToEdit: product),
+          transitionType: AppRouteTransitionType.slideFromRight,
+        );
+      },
     ),
-    // GoRoute(
-    //   name: AppRoutes.profile,
-    //   path: AppRoutes.profilePath,
-    //   pageBuilder: (context, state) {
-    //
-    //     final userId = state.pathParameters['userId']!;
-    //     return buildPageRoute(
-    //       context: context,
-    //       state: state,
-    //       child: UserProfilePage(userId: userId),
-    //       transitionType: AppRouteTransitionType.scale,
-    //     );
-    //   },
-    // ),
-    // GoRoute(
-    //   name: AppRoutes.editProfile,
-    //   path: AppRoutes.editProfilePath,
-    //   pageBuilder: (context, state) => buildPageRoute(
-    //     context: context,
-    //     state: state,
-    //     child: const EditProfilePage(user: null,),
-    //     transitionType: AppRouteTransitionType.scale,
-    //   ),
-    // ),
+
+    // ADD THE NEW ROUTE FOR THE DETAIL PAGE
+    GoRoute(
+      name: AppRoutes.productDetail,
+      path: AppRoutes.productDetailPath,
+      pageBuilder: (context, state) {
+        // We receive the entire product object via the 'extra' parameter
+        final product = state.extra as ProductEntity;
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: ProductDetailPage(product: product),
+          transitionType: AppRouteTransitionType.slideFromLeft,
+        );
+      },
+    ),
     GoRoute(
       name: AppRoutes.profile,
       path: AppRoutes.profilePath,
@@ -224,7 +223,7 @@ final GoRouter appRouter = GoRouter(
       routes: [
         // Nested edit profile route
         GoRoute(
-          name: AppRoutes.editProfile,
+          name: AppRoutes.editProfilePath,
           path: 'edit',
           pageBuilder: (context, state) {
             final profileState = ProviderScope.containerOf(context)
@@ -294,3 +293,29 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+
+
+// GoRoute(
+//   name: AppRoutes.profile,
+//   path: AppRoutes.profilePath,
+//   pageBuilder: (context, state) {
+//
+//     final userId = state.pathParameters['userId']!;
+//     return buildPageRoute(
+//       context: context,
+//       state: state,
+//       child: UserProfilePage(userId: userId),
+//       transitionType: AppRouteTransitionType.scale,
+//     );
+//   },
+// ),
+// GoRoute(
+//   name: AppRoutes.editProfile,
+//   path: AppRoutes.editProfilePath,
+//   pageBuilder: (context, state) => buildPageRoute(
+//     context: context,
+//     state: state,
+//     child: const EditProfilePage(user: null,),
+//     transitionType: AppRouteTransitionType.scale,
+//   ),
+// ),

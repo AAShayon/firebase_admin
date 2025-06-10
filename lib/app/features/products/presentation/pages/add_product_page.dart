@@ -1,3 +1,4 @@
+import 'package:firebase_admin/app/features/products/presentation/providers/product_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,81 +10,150 @@ import 'package:firebase_admin/app/features/products/presentation/widgets/add_va
 import '../../data/model/product_model.dart';
 
 class AddProductPage extends ConsumerStatefulWidget {
-  const AddProductPage({super.key});
+  final ProductEntity? productToEdit; // MODIFIED: To accept a product for editing
+
+  const AddProductPage({super.key, this.productToEdit});
 
   @override
-  ConsumerState<AddProductPage> createState() => _AddProductScreenState();
+  ConsumerState<AddProductPage> createState() => _AddProductPageState();
 }
 
-class _AddProductScreenState extends ConsumerState<AddProductPage> {
+class _AddProductPageState extends ConsumerState<AddProductPage> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _imageLinkController = TextEditingController();
-  final List<ProductVariantEntity> _variants = [];
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+
+  // MODIFIED: Manage a list of controllers for image URLs
+  final List<TextEditingController> _imageUrlControllers = [];
+
+  List<ProductVariantEntity> _variants = [];
   ProductCategory _selectedCategory = ProductCategory.shirt;
   bool _availability = true;
+  bool _isLoading = false;
+
+  // MODIFIED: Check if we are in edit mode
+  bool get _isEditMode => widget.productToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController();
+    _descriptionController = TextEditingController();
+
+    if (_isEditMode) {
+      // If editing, populate the form with existing data
+      final product = widget.productToEdit!;
+      _titleController.text = product.title;
+      _descriptionController.text = product.description;
+      _variants = List<ProductVariantEntity>.from(product.variants);
+      _selectedCategory = product.category;
+      _availability = product.availability;
+
+      // Populate image URL controllers
+      if (product.imageUrls.isEmpty) {
+        _imageUrlControllers.add(TextEditingController()); // Add one empty if none exist
+      } else {
+        for (var url in product.imageUrls) {
+          _imageUrlControllers.add(TextEditingController(text: url));
+        }
+      }
+    } else {
+      // If adding a new product, start with one empty image URL field
+      _imageUrlControllers.add(TextEditingController());
+    }
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _imageLinkController.dispose();
+    for (var controller in _imageUrlControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   Future<void> _submitForm() async {
-    // 1. Get navigation references BEFORE async operations
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-
-    // 2. Validate synchronously first
     if (!_formKey.currentState!.validate()) return;
+
+    // Validate that at least one image URL is provided
+    final imageUrls = _imageUrlControllers
+        .map((c) => c.text.trim())
+        .where((url) => url.isNotEmpty)
+        .toList();
+
+    if (imageUrls.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide at least one image URL')),
+      );
+      return;
+    }
+
     if (_variants.isEmpty) {
-      messenger.showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please add at least one variant')),
       );
       return;
     }
 
-    // 3. Create product
+    setState(() => _isLoading = true);
+
     final product = ProductEntity(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: _isEditMode ? widget.productToEdit!.id : DateTime.now().millisecondsSinceEpoch.toString(),
       title: _titleController.text,
       description: _descriptionController.text,
       variants: _variants,
       availability: _availability,
-      imageUrl: null,
-      imageLink: _imageLinkController.text,
+      imageUrls: imageUrls,
       category: _selectedCategory,
-      createdAt: DateTime.now(),
+      createdAt: _isEditMode ? widget.productToEdit!.createdAt : DateTime.now(),
     );
 
     try {
-      // 4. Perform async operation
-      await ref.read(productNotifierProvider.notifier).addProduct(product);
-
-      // 5. Handle success - no mounted check needed because:
-      //    - We're using local Navigator reference
-      //    - We'll handle errors properly
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Product added successfully')),
-      );
-      navigator.pop();
-
+      if (_isEditMode) {
+        await ref.read(productNotifierProvider.notifier).updateProduct(product);
+      } else {
+        await ref.read(productNotifierProvider.notifier).addProduct(product);
+      }
     } catch (e) {
-      // 6. Handle errors safely
-      messenger.showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ProductState>(productNotifierProvider, (previous, next) {
+      next.whenOrNull(
+        added: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product added successfully')),
+          );
+          if (context.canPop()) context.pop();
+        },
+        updated: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product updated successfully')),
+          );
+          if (context.canPop()) context.pop();
+        },
+        error: (message) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message)));
+        },
+      );
+    });
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Product'),
+        title: Text(_isEditMode ? 'Edit Product' : 'Add Product'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -94,7 +164,7 @@ class _AddProductScreenState extends ConsumerState<AddProductPage> {
                 formKey: _formKey,
                 titleController: _titleController,
                 descriptionController: _descriptionController,
-                imageLinkController: _imageLinkController,
+                imageUrlControllers: _imageUrlControllers, // Pass the list of controllers
                 variants: _variants,
                 selectedCategory: _selectedCategory,
                 availability: _availability,
@@ -116,15 +186,28 @@ class _AddProductScreenState extends ConsumerState<AddProductPage> {
                   ),
                 ),
                 onRemoveVariant: (variant) => setState(() => _variants.remove(variant)),
+                onAddImageUrlField: () {
+                  setState(() {
+                    _imageUrlControllers.add(TextEditingController());
+                  });
+                },
+                onRemoveImageUrlField: (controller) {
+                  setState(() {
+                    _imageUrlControllers.remove(controller);
+                    controller.dispose();
+                  });
+                },
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _submitForm,
+                onPressed: _isLoading ? null : _submitForm,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   minimumSize: const Size(double.infinity, 50),
                 ),
-                child: const Text('Save Product'),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : Text(_isEditMode ? 'Update Product' : 'Save Product'),
               ),
             ],
           ),

@@ -31,5 +31,25 @@ class ProductNotifier extends StateNotifier<ProductState> {
       state = ProductState.error(e.toString());
     }
   }
+  Future<void> updateProduct(ProductEntity product) async {
+    state = const ProductState.loading();
+    try {
+      await ref.read(updateProductProvider).call(product);
+      state = const ProductState.updated(); // Use a new state for clarity
+    } catch (e) {
+      state = ProductState.error(e.toString());
+    }
+  }
+
+  // NEW METHOD
+  Future<void> deleteProduct(String productId) async {
+    state = const ProductState.loading();
+    try {
+      await ref.read(deleteProductProvider).call(productId);
+      state = const ProductState.deleted();
+    } catch (e) {
+      state = ProductState.error(e.toString());
+    }
+  }
 
 }

@@ -1,6 +1,6 @@
+// lib/app/features/products/domain/entities/product_entity.dart
 
-
-import '../../data/model/product_model.dart';
+import '../../data/model/product_model.dart'; // Assuming you have this for enums
 
 class ProductVariantEntity {
   final String size;
@@ -22,8 +22,7 @@ class ProductEntity {
   final String description;
   final List<ProductVariantEntity> variants;
   final bool availability;
-  final String? imageUrl;
-  final String? imageLink;
+  final List<String> imageUrls; // MODIFIED: Changed from single string to a list
   final ProductCategory category;
   final DateTime createdAt;
 
@@ -33,8 +32,7 @@ class ProductEntity {
     required this.description,
     required this.variants,
     required this.availability,
-    this.imageUrl,
-    this.imageLink,
+    required this.imageUrls, // MODIFIED
     required this.category,
     required this.createdAt,
   });

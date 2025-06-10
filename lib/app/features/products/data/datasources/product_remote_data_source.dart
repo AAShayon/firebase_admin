@@ -1,4 +1,6 @@
 
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../model/product_model.dart';
@@ -6,6 +8,8 @@ import '../model/product_model.dart';
 abstract class ProductRemoteDataSource {
   Future<void> addProduct(Product product);
   Stream<List<Product>> getProducts();
+  Future<void> updateProduct(Product product); // ADDED
+  Future<void> deleteProduct(String productId); // ADDED
   // Future<void> createProduct(ProductEntity product);
   // Stream<List<Product>> getProducts();
   // Future<ProductEntity> getProductById(String id);
@@ -203,6 +207,17 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   })  : _firestore = firestore,
         _storage = storage;
 
+  // NEW METHOD
+  @override
+  Future<void> updateProduct(Product product) async {
+    await _firestore.collection('products').doc(product.id).update(product.toJson());
+  }
+
+  // NEW METHOD
+  @override
+  Future<void> deleteProduct(String productId) async {
+    await _firestore.collection('products').doc(productId).delete();
+  }
   @override
   Future<void> addProduct(Product product) async {
     await _firestore.collection('products').doc(product.id).set(product.toJson());
@@ -214,8 +229,17 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         .collection('products')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-        .map((doc) => Product.fromJson(doc.data()))
-        .toList());
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        try {
+          return Product.fromJson(doc.data() as Map<String, dynamic>);
+        } catch (e) {
+          log("Error parsing product ${doc.id}: $e");
+          // Return a dummy product or rethrow to handle it upstream
+          // This prevents one bad entry from crashing the whole list
+          return Product(id: doc.id, title: 'Error: Invalid Data', description: '', variants: [], availability: false, imageUrls: [], category: ProductCategory.ecom, createdAt: DateTime.now());
+        }
+      }).toList();
+    });
   }
 }

@@ -24,6 +24,8 @@ mixin _$ProductState {
     required TResult Function(List<ProductEntity> products) loaded,
     required TResult Function(String message) error,
     required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -32,6 +34,8 @@ mixin _$ProductState {
     TResult? Function(List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
     TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -40,6 +44,8 @@ mixin _$ProductState {
     TResult Function(List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -49,6 +55,8 @@ mixin _$ProductState {
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
     required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -57,6 +65,8 @@ mixin _$ProductState {
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
     TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -65,6 +75,8 @@ mixin _$ProductState {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 }
@@ -139,6 +151,8 @@ class _$InitialImpl implements _Initial {
     required TResult Function(List<ProductEntity> products) loaded,
     required TResult Function(String message) error,
     required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
   }) {
     return initial();
   }
@@ -151,6 +165,8 @@ class _$InitialImpl implements _Initial {
     TResult? Function(List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
     TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
   }) {
     return initial?.call();
   }
@@ -163,6 +179,8 @@ class _$InitialImpl implements _Initial {
     TResult Function(List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -179,6 +197,8 @@ class _$InitialImpl implements _Initial {
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
     required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
   }) {
     return initial(this);
   }
@@ -191,6 +211,8 @@ class _$InitialImpl implements _Initial {
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
     TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
   }) {
     return initial?.call(this);
   }
@@ -203,6 +225,8 @@ class _$InitialImpl implements _Initial {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -264,6 +288,8 @@ class _$LoadingImpl implements _Loading {
     required TResult Function(List<ProductEntity> products) loaded,
     required TResult Function(String message) error,
     required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
   }) {
     return loading();
   }
@@ -276,6 +302,8 @@ class _$LoadingImpl implements _Loading {
     TResult? Function(List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
     TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
   }) {
     return loading?.call();
   }
@@ -288,6 +316,8 @@ class _$LoadingImpl implements _Loading {
     TResult Function(List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -304,6 +334,8 @@ class _$LoadingImpl implements _Loading {
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
     required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
   }) {
     return loading(this);
   }
@@ -316,6 +348,8 @@ class _$LoadingImpl implements _Loading {
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
     TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
   }) {
     return loading?.call(this);
   }
@@ -328,6 +362,8 @@ class _$LoadingImpl implements _Loading {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -422,6 +458,8 @@ class _$LoadedImpl implements _Loaded {
     required TResult Function(List<ProductEntity> products) loaded,
     required TResult Function(String message) error,
     required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
   }) {
     return loaded(products);
   }
@@ -434,6 +472,8 @@ class _$LoadedImpl implements _Loaded {
     TResult? Function(List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
     TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
   }) {
     return loaded?.call(products);
   }
@@ -446,6 +486,8 @@ class _$LoadedImpl implements _Loaded {
     TResult Function(List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
     required TResult orElse(),
   }) {
     if (loaded != null) {
@@ -462,6 +504,8 @@ class _$LoadedImpl implements _Loaded {
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
     required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
   }) {
     return loaded(this);
   }
@@ -474,6 +518,8 @@ class _$LoadedImpl implements _Loaded {
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
     TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
   }) {
     return loaded?.call(this);
   }
@@ -486,6 +532,8 @@ class _$LoadedImpl implements _Loaded {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
     required TResult orElse(),
   }) {
     if (loaded != null) {
@@ -582,6 +630,8 @@ class _$ErrorImpl implements _Error {
     required TResult Function(List<ProductEntity> products) loaded,
     required TResult Function(String message) error,
     required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
   }) {
     return error(message);
   }
@@ -594,6 +644,8 @@ class _$ErrorImpl implements _Error {
     TResult? Function(List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
     TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
   }) {
     return error?.call(message);
   }
@@ -606,6 +658,8 @@ class _$ErrorImpl implements _Error {
     TResult Function(List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -622,6 +676,8 @@ class _$ErrorImpl implements _Error {
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
     required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
   }) {
     return error(this);
   }
@@ -634,6 +690,8 @@ class _$ErrorImpl implements _Error {
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
     TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
   }) {
     return error?.call(this);
   }
@@ -646,6 +704,8 @@ class _$ErrorImpl implements _Error {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -715,6 +775,8 @@ class _$AddedImpl implements _Added {
     required TResult Function(List<ProductEntity> products) loaded,
     required TResult Function(String message) error,
     required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
   }) {
     return added();
   }
@@ -727,6 +789,8 @@ class _$AddedImpl implements _Added {
     TResult? Function(List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
     TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
   }) {
     return added?.call();
   }
@@ -739,6 +803,8 @@ class _$AddedImpl implements _Added {
     TResult Function(List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
     required TResult orElse(),
   }) {
     if (added != null) {
@@ -755,6 +821,8 @@ class _$AddedImpl implements _Added {
     required TResult Function(_Loaded value) loaded,
     required TResult Function(_Error value) error,
     required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
   }) {
     return added(this);
   }
@@ -767,6 +835,8 @@ class _$AddedImpl implements _Added {
     TResult? Function(_Loaded value)? loaded,
     TResult? Function(_Error value)? error,
     TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
   }) {
     return added?.call(this);
   }
@@ -779,6 +849,8 @@ class _$AddedImpl implements _Added {
     TResult Function(_Loaded value)? loaded,
     TResult Function(_Error value)? error,
     TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
     required TResult orElse(),
   }) {
     if (added != null) {
@@ -790,4 +862,278 @@ class _$AddedImpl implements _Added {
 
 abstract class _Added implements ProductState {
   const factory _Added() = _$AddedImpl;
+}
+
+/// @nodoc
+abstract class _$$UpdatedImplCopyWith<$Res> {
+  factory _$$UpdatedImplCopyWith(
+    _$UpdatedImpl value,
+    $Res Function(_$UpdatedImpl) then,
+  ) = __$$UpdatedImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$UpdatedImplCopyWithImpl<$Res>
+    extends _$ProductStateCopyWithImpl<$Res, _$UpdatedImpl>
+    implements _$$UpdatedImplCopyWith<$Res> {
+  __$$UpdatedImplCopyWithImpl(
+    _$UpdatedImpl _value,
+    $Res Function(_$UpdatedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ProductState
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$UpdatedImpl implements _Updated {
+  const _$UpdatedImpl();
+
+  @override
+  String toString() {
+    return 'ProductState.updated()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$UpdatedImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<ProductEntity> products) loaded,
+    required TResult Function(String message) error,
+    required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
+  }) {
+    return updated();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<ProductEntity> products)? loaded,
+    TResult? Function(String message)? error,
+    TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
+  }) {
+    return updated?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<ProductEntity> products)? loaded,
+    TResult Function(String message)? error,
+    TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
+    required TResult orElse(),
+  }) {
+    if (updated != null) {
+      return updated();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
+  }) {
+    return updated(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
+  }) {
+    return updated?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
+    required TResult orElse(),
+  }) {
+    if (updated != null) {
+      return updated(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _Updated implements ProductState {
+  const factory _Updated() = _$UpdatedImpl;
+}
+
+/// @nodoc
+abstract class _$$DeletedImplCopyWith<$Res> {
+  factory _$$DeletedImplCopyWith(
+    _$DeletedImpl value,
+    $Res Function(_$DeletedImpl) then,
+  ) = __$$DeletedImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DeletedImplCopyWithImpl<$Res>
+    extends _$ProductStateCopyWithImpl<$Res, _$DeletedImpl>
+    implements _$$DeletedImplCopyWith<$Res> {
+  __$$DeletedImplCopyWithImpl(
+    _$DeletedImpl _value,
+    $Res Function(_$DeletedImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ProductState
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$DeletedImpl implements _Deleted {
+  const _$DeletedImpl();
+
+  @override
+  String toString() {
+    return 'ProductState.deleted()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$DeletedImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(List<ProductEntity> products) loaded,
+    required TResult Function(String message) error,
+    required TResult Function() added,
+    required TResult Function() updated,
+    required TResult Function() deleted,
+  }) {
+    return deleted();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(List<ProductEntity> products)? loaded,
+    TResult? Function(String message)? error,
+    TResult? Function()? added,
+    TResult? Function()? updated,
+    TResult? Function()? deleted,
+  }) {
+    return deleted?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(List<ProductEntity> products)? loaded,
+    TResult Function(String message)? error,
+    TResult Function()? added,
+    TResult Function()? updated,
+    TResult Function()? deleted,
+    required TResult orElse(),
+  }) {
+    if (deleted != null) {
+      return deleted();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_Added value) added,
+    required TResult Function(_Updated value) updated,
+    required TResult Function(_Deleted value) deleted,
+  }) {
+    return deleted(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_Added value)? added,
+    TResult? Function(_Updated value)? updated,
+    TResult? Function(_Deleted value)? deleted,
+  }) {
+    return deleted?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_Added value)? added,
+    TResult Function(_Updated value)? updated,
+    TResult Function(_Deleted value)? deleted,
+    required TResult orElse(),
+  }) {
+    if (deleted != null) {
+      return deleted(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _Deleted implements ProductState {
+  const factory _Deleted() = _$DeletedImpl;
 }
