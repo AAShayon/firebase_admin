@@ -25,19 +25,13 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+              'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
@@ -70,8 +64,29 @@ class DefaultFirebaseOptions {
     messagingSenderId: '777980235435',
     projectId: 'fir-admin-4f1fd',
     storageBucket: 'fir-admin-4f1fd.firebasestorage.app',
-    androidClientId: '777980235435-np92ammav0viev446mbjict68u2jnhaa.apps.googleusercontent.com',
+    androidClientId: '777980235435-hecmlunrbt89j01kjrut620mcip4v02u.apps.googleusercontent.com',
     iosClientId: '777980235435-o4aaggnknm94o2vi74d4j1c0snsoa0df.apps.googleusercontent.com',
     iosBundleId: 'com.devans.firebaseAdmin',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyCZwRVDRQnTxp72ptdx3Gi05Y0z0yXvaIA',
+    appId: '1:777980235435:ios:4fc378c9c8f555f8c531ee',
+    messagingSenderId: '777980235435',
+    projectId: 'fir-admin-4f1fd',
+    storageBucket: 'fir-admin-4f1fd.firebasestorage.app',
+    androidClientId: '777980235435-hecmlunrbt89j01kjrut620mcip4v02u.apps.googleusercontent.com',
+    iosClientId: '777980235435-o4aaggnknm94o2vi74d4j1c0snsoa0df.apps.googleusercontent.com',
+    iosBundleId: 'com.devans.firebaseAdmin',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyAi9KH8n1u96KGCHTvjjcblZ_8x3QKyX-g',
+    appId: '1:777980235435:web:15890dab18ca2ac0c531ee',
+    messagingSenderId: '777980235435',
+    projectId: 'fir-admin-4f1fd',
+    authDomain: 'fir-admin-4f1fd.firebaseapp.com',
+    storageBucket: 'fir-admin-4f1fd.firebasestorage.app',
+    measurementId: 'G-22VKZSG6QB',
   );
 }

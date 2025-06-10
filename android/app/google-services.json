@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "777980235435-hecmlunrbt89j01kjrut620mcip4v02u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.devans.firebase_admin",
+            "certificate_hash": "e715d4f3d1d4cd60d4d750fb39facdf9d3f3b30b"
+          }
+        },
+        {
           "client_id": "777980235435-np92ammav0viev446mbjict68u2jnhaa.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
