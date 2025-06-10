@@ -49,6 +49,8 @@ dependencies:
   freezed: ^2.5.8
   cached_network_image: ^3.4.1
   image_picker: ^1.1.2
+  carousel_slider: ^5.1.1
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:
