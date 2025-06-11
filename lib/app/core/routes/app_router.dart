@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/providers/auth_notifier_provider.dart';
+import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/home_page/presentation/pages/home_page.dart';
 import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -42,6 +43,7 @@ class AppRoutes {
   static const profile = 'profile';
   static const editProfile = 'editProfile';
   static const productDetail = 'productDetail';
+  static const cart = 'cart';
 
   // Route paths
   static const splashPath = '/splash';
@@ -60,6 +62,7 @@ class AppRoutes {
   static const profilePath = '/profile';
   static const editProfilePath = '/profile/edit';
   static const productDetailPath = '/product-detail';
+  static const cartPath = '/cart';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -279,6 +282,18 @@ final GoRouter appRouter = GoRouter(
             child: const NotificationsPage(),
             transitionType: AppRouteTransitionType.scale,
           ),
+    ),
+    GoRoute(
+      name: AppRoutes.cart,
+      path: AppRoutes.cartPath,
+      pageBuilder: (context, state) {
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: const CartPage(), // The page we created earlier
+          transitionType: AppRouteTransitionType.slideFromRight, // A nice transition
+        );
+      },
     ),
     GoRoute(
       name: AppRoutes.settings,

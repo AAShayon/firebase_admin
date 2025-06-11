@@ -68,7 +68,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           style: TextStyle(color: Colors.black),
                         ),
                         onTap: () {
-                          context.pushNamed(AppRoutes.profilePath);
+                          context.pushNamed(AppRoutes.profile);
                         },
                       ),
                       addressUpdated: () => const CircularProgressIndicator(),

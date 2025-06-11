@@ -7,7 +7,6 @@ enum ProductColor { red, blue, green, black, white, yellow, custom }
 
 // ProductVariant remains the same
 class ProductVariant {
-  // ... no changes here
   final String size;
   final double price;
   final List<String> imageUrls;
@@ -73,7 +72,6 @@ class Product {
     required this.createdAt,
   });
 
-  // copyWith is removed for brevity as it's less used with clean architecture models
 
   Map<String, dynamic> toJson() => {
     'id': id,
