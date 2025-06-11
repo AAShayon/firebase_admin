@@ -1,6 +1,7 @@
-import 'package:firebase_admin/app/features/products/domain/repositories/product_repository.dart';
 
-import '../entities/product_entity.dart';
+import '../../../shared/domain/entities/product_entity.dart';
+import '../repositories/product_repository.dart';
+
 
 class AddProductUseCase{
   final ProductRepository repository;

@@ -1,15 +1,13 @@
-// lib/app/features/products/presentation/pages/add_product_page.dart
-
 import 'package:firebase_admin/app/features/products/presentation/providers/product_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_admin/app/features/products/domain/entities/product_entity.dart';
 import 'package:firebase_admin/app/features/products/presentation/providers/product_notifier_provider.dart';
 import 'package:firebase_admin/app/features/products/presentation/widgets/product_form.dart';
 import 'package:firebase_admin/app/features/products/presentation/widgets/add_variant_dialog.dart';
+import '../../../shared/data/model/product_model.dart';
+import '../../../shared/domain/entities/product_entity.dart';
 
-import '../../data/model/product_model.dart';
 
 class AddProductPage extends ConsumerStatefulWidget {
   final ProductEntity? productToEdit;

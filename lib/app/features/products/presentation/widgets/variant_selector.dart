@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import '../../domain/entities/product_entity.dart';
+import 'package:firebase_admin/app/features/shared/domain/entities/product_entity.dart';
 import 'color_chip.dart';
 
 class VariantSelector extends StatelessWidget {

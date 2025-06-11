@@ -53,10 +53,12 @@
 //   }
 // }
 
-import '../../domain/entities/product_entity.dart';
+import '../../../shared/data/model/product_model.dart';
+import '../../../shared/domain/entities/product_entity.dart';
+
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_remote_data_source.dart';
-import '../model/product_model.dart';
+
 
 
 class ProductRepositoryImpl implements ProductRepository {

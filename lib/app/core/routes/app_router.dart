@@ -17,9 +17,9 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/landing/presentation/landing.dart';
-import '../../features/products/domain/entities/product_entity.dart';
 import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/products/presentation/widgets/products_table.dart';
+import '../../features/shared/domain/entities/product_entity.dart';
 import '../../features/user_profile/presentation/providers/user_profile_notifier_provider.dart';
 import 'app_transitions.dart';
 // lib/config/routes/app_routes.dart

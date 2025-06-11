@@ -352,8 +352,10 @@
 ///
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:flutter/material.dart';
-import '../../data/model/product_model.dart';
-import '../../domain/entities/product_entity.dart';
+import '../../../shared/data/model/product_model.dart';
+import '../../../shared/domain/entities/product_entity.dart';
+
+
 import '../widgets/product_image_slider.dart';
 import '../widgets/variant_selector.dart';
 

@@ -1,5 +1,6 @@
+import 'package:firebase_admin/app/features/shared/domain/entities/product_entity.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_admin/app/features/products/domain/entities/product_entity.dart';
+
 
 class VariantItem extends StatelessWidget {
   final ProductVariantEntity variant;

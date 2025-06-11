@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_admin/app/features/products/domain/entities/product_entity.dart';
 
+
+import '../../../shared/domain/entities/product_entity.dart';
 import 'admin_action_menu.dart';
 
 class ProductCard extends StatelessWidget {

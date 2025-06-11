@@ -1,5 +1,7 @@
 
-import '../entities/product_entity.dart';
+
+
+import '../../../shared/domain/entities/product_entity.dart';
 
 abstract class ProductRepository {
 

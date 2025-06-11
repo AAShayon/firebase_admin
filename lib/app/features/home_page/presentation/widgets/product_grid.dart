@@ -4,8 +4,9 @@ import 'package:firebase_admin/app/features/home_page/presentation/widgets/produ
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_admin/app/features/products/domain/entities/product_entity.dart';
 import 'package:firebase_admin/app/features/products/presentation/providers/product_notifier_provider.dart';
+
+import '../../../shared/domain/entities/product_entity.dart';
 
 class ProductGrid extends ConsumerWidget {
   final List<ProductEntity> products;

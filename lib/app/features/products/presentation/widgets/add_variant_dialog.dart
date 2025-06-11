@@ -1,6 +1,7 @@
+import 'package:firebase_admin/app/features/shared/data/model/product_model.dart';
 import 'package:flutter/material.dart';
 import '../../../../config/widgets/custom_drop_down.dart';
-import '../../data/model/product_model.dart';
+
 
 class AddVariantDialog extends StatefulWidget {
   // MODIFIED: The callback now includes a list of image URLs

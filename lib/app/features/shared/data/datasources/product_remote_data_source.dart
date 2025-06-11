@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import '../model/product_model.dart';
+import '../../../shared/data/model/product_model.dart';
 
 abstract class ProductRemoteDataSource {
   Future<void> addProduct(Product product);

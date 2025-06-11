@@ -1,7 +1,7 @@
 import 'package:firebase_admin/app/features/products/presentation/providers/product_providers.dart';
 import 'package:firebase_admin/app/features/products/presentation/providers/product_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/product_entity.dart';
+import '../../../shared/domain/entities/product_entity.dart';
 
 
 class ProductNotifier extends StateNotifier<ProductState> {
