@@ -1,4 +1,3 @@
-// lib/app/features/products/presentation/widgets/product_card.dart
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_admin/app/features/products/domain/entities/product_entity.dart';
@@ -12,9 +11,9 @@ class ProductCard extends StatelessWidget {
   final VoidCallback onDelete;
   final bool isAdmin;
 
-   const ProductCard({
+  const ProductCard({
     super.key,
-    this.isAdmin=true,
+    this.isAdmin = true,
     required this.product,
     required this.onTap,
     required this.onEdit,
@@ -33,24 +32,25 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image with Admin Menu Overlay
-            isAdmin?   Expanded(
+            Expanded(
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // --- FIX: Use imageUrls list ---
+                  // This now correctly finds the first available image
                   _buildProductImage(),
                   // Admin Menu positioned at the top-right
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: AdminActionMenu(
-                      onEdit: onEdit,
-                      onDelete: onDelete,
+                  if (isAdmin)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: AdminActionMenu(
+                        onEdit: onEdit,
+                        onDelete: onDelete,
+                      ),
                     ),
-                  ),
                 ],
               ),
-            ):SizedBox.shrink(),
+            ),
             // Product details
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -83,14 +83,27 @@ class ProductCard extends StatelessWidget {
     );
   }
 
+  /// Finds the first image URL from the list of variants.
+  /// It iterates through variants until it finds one with images.
   Widget _buildProductImage() {
-    // --- FIX: Use the first URL from the list, with a fallback ---
-    if (product.imageUrls.isNotEmpty) {
+    String? firstImageUrl;
+
+    // Iterate through variants to find the first one with an image.
+    for (final variant in product.variants) {
+      if (variant.imageUrls.isNotEmpty) {
+        firstImageUrl = variant.imageUrls.first;
+        break; // Found an image, no need to look further.
+      }
+    }
+
+    // If an image URL was found, display it.
+    if (firstImageUrl != null) {
       return CachedNetworkImage(
-        imageUrl: product.imageUrls.first,
+        imageUrl: firstImageUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
           color: Colors.grey[200],
+          child: const Center(child: CircularProgressIndicator()),
         ),
         errorWidget: (context, url, error) => const Icon(
           Icons.broken_image,
@@ -98,7 +111,7 @@ class ProductCard extends StatelessWidget {
         ),
       );
     } else {
-      // Fallback if there are no images
+      // Fallback if no variant has any images.
       return Container(
         color: Colors.grey[300],
         child: const Center(

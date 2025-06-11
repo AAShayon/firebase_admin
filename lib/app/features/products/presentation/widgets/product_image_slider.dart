@@ -2,14 +2,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
+// In ProductImageSlider widget
 class ProductImageSlider extends StatefulWidget {
   final List<String> imageUrls;
   final CarouselSliderController? controller;
+  final ValueChanged<int> onImageChanged;  // Add this line to accept the callback
 
   const ProductImageSlider({
     super.key,
     this.controller,
-    required this.imageUrls
+    required this.imageUrls,
+    required this.onImageChanged,  // Pass the callback to the constructor
   });
 
   @override
@@ -46,6 +49,7 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
               setState(() {
                 _currentIndex = index;
               });
+              widget.onImageChanged(index);  // Call the callback when image is changed
             },
           ),
           items: widget.imageUrls.map((url) {

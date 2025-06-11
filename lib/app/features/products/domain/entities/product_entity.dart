@@ -6,12 +6,14 @@ class ProductVariantEntity {
   final String size;
   final double price;
   final int quantity;
+  final List<String> imageUrls;
   final ProductColor color;
 
   ProductVariantEntity({
     required this.size,
     required this.price,
     required this.quantity,
+    required this.imageUrls,
     required this.color,
   });
 }
@@ -22,7 +24,7 @@ class ProductEntity {
   final String description;
   final List<ProductVariantEntity> variants;
   final bool availability;
-  final List<String> imageUrls; // MODIFIED: Changed from single string to a list
+
   final ProductCategory category;
   final DateTime createdAt;
 
@@ -32,7 +34,6 @@ class ProductEntity {
     required this.description,
     required this.variants,
     required this.availability,
-    required this.imageUrls, // MODIFIED
     required this.category,
     required this.createdAt,
   });

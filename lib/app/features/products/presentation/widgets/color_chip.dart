@@ -12,30 +12,93 @@ class ColorChip extends StatelessWidget {
     required this.onTap,
   });
 
-  // Helper function to convert a string name to a Color object
   Color _getColorFromString(String colorStr) {
+    // Normalize the string to lower case for case-insensitive matching.
     final lowerCaseColor = colorStr.toLowerCase();
+
     switch (lowerCaseColor) {
-      case 'charcoal black':
+    // Blacks & Dark Greys
       case 'black':
-        return Colors.black;
-      case 'heather grey':
-        return Colors.grey.shade400;
+      case 'charcoal':
+      case 'graphite':
+      case 'space gray':
+      case 'dark grey':
+      case 'black/red': // Use first color
+        return Colors.black87;
+
+    // Whites & Off-Whites
       case 'white':
+      case 'ivory':
+      case 'champagne':
+      case 'cream':
         return Colors.white;
-      case 'red':
-        return Colors.red;
-      case 'blue':
-        return Colors.blue;
-      case 'green':
-        return Colors.green;
-      case 'yellow':
-        return Colors.yellow;
+
+    // Greys & Silvers
+      case 'grey':
+      case 'heather grey':
+      case 'grey stripe':
+      case 'grey/yellow': // Use first color
+        return Colors.grey;
       case 'silver':
-        return Colors.grey.shade300;
-    // Add more color mappings as needed
+      case 'satin nickel':
+      case 'brushed metal':
+        return Colors.grey.shade400;
+
+    // Blues
+      case 'blue':
+      case 'light blue':
+      case 'navy':
+      case 'navy stripe':
+      case 'navy blue':
+      case 'blue/gold': // Use first color
+      case 'blue/white check': // Use first color
+        return Colors.blue.shade700;
+
+    // Greens
+      case 'green':
+      case 'olive green':
+      case 'camo': // Representative color
+      case 'olive/black': // Use first color
+        return Colors.green.shade800;
+      case 'teal':
+        return Colors.teal;
+
+    // Reds
+      case 'red':
+      case 'empire red':
+      case 'red/black check': // Use first color
+        return Colors.red.shade700;
+
+    // Browns & Tans
+      case 'khaki':
+      case 'walnut':
+      case 'leopard print': // Representative color
+      case 'silver/brown': // Use second, more distinct color
+        return Colors.brown.shade600;
+
+    // Oranges
+      case 'orange':
+        return Colors.orange;
+      case 'terracotta':
+        return Colors.deepOrange.shade300;
+
+    // Pinks
+      case 'pink':
+      case 'dusty rose':
+      case 'rose gold':
+        return Colors.pink.shade200;
+
+    // Yellows
+      case 'yellow':
+        return Colors.yellow.shade600;
+
+    // Special Cases
+      case 'multi-color':
+        return Colors.purple; // Use a distinct color to represent variety
+
+    // Fallback for any unhandled colors
       default:
-        return Colors.grey; // Fallback color
+        return Colors.grey.shade500;
     }
   }
 

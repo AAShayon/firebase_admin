@@ -1,4 +1,6 @@
 // lib/app/features/products/presentation/pages/home_page.dart
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_admin/app/features/products/presentation/providers/product_notifier_provider.dart';
@@ -28,12 +30,15 @@ class HomePage extends ConsumerWidget {
             ? const Center(child: Text('No products found. Add one!'))
             : ProductGrid(products: products), // Use the new dedicated widget
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, stackTrace) => Center(
+        error: (e, stackTrace) {
+          log("$e");
+          return Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text('Failed to load products: $e', textAlign: TextAlign.center),
           ),
-        ),
+        );
+        },
       ),
     );
   }

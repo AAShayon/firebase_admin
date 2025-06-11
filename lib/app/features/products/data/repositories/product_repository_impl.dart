@@ -73,10 +73,11 @@ class ProductRepositoryImpl implements ProductRepository {
         size: v.size,
         price: v.price,
         quantity: v.quantity,
+        imageUrls: v.imageUrls,
         color: v.color,
       )).toList(),
       availability: entity.availability,
-      imageUrls: entity.imageUrls, // MODIFIED
+
       category: entity.category,
       createdAt: entity.createdAt,
     );
@@ -91,11 +92,11 @@ class ProductRepositoryImpl implements ProductRepository {
       variants: model.variants.map((v) => ProductVariantEntity(
         size: v.size,
         price: v.price,
+        imageUrls: v.imageUrls,
         quantity: v.quantity,
         color: v.color,
       )).toList(),
       availability: model.availability,
-      imageUrls: model.imageUrls, // MODIFIED
       category: model.category,
       createdAt: model.createdAt,
     );

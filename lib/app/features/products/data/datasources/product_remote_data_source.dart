@@ -237,7 +237,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           log("Error parsing product ${doc.id}: $e");
           // Return a dummy product or rethrow to handle it upstream
           // This prevents one bad entry from crashing the whole list
-          return Product(id: doc.id, title: 'Error: Invalid Data', description: '', variants: [], availability: false, imageUrls: [], category: ProductCategory.ecom, createdAt: DateTime.now());
+          return Product(id: doc.id, title: 'Error: Invalid Data', description: '', variants: [], availability: false, category: ProductCategory.ecom, createdAt: DateTime.now());
         }
       }).toList();
     });

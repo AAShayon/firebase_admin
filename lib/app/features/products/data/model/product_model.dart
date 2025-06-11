@@ -10,12 +10,14 @@ class ProductVariant {
   // ... no changes here
   final String size;
   final double price;
+  final List<String> imageUrls;
   final int quantity;
   final ProductColor color;
 
   ProductVariant({
     required this.size,
     required this.price,
+    required this.imageUrls,
     required this.quantity,
     required this.color,
   });
@@ -24,18 +26,32 @@ class ProductVariant {
     'size': size,
     'price': price,
     'quantity': quantity,
+    'imageUrls': imageUrls, // MODIFIED
     'color': describeEnum(color),
   };
 
-  factory ProductVariant.fromJson(Map<String, dynamic> json) => ProductVariant(
+  factory ProductVariant.fromJson(Map<String, dynamic> json) {
+    List<String> images = [];
+    if (json['imageUrls'] != null && json['imageUrls'] is List) {
+      images = List<String>.from(json['imageUrls']);
+    } else if (json['imageUrl'] != null && json['imageUrl'] is String) {
+      // Handle old data model (single imageUrl)
+      images.add(json['imageUrl']);
+    } else if (json['imageLink'] != null && json['imageLink'] is String) {
+      // Handle even older data model (single imageLink)
+      images.add(json['imageLink']);
+    }
+    return ProductVariant(
     size: json['size'],
     price: json['price'] is int ? json['price'].toDouble() : json['price'],
     quantity: json['quantity'],
+      imageUrls: images,
     color: ProductColor.values.firstWhere(
           (e) => describeEnum(e) == json['color'],
       orElse: () => ProductColor.custom,
     ),
   );
+  }
 }
 
 class Product {
@@ -44,7 +60,6 @@ class Product {
   final String description;
   final List<ProductVariant> variants;
   final bool availability;
-  final List<String> imageUrls; // MODIFIED: Changed field name and type
   final ProductCategory category;
   final DateTime createdAt;
 
@@ -54,7 +69,6 @@ class Product {
     required this.description,
     required this.variants,
     required this.availability,
-    required this.imageUrls, // MODIFIED
     required this.category,
     required this.createdAt,
   });
@@ -67,24 +81,12 @@ class Product {
     'description': description,
     'variants': variants.map((v) => v.toJson()).toList(),
     'availability': availability,
-    'imageUrls': imageUrls, // MODIFIED
     'category': describeEnum(category),
     'createdAt': createdAt.millisecondsSinceEpoch,
   };
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    // --- ROBUST IMAGE HANDLING ---
-    // This makes your app compatible with both old (single image) and new (multiple images) data structures in Firestore.
-    List<String> images = [];
-    if (json['imageUrls'] != null && json['imageUrls'] is List) {
-      images = List<String>.from(json['imageUrls']);
-    } else if (json['imageUrl'] != null && json['imageUrl'] is String) {
-      // Handle old data model (single imageUrl)
-      images.add(json['imageUrl']);
-    } else if (json['imageLink'] != null && json['imageLink'] is String) {
-      // Handle even older data model (single imageLink)
-      images.add(json['imageLink']);
-    }
+
 
     return Product(
       id: json['id'],
@@ -94,7 +96,6 @@ class Product {
           .map((v) => ProductVariant.fromJson(v))
           .toList(),
       availability: json['availability'],
-      imageUrls: images, // MODIFIED
       category: ProductCategory.values.firstWhere(
             (e) => describeEnum(e).toLowerCase() == json['category'].toString().toLowerCase(),
         orElse: () => ProductCategory.ecom,

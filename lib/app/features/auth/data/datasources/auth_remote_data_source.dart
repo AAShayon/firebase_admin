@@ -32,37 +32,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         _googleSignIn = googleSignIn,
         _firestore = firestore;
 
+// In lib/app/features/auth/data/datasources/auth_remote_data_source.dart
+
   Future<void> _saveUserToFirestore(User user) async {
     final userRef = _firestore.collection('users').doc(user.uid);
-    final adminRef = _firestore.collection('admins').doc(user.uid);
-
-    // Check if user is admin first
-    final adminSnapshot = await adminRef.get();
-    final isAdmin = adminSnapshot.exists;
-
-    // Check if user document already exists
     final userSnapshot = await userRef.get();
 
     if (!userSnapshot.exists) {
-      // New user - create document with proper admin status
+      // User is signing up for the first time.
+      // Create their document. The 'isAdmin' field will be 'false' by default.
+      // The security rules PREVENT the client from setting this to true.
       await userRef.set({
         'id': user.uid,
         'email': user.email,
         'displayName': user.displayName,
         'photoUrl': user.photoURL,
         'createdAt': FieldValue.serverTimestamp(),
-        'isAdmin': isAdmin,
+        'isAdmin': false,
         'isSubAdmin': false,
-      },SetOptions(merge: true));
+      });
     } else {
-      // Existing user - only update these fields
+      // Existing user is signing in.
+      // Just update their basic info. Do not touch role fields.
       await userRef.update({
-        'email': user.email,
         'displayName': user.displayName,
         'photoUrl': user.photoURL,
-        // Don't update isAdmin here - maintain existing value
-        // Or optionally force sync with admin collection:
-        'isAdmin': isAdmin,
       });
     }
   }
@@ -238,13 +232,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
+// This function in your code is now correctly secured by the new rules.
+// Only a user who is ALREADY an admin can successfully call this.
   @override
   Future<void> assignAdminRole(String userId, {bool isAdmin = true}) async {
     try {
+      // THIS LINE WILL FAIL if the currently logged-in user is not an admin,
+      // because our security rule `allow update: if (isAdmin())` will catch it.
       await _firestore.collection('users').doc(userId).update({
         'isAdmin': isAdmin,
-        if (isAdmin) 'isSubAdmin': false, // Remove sub-admin if promoting to admin
+        if (isAdmin) 'isSubAdmin': false,
       });
+
+      // To make this fully work, you MUST also add/remove the user from the `admins` collection.
+      if (isAdmin) {
+        await _firestore.collection('admins').doc(userId).set({
+          'assignedAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await _firestore.collection('admins').doc(userId).delete();
+      }
     } catch (e) {
       throw AuthFailure(message: 'Failed to update admin role: ${e.toString()}');
     }
