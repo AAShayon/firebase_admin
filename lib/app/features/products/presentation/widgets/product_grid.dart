@@ -1,39 +1,51 @@
-// lib/app/features/products/presentation/widgets/product_grid.dart
-import 'package:firebase_admin/app/core/routes/app_router.dart';
-import 'package:firebase_admin/app/features/home_page/presentation/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_admin/app/features/products/presentation/providers/product_notifier_provider.dart';
 
+import '../../../../core/routes/app_router.dart';
+import '../../../home_page/presentation/pages/home_page.dart'; // Import for homeAnimationProvider
 import '../../../shared/domain/entities/product_entity.dart';
+import '../providers/product_notifier_provider.dart';
+import 'product_card.dart';
 
 class ProductGrid extends ConsumerWidget {
   final List<ProductEntity> products;
+  final bool isAdmin; // Allow toggling admin view if needed
 
-  const ProductGrid({super.key, required this.products});
+  const ProductGrid({
+    super.key,
+    required this.products,
+    this.isAdmin = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 4. Read the animation function from the provider.
+    final runAnimation = ref.watch(homeAnimationProvider);
+
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-        childAspectRatio: 0.75, // Adjusted for better card appearance
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        childAspectRatio: 0.70, // Adjusted for better card appearance
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
       ),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
         return ProductCard(
           product: product,
-          // Navigate to details/edit page on tap
+          isAdmin: isAdmin,
           onTap: () => context.pushNamed(AppRoutes.productDetail, extra: product),
-          // Also provide the same navigation for the explicit edit button
           onEdit: () => context.pushNamed(AppRoutes.addProduct, extra: product),
-          // Show a confirmation dialog on delete
           onDelete: () => _showDeleteDialog(context, ref, product),
+          // 5. Pass the function to the card if it's available.
+          onAddToCart: (key) {
+            if (runAnimation != null) {
+              runAnimation(key, product);
+            }
+          },
         );
       },
     );
