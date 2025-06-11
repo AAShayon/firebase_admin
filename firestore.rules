@@ -1,9 +1,77 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null &&
-                         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+
+    // --- Helper Functions ---
+    // The ONLY reliable way to check for admin status in rules.
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Is the user signed in?
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Is the user the owner of the document?
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+
+    // --- Collection Rules ---
+
+    // Products: Readable by anyone, writable only by admins.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admins Collection: Only manageable by other admins. This is the master key.
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    // User Data: This is the most important section.
+    match /users/{userId} {
+      // READ: A user can read their own profile. An admin can read anyone's profile.
+      allow read: if isOwner(userId) || isAdmin();
+
+      // CREATE: A user can create their own profile document when they sign up.
+      // We check that they are not trying to make themselves an admin during creation.
+      allow create: if isOwner(userId) && request.resource.data.isAdmin == false;
+
+      // UPDATE: The most complex rule.
+      // - An admin can update any user's document (e.g., to grant admin roles).
+      // - A regular user can update their OWN document, but they CANNOT change the 'isAdmin' or 'isSubAdmin' fields.
+      allow update: if (isAdmin()) ||
+                     (isOwner(userId) &&
+                        !('isAdmin' in request.resource.data) &&
+                        !('isSubAdmin' in request.resource.data));
+
+      // DELETE: Only admins can delete user accounts from the database.
+      allow delete: if isAdmin();
+
+
+      // --- Sub-collection Rules for each User ---
+
+      // Cart: Only the owner can manage their cart.
+      match /cart/{cartItemId} {
+        allow read, write, delete: if isOwner(userId);
+      }
+
+      // Favorites: Only the owner can manage their favorites.
+      match /favorites/{favoriteId} {
+        allow read, write, delete: if isOwner(userId);
+      }
+
+      // Orders:
+      match /orders/{orderId} {
+        allow create: if isOwner(userId);
+        allow read: if isOwner(userId) || isAdmin();
+        allow update: if isAdmin(); // Only admins can update status (e.g., shipped)
+        allow delete: if false; // Never delete order history
+      }
     }
   }
 }
