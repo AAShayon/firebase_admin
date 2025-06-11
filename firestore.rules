@@ -53,11 +53,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
 
 
-      // --- Sub-collection Rules for each User ---
-
-      // Cart: Only the owner can manage their cart.
-      match /cart/{cartItemId} {
-        allow read, write, delete: if isOwner(userId);
+    // NEW RULE: Secure the top-level 'carts' collection
+    // This rule allows a user to read and write only to their own cart document
+    // and all documents in its subcollections (like 'items').
+       match /carts/{userId}/{document=**} {
+        allow read, write: if isOwner(userId);
       }
 
       // Favorites: Only the owner can manage their favorites.
