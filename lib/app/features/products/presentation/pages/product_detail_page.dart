@@ -359,6 +359,7 @@ import '../widgets/variant_selector.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final ProductEntity product;
+
   const ProductDetailPage({super.key, required this.product});
 
   @override
@@ -369,7 +370,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late ProductVariantEntity _selectedVariant;
   List<String> allImages = [];
   List<ProductVariantEntity> variantsForSlider = [];
-  final CarouselSliderController _carouselController = CarouselSliderController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
 
   @override
   void initState() {
@@ -377,8 +379,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     // Combine all images from all variants
     for (var variant in widget.product.variants) {
-      allImages.addAll(variant.imageUrls);  // Collect all images
-      variantsForSlider.add(variant);  // Store the corresponding variants
+      allImages.addAll(variant.imageUrls); // Collect all images
+      variantsForSlider.add(variant); // Store the corresponding variants
     }
 
     // Default selected variant (first variant)
@@ -397,7 +399,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   // Update selected variant based on the image index
   void _onImageSlide(int index) {
-    final newVariant = variantsForSlider[index];  // Get the variant corresponding to the image
+    final newVariant =
+        variantsForSlider[index]; // Get the variant corresponding to the image
     setState(() {
       _selectedVariant = newVariant;
     });
@@ -415,6 +418,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     // Optionally: Auto-slide to the first image of the selected variant
     _carouselController.animateToPage(0);
   }
+
   void _logVariantDetails() {
     print("Selected Variant Details:");
     print("Title: ${_selectedVariant.color}");
@@ -424,6 +428,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     print("Price: \$${_selectedVariant.price}");
     print("Quantity Available: ${_selectedVariant.quantity}");
   }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -436,9 +441,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             expandedHeight: 350.0,
             flexibleSpace: FlexibleSpaceBar(
               background: ProductImageSlider(
-                imageUrls: allImages,  // Pass the updated list of images
+                imageUrls: allImages,
+                // Pass the updated list of images
                 controller: _carouselController,
-                onImageChanged: _onImageSlide,  // Handle image change to update variant
+                onImageChanged: _onImageSlide,
+                // Handle image change to update variant
+                onPressed: () {
+                  _logVariantDetails();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Added to Wishlist (Not Implemented)'),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -448,7 +463,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.product.title, style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    widget.product.title,
+                    style: textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 8),
 
                   Text(
@@ -461,9 +481,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   const SizedBox(height: 8),
 
                   Text(
-                    _selectedVariant.quantity > 0 ? 'In Stock (${_selectedVariant.quantity} available)' : 'Out of Stock',
+                    _selectedVariant.quantity > 0
+                        ? 'In Stock (${_selectedVariant.quantity} available)'
+                        : 'Out of Stock',
                     style: TextStyle(
-                      color: _selectedVariant.quantity > 0 ? Colors.green.shade700 : Colors.red.shade700,
+                      color:
+                          _selectedVariant.quantity > 0
+                              ? Colors.green.shade700
+                              : Colors.red.shade700,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -473,7 +498,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     VariantSelector(
                       product: widget.product,
                       selectedVariant: _selectedVariant,
-                      onVariantSelected: _onColorChipSelected,  // Pass the color chip selection handler
+                      onVariantSelected:
+                          _onColorChipSelected, // Pass the color chip selection handler
                     ),
                   const Divider(height: 32, thickness: 1),
 
@@ -496,7 +522,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildActionButtons() {
     return Container(
-      padding: const EdgeInsets.all(16).copyWith(bottom: MediaQuery.of(context).padding.bottom + 8),
+      padding: const EdgeInsets.all(
+        16,
+      ).copyWith(bottom: MediaQuery.of(context).padding.bottom + 8),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         boxShadow: [
@@ -504,34 +532,62 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
-          )
+          ),
         ],
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
         children: [
-          OutlinedButton(
-            onPressed: () {
-              _logVariantDetails();
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to Wishlist (Not Implemented)')));
-            },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.all(12),
-              shape: const CircleBorder(),
-            ),
-            child: const Icon(Icons.favorite_border),
-          ),
-          const SizedBox(width: 16),
+          // Add to Cart Button
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: _selectedVariant.quantity > 0 ? () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to Cart (Not Implemented)')));
-              } : null,
+              onPressed:
+                  _selectedVariant.quantity > 0
+                      ? () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Added to Cart (Not Implemented)'),
+                          ),
+                        );
+                      }
+                      : null,
               icon: const Icon(Icons.shopping_cart_outlined),
               label: const Text('Add to Cart'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Buy Now Button
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed:
+                  _selectedVariant.quantity > 0
+                      ? () {
+                        // You can replace this with actual Buy Now logic (e.g., navigate to checkout)
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Proceeding to Checkout'),
+                          ),
+                        );
+                      }
+                      : null,
+              icon: const Icon(Icons.shopping_bag_outlined),
+              label: const Text('Buy Now'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

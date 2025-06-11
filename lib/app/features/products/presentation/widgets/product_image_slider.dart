@@ -6,13 +6,16 @@ import 'package:flutter/material.dart';
 class ProductImageSlider extends StatefulWidget {
   final List<String> imageUrls;
   final CarouselSliderController? controller;
-  final ValueChanged<int> onImageChanged;  // Add this line to accept the callback
+  final ValueChanged<int> onImageChanged;
+  final VoidCallback? onPressed;
+
 
   const ProductImageSlider({
     super.key,
     this.controller,
     required this.imageUrls,
-    required this.onImageChanged,  // Pass the callback to the constructor
+    required this.onImageChanged,
+    this.onPressed,
   });
 
   @override
@@ -87,6 +90,14 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
               }),
             ),
           ),
+        Positioned(bottom: 10,right: 10,child:    OutlinedButton(
+          onPressed: widget.onPressed,
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.all(12),
+            shape: const CircleBorder(),
+          ),
+          child: const Icon(Icons.favorite_border),
+        ),)
       ],
     );
   }
