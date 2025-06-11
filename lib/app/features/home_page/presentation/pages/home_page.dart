@@ -1,11 +1,11 @@
 import 'dart:developer';
-import 'package:firebase_admin/app/features/home_page/presentation/widgets/product_search_bar.dart';
-import 'package:firebase_admin/app/features/home_page/presentation/widgets/search_results_list.dart';
 import 'package:firebase_admin/app/features/search/presentation/providers/search_notifier_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_admin/app/features/products/presentation/providers/product_notifier_provider.dart';
 import 'package:firebase_admin/app/features/products/presentation/providers/product_providers.dart';
+import '../../../search/presentation/widgets/product_search_bar.dart';
+import '../../../search/presentation/widgets/search_results_list.dart';
 import '../widgets/product_grid.dart';
 
 class HomePage extends ConsumerWidget {
@@ -24,22 +24,39 @@ class HomePage extends ConsumerWidget {
     });
 
     // Determine if we should show search results or the main grid
-    final isSearching = ref.watch(searchNotifierProvider.select(
-          (state) => state.maybeWhen(initial: () => false, orElse: () => true),
-    ));
-
+    // final isSearching = ref.watch(searchNotifierProvider.select(
+    //       (state) => state.maybeWhen(initial: () => false, orElse: () => true),
+    // ));
+    final searchState = ref.watch(searchNotifierProvider);
+    void dismissSearch() {
+      FocusScope.of(context).unfocus();
+      // Clear the search state, which will make the UI switch back to the product grid
+      ref.read(searchNotifierProvider.notifier).clearSearch();
+    }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        automaticallyImplyLeading: false,
-      ),
       body: Column(
         children: [
           const ProductSearchBar(),
           Expanded(
-            child: isSearching
-                ? _buildSearchResults(context, ref)
-                : _buildMainProductGrid(context, ref),
+            // Build the UI directly based on the search state
+            child: searchState.when(
+              // **THIS IS THE KEY FIX**
+              // When the state is initial (i.e., search is cleared or not started),
+              // show the main product grid.
+              initial: () => GestureDetector(
+                  onTap: dismissSearch,
+                  child: _buildMainProductGrid(context, ref)),
+
+              // The other states are for the search results view
+              loading: () => const Center(child: CircularProgressIndicator()),
+              loaded: (query, products) => SearchResultsList(products: products),
+              error: (message) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text('Search failed: $message', textAlign: TextAlign.center),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -66,19 +83,4 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  /// Builds the search results view when a search is active.
-  Widget _buildSearchResults(BuildContext context, WidgetRef ref) {
-    final searchState = ref.watch(searchNotifierProvider);
-    return searchState.when(
-      initial: () => const SizedBox.shrink(), // Should not be reached
-      loading: () => const Center(child: CircularProgressIndicator()),
-      loaded: (products) => SearchResultsList(products: products),
-      error: (message) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text('Search failed: $message', textAlign: TextAlign.center),
-        ),
-      ),
-    );
-  }
 }

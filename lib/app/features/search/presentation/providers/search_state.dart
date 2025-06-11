@@ -8,6 +8,10 @@ part 'search_state.freezed.dart';
 class SearchState with _$SearchState {
   const factory SearchState.initial() = _Initial;
   const factory SearchState.loading() = _Loading;
-  const factory SearchState.loaded(List<ProductEntity> products) = _Loaded;
+  // Add query to the loaded state
+  const factory SearchState.loaded({
+    required String query,
+    required List<ProductEntity> products,
+  }) = _Loaded;
   const factory SearchState.error(String message) = _Error;
 }

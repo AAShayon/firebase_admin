@@ -21,21 +21,22 @@ mixin _$SearchState {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<ProductEntity> products) loaded,
+    required TResult Function(String query, List<ProductEntity> products)
+    loaded,
     required TResult Function(String message) error,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<ProductEntity> products)? loaded,
+    TResult? Function(String query, List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<ProductEntity> products)? loaded,
+    TResult Function(String query, List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
@@ -130,7 +131,8 @@ class _$InitialImpl implements _Initial {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<ProductEntity> products) loaded,
+    required TResult Function(String query, List<ProductEntity> products)
+    loaded,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -141,7 +143,7 @@ class _$InitialImpl implements _Initial {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<ProductEntity> products)? loaded,
+    TResult? Function(String query, List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -152,7 +154,7 @@ class _$InitialImpl implements _Initial {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<ProductEntity> products)? loaded,
+    TResult Function(String query, List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -249,7 +251,8 @@ class _$LoadingImpl implements _Loading {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<ProductEntity> products) loaded,
+    required TResult Function(String query, List<ProductEntity> products)
+    loaded,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -260,7 +263,7 @@ class _$LoadingImpl implements _Loading {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<ProductEntity> products)? loaded,
+    TResult? Function(String query, List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -271,7 +274,7 @@ class _$LoadingImpl implements _Loading {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<ProductEntity> products)? loaded,
+    TResult Function(String query, List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -330,7 +333,7 @@ abstract class _$$LoadedImplCopyWith<$Res> {
     $Res Function(_$LoadedImpl) then,
   ) = __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({List<ProductEntity> products});
+  $Res call({String query, List<ProductEntity> products});
 }
 
 /// @nodoc
@@ -346,13 +349,19 @@ class __$$LoadedImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? products = null}) {
+  $Res call({Object? query = null, Object? products = null}) {
     return _then(
       _$LoadedImpl(
-        null == products
-            ? _value._products
-            : products // ignore: cast_nullable_to_non_nullable
-                as List<ProductEntity>,
+        query:
+            null == query
+                ? _value.query
+                : query // ignore: cast_nullable_to_non_nullable
+                    as String,
+        products:
+            null == products
+                ? _value._products
+                : products // ignore: cast_nullable_to_non_nullable
+                    as List<ProductEntity>,
       ),
     );
   }
@@ -361,8 +370,13 @@ class __$$LoadedImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$LoadedImpl implements _Loaded {
-  const _$LoadedImpl(final List<ProductEntity> products) : _products = products;
+  const _$LoadedImpl({
+    required this.query,
+    required final List<ProductEntity> products,
+  }) : _products = products;
 
+  @override
+  final String query;
   final List<ProductEntity> _products;
   @override
   List<ProductEntity> get products {
@@ -373,7 +387,7 @@ class _$LoadedImpl implements _Loaded {
 
   @override
   String toString() {
-    return 'SearchState.loaded(products: $products)';
+    return 'SearchState.loaded(query: $query, products: $products)';
   }
 
   @override
@@ -381,12 +395,16 @@ class _$LoadedImpl implements _Loaded {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$LoadedImpl &&
+            (identical(other.query, query) || other.query == query) &&
             const DeepCollectionEquality().equals(other._products, _products));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_products));
+  int get hashCode => Object.hash(
+    runtimeType,
+    query,
+    const DeepCollectionEquality().hash(_products),
+  );
 
   /// Create a copy of SearchState
   /// with the given fields replaced by the non-null parameter values.
@@ -401,10 +419,11 @@ class _$LoadedImpl implements _Loaded {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<ProductEntity> products) loaded,
+    required TResult Function(String query, List<ProductEntity> products)
+    loaded,
     required TResult Function(String message) error,
   }) {
-    return loaded(products);
+    return loaded(query, products);
   }
 
   @override
@@ -412,10 +431,10 @@ class _$LoadedImpl implements _Loaded {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<ProductEntity> products)? loaded,
+    TResult? Function(String query, List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
   }) {
-    return loaded?.call(products);
+    return loaded?.call(query, products);
   }
 
   @override
@@ -423,12 +442,12 @@ class _$LoadedImpl implements _Loaded {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<ProductEntity> products)? loaded,
+    TResult Function(String query, List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
     if (loaded != null) {
-      return loaded(products);
+      return loaded(query, products);
     }
     return orElse();
   }
@@ -472,8 +491,12 @@ class _$LoadedImpl implements _Loaded {
 }
 
 abstract class _Loaded implements SearchState {
-  const factory _Loaded(final List<ProductEntity> products) = _$LoadedImpl;
+  const factory _Loaded({
+    required final String query,
+    required final List<ProductEntity> products,
+  }) = _$LoadedImpl;
 
+  String get query;
   List<ProductEntity> get products;
 
   /// Create a copy of SearchState
@@ -555,7 +578,8 @@ class _$ErrorImpl implements _Error {
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
-    required TResult Function(List<ProductEntity> products) loaded,
+    required TResult Function(String query, List<ProductEntity> products)
+    loaded,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -566,7 +590,7 @@ class _$ErrorImpl implements _Error {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? initial,
     TResult? Function()? loading,
-    TResult? Function(List<ProductEntity> products)? loaded,
+    TResult? Function(String query, List<ProductEntity> products)? loaded,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -577,7 +601,7 @@ class _$ErrorImpl implements _Error {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? initial,
     TResult Function()? loading,
-    TResult Function(List<ProductEntity> products)? loaded,
+    TResult Function(String query, List<ProductEntity> products)? loaded,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {

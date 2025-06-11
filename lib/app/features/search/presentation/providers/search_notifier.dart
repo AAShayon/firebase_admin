@@ -21,7 +21,9 @@ class SearchNotifier extends StateNotifier<SearchState> {
 
     // If the query is empty, clear results and don't start a new timer.
     if (query.isEmpty) {
-      state = const SearchState.initial();
+      // state = const SearchState.initial();
+      // return;
+      clearSearch();
       return;
     }
 
@@ -33,7 +35,8 @@ class SearchNotifier extends StateNotifier<SearchState> {
         final products = await usecase.call(query);
         // Ensure the notifier hasn't been disposed before updating the state.
         if (mounted) {
-          state = SearchState.loaded(products);
+          state = SearchState.loaded(query: query, products: products);
+
         }
       } catch (e) {
         if (mounted) {

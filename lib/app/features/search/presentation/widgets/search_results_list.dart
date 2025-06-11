@@ -3,7 +3,10 @@ import 'package:firebase_admin/app/core/routes/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../shared/domain/entities/product_entity.dart';
+import '../providers/search_notifier_provider.dart';
+
 
 class SearchResultsList extends ConsumerWidget {
   final List<ProductEntity> products;
@@ -49,7 +52,6 @@ class SearchResultsList extends ConsumerWidget {
               'Price: \$${product.variants.firstOrNull?.price.toStringAsFixed(2) ?? 'N/A'}',
             ),
             onTap: () {
-              // When a search result is tapped, navigate to its detail page.
               context.pushNamed(AppRoutes.productDetail, extra: product);
             },
           ),
