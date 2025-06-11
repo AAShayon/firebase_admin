@@ -19,6 +19,7 @@ import '../../features/auth/domain/usecases/sign_up_with_email_password_use_case
 import '../../features/auth/domain/usecases/sub_admin_use_case.dart';
 import '../../features/products/data/repositories/product_repository_impl.dart';
 import '../../features/products/domain/usecases/delete_product_use_case.dart';
+import '../../features/products/domain/usecases/search_product_use_case.dart';
 import '../../features/products/domain/usecases/update_product_use_case.dart';
 import '../../features/settings/data/datasources/settings_local_data_source.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
@@ -84,4 +85,5 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<GetProductUseCase>(()=>GetProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<UpdateProductUseCase>(()=>UpdateProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<DeleteProductUseCase>(()=>DeleteProductUseCase(locator<ProductRepository>()));
+  locator.registerLazySingleton<SearchProductUseCase>(()=>SearchProductUseCase(locator<ProductRepository>()));
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_admin/app/features/products/domain/entities/product_entity.dart';
 
 import '../../domain/usecases/delete_product_use_case.dart';
+import '../../domain/usecases/search_product_use_case.dart';
 import '../../domain/usecases/update_product_use_case.dart';
 
 // Existing providers
@@ -25,4 +26,7 @@ final updateProductProvider = Provider<UpdateProductUseCase>((ref) {
 
 final deleteProductProvider = Provider<DeleteProductUseCase>((ref) {
   return locator<DeleteProductUseCase>(); // Assuming you use GetIt/locator
+});
+final searchProductProvider = Provider<SearchProductUseCase>((ref) {
+  return locator<SearchProductUseCase>(); // Assuming you use GetIt/locator
 });

@@ -7,6 +7,7 @@ abstract class ProductRepository {
   Stream<List<ProductEntity>> getProducts();
   Future<void> updateProduct(ProductEntity product); // ADDED
   Future<void> deleteProduct(String productId);
+  Future<List<ProductEntity>> searchProducts(String query);
 
 }
 

@@ -8,3 +8,4 @@ class GetProductUseCase{
   Stream<List<ProductEntity>> call() => repository.getProducts();
 
 }
+

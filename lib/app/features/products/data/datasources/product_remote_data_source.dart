@@ -10,14 +10,83 @@ abstract class ProductRemoteDataSource {
   Stream<List<Product>> getProducts();
   Future<void> updateProduct(Product product); // ADDED
   Future<void> deleteProduct(String productId); // ADDED
-  // Future<void> createProduct(ProductEntity product);
-  // Stream<List<Product>> getProducts();
-  // Future<ProductEntity> getProductById(String id);
-  // Future<void> updateProduct(ProductEntity product);
-  // Future<void> deleteProduct(String id);
-  // Future<String> uploadImage(File image);
+  Future<List<Product>> searchProducts(String query);
+
 }
 
+class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
+
+  ProductRemoteDataSourceImpl({
+    required FirebaseFirestore firestore,
+    required FirebaseStorage storage,
+  })  : _firestore = firestore,
+        _storage = storage;
+
+  // NEW METHOD
+  @override
+  Future<void> updateProduct(Product product) async {
+    await _firestore.collection('products').doc(product.id).update(product.toJson());
+  }
+
+  // NEW METHOD
+  @override
+  Future<void> deleteProduct(String productId) async {
+    await _firestore.collection('products').doc(productId).delete();
+  }
+  @override
+  Future<void> addProduct(Product product) async {
+    await _firestore.collection('products').doc(product.id).set(product.toJson());
+  }
+
+  @override
+  Stream<List<Product>> getProducts() {
+    return _firestore
+        .collection('products')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        try {
+          return Product.fromJson(doc.data() as Map<String, dynamic>);
+        } catch (e) {
+          log("Error parsing product ${doc.id}: $e");
+          return Product(id: doc.id, title: 'Error: Invalid Data', description: '', variants: [], availability: false, category: ProductCategory.ecom, createdAt: DateTime.now());
+        }
+      }).toList();
+    });
+  }
+  @override
+  Future<List<Product>> searchProducts(String query) async {
+    // 1. Get the full list of products one time.
+    final allProducts = await getProducts().first;
+
+    // 2. If the query is empty, return an empty list.
+    if (query.isEmpty) {
+      return [];
+    }
+
+    // 3. Filter the list in-memory (client-side).
+    final lowerCaseQuery = query.toLowerCase();
+    return allProducts.where((product) {
+      final titleMatches = product.title.toLowerCase().contains(lowerCaseQuery);
+      final idMatches = product.id.toLowerCase().contains(lowerCaseQuery);
+      // You could also search descriptions, categories, etc.
+      // final descriptionMatches = product.description.toLowerCase().contains(lowerCaseQuery);
+
+      return titleMatches || idMatches;
+    }).toList();
+  }
+}
+
+
+// Future<void> createProduct(ProductEntity product);
+// Stream<List<Product>> getProducts();
+// Future<ProductEntity> getProductById(String id);
+// Future<void> updateProduct(ProductEntity product);
+// Future<void> deleteProduct(String id);
+// Future<String> uploadImage(File image);
 // class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 //   final FirebaseFirestore _firestore = FirebaseProvider.firestore;
 //   final FirebaseStorage _storage = FirebaseProvider.storage;
@@ -197,49 +266,3 @@ abstract class ProductRemoteDataSource {
 //
 // // Implement other methods similarly
 // }
-class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
-  final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
-
-  ProductRemoteDataSourceImpl({
-    required FirebaseFirestore firestore,
-    required FirebaseStorage storage,
-  })  : _firestore = firestore,
-        _storage = storage;
-
-  // NEW METHOD
-  @override
-  Future<void> updateProduct(Product product) async {
-    await _firestore.collection('products').doc(product.id).update(product.toJson());
-  }
-
-  // NEW METHOD
-  @override
-  Future<void> deleteProduct(String productId) async {
-    await _firestore.collection('products').doc(productId).delete();
-  }
-  @override
-  Future<void> addProduct(Product product) async {
-    await _firestore.collection('products').doc(product.id).set(product.toJson());
-  }
-
-  @override
-  Stream<List<Product>> getProducts() {
-    return _firestore
-        .collection('products')
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        try {
-          return Product.fromJson(doc.data() as Map<String, dynamic>);
-        } catch (e) {
-          log("Error parsing product ${doc.id}: $e");
-          // Return a dummy product or rethrow to handle it upstream
-          // This prevents one bad entry from crashing the whole list
-          return Product(id: doc.id, title: 'Error: Invalid Data', description: '', variants: [], availability: false, category: ProductCategory.ecom, createdAt: DateTime.now());
-        }
-      }).toList();
-    });
-  }
-}

@@ -145,4 +145,9 @@ class ProductRepositoryImpl implements ProductRepository {
       return productModels.map((model) => _toEntity(model)).toList();
     });
   }
+  @override
+  Future<List<ProductEntity>> searchProducts(String query) async {
+    final productModels = await remoteDataSource.searchProducts(query);
+    return productModels.map((model) => _toEntity(model)).toList();
+  }
 }
