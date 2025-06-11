@@ -1,3 +1,4 @@
+import 'package:firebase_admin/app/features/cart/presentation/pages/cart_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -148,6 +149,15 @@ class _LandingPageState extends ConsumerState<LandingPage> {
                   setState(() => _currentIndex = 6);
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.shopping_cart),
+                title: const Text('Cart'),
+                selected: _currentIndex == 7,
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 7);
+                },
+              ),
               const Divider(),
               Consumer(
                 builder: (context, ref, _) {
@@ -213,6 +223,8 @@ class _LandingPageState extends ConsumerState<LandingPage> {
         return 'Notifications';
       case 6:
         return 'Settings';
+      case 7:
+        return 'Cart';
       default:
         return 'Home';
     }
@@ -234,6 +246,8 @@ class _LandingPageState extends ConsumerState<LandingPage> {
         return const NotificationsPage();
       case 6:
         return const SettingsPage();
+      case 7:
+        return  CartPage(isFromLanding: false,);
       default:
         return const HomePage();
     }

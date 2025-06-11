@@ -12,6 +12,14 @@ import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/domain/usecases/get_current_user_use_case.dart';
 import '../../features/auth/domain/usecases/sign_up_with_email_password_use_case.dart';
 import '../../features/auth/domain/usecases/sub_admin_use_case.dart';
+import '../../features/cart/data/datasources/cart_remote_data_sources.dart';
+import '../../features/cart/data/repositories/cart_repository_impl.dart';
+import '../../features/cart/domain/repositories/cart_repositories.dart';
+import '../../features/cart/domain/usecases/add_to_cart_use_case.dart';
+import '../../features/cart/domain/usecases/clear_cart_use_case.dart';
+import '../../features/cart/domain/usecases/get_cart_items_use_case.dart';
+import '../../features/cart/domain/usecases/remove_from_cart_use_cse.dart';
+import '../../features/cart/domain/usecases/update_cart_item_use_case.dart';
 import '../../features/settings/data/datasources/settings_local_data_source.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/settings_repository.dart';
@@ -85,4 +93,13 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdateProductUseCase>(()=>UpdateProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<DeleteProductUseCase>(()=>DeleteProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<SearchProductUseCase>(()=>SearchProductUseCase(locator<ProductRepository>()));
+
+  //cart
+  locator.registerLazySingleton<CartRemoteDataSource>(()=>CartRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<CartRepository>(()=>CartRepositoryImpl(remoteDataSource: locator<CartRemoteDataSource>()));
+  locator.registerLazySingleton<AddToCartUseCase>(()=>AddToCartUseCase(locator<CartRepository>()));
+  locator.registerLazySingleton<GetCartItemsUseCase>(()=>GetCartItemsUseCase(locator<CartRepository>()));
+  locator.registerLazySingleton<UpdateCartItemQuantityUseCase>(()=>UpdateCartItemQuantityUseCase(locator<CartRepository>()));
+  locator.registerLazySingleton<RemoveFromCartUseCase>(()=>RemoveFromCartUseCase(locator<CartRepository>()));
+  locator.registerLazySingleton<ClearCartUseCase>(()=>ClearCartUseCase(locator<CartRepository>()));
 }

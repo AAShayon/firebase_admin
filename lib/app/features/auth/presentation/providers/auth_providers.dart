@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/injector.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/admin_use_case.dart';
 import '../../domain/usecases/assign_admin_role_use_case.dart';
 import '../../domain/usecases/assign_sub_admin_use_case.dart';
@@ -12,6 +13,7 @@ import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/sign_up_with_email_password_use_case.dart';
 import '../../domain/usecases/sub_admin_use_case.dart';
 import '../../domain/usecases/update_password_use_case.dart';
+import 'auth_notifier_provider.dart';
 
 final signInWithEmailProvider = Provider<SignInWithEmailAndPassword>((ref) {
   return locator<SignInWithEmailAndPassword>();
@@ -51,4 +53,19 @@ final assignSubAdminRoleProvider = Provider<AssignSubAdminRole>((ref) {
 
 final getCurrentUserProvider = Provider<CurrentUserUseCase>((ref) {
   return locator<CurrentUserUseCase>();
+});
+// ... (your existing providers)
+
+/// This provider derives the current user from the main AuthState.
+/// The UI can watch this to get direct access to the UserEntity? object.
+/// It will automatically be null if the user is unauthenticated.
+final currentUserProvider = Provider<UserEntity?>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+  return authState.when(
+    initial: () => null,
+    loading: () => null,
+    authenticated: (user) => user,
+    unauthenticated: () => null,
+    error: (_) => null,
+  );
 });
