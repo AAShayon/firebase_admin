@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_admin/app/features/user_profile/presentation/providers/user_profile_state.dart';
-import 'package:firebase_admin/app/features/user_profile/presentation/widgets/add_address_dialog.dart';
 import 'package:firebase_admin/app/features/user_profile/presentation/widgets/address_list_tile.dart';
 import 'package:firebase_admin/app/features/user_profile/presentation/widgets/profile_header.dart';
 import 'package:firebase_admin/app/features/user_profile/domain/entities/user_profile_entity.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routes/app_router.dart';
 import '../providers/user_profile_notifier_provider.dart';
 
 class UserProfilePage extends ConsumerStatefulWidget {
@@ -47,8 +48,12 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       ),
       body: _buildBody(state),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddAddressDialog(context, ref),
-        child: const Icon(Icons.add),
+        onPressed: () {
+          // Navigate to the Add Address page using GoRouter
+          context.pushNamed(AppRoutes.addAddress);
+        },
+        tooltip: 'Add New Address',
+        child: const Icon(Icons.add_location_alt_outlined),
       ),
     );
   }
@@ -60,12 +65,10 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
       loaded: (user) => _buildProfileView(user),
       error: (message) => Center(child: Text('Error: $message')),
       addressUpdated: () {
-        // Use Future.microtask to schedule the reload after build
         Future.microtask(() => _loadProfile());
         return const Center(child: CircularProgressIndicator());
       },
       contactUpdated: () {
-        // Use Future.microtask to schedule the reload after build
         Future.microtask(() => _loadProfile());
         return const Center(child: CircularProgressIndicator());
       },
@@ -99,6 +102,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
               ),
             ),
             _buildAddressList(user),
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -108,10 +112,11 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
   Widget _buildAddressList(UserProfileEntity user) {
     if (user.addresses.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text('No addresses saved yet. Tap + to add one.'),
+        padding: EdgeInsets.symmetric(vertical: 40.0, horizontal: 16.0),
+        child: Center(child: Text('No addresses saved yet.\nTap the + button to add one.', textAlign: TextAlign.center)),
       );
     }
+
 
     return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
@@ -121,47 +126,56 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
         final address = user.addresses[index];
         return AddressListTile(
           address: address,
-          onTap: () => _showEditAddressDialog(context, ref, address),
-          onSetDefault: () => _setDefaultAddress(ref, address),
+          onTap: () {
+            context.pushNamed(
+              AppRoutes.editAddress,
+              pathParameters: {'addressId': address.id},
+              extra: address, // Pass the full object for convenience
+            );
+          },
+          onSetDefault: () => _setDefaultAddress(ref, address.id),
           onDelete: () => _deleteAddress(context, ref, address),
         );
       },
     );
   }
 
-  void _showAddAddressDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AddAddressDialog(
-        onSave: (newAddress) {
-          ref
-              .read(userProfileNotifierProvider.notifier)
-              .addUserAddress(widget.userId, newAddress);
-        },
-      ),
-    );
-  }
 
-  void _showEditAddressDialog(
-      BuildContext context, WidgetRef ref, UserAddress address) {
-    showDialog(
-      context: context,
-      builder: (context) => AddAddressDialog(
-        address: address,
-        onSave: (updatedAddress) {
-          ref
-              .read(userProfileNotifierProvider.notifier)
-              .updateUserAddress(widget.userId, updatedAddress);
-        },
-      ),
-    );
-  }
+  // void _showEditAddressDialog(
+  //     BuildContext context, WidgetRef ref, UserAddress address) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AddAddressDialog(
+  //       address: address,
+  //       onSave: (updatedAddress) {
+  //         ref
+  //             .read(userProfileNotifierProvider.notifier)
+  //             .updateUserAddress(widget.userId, updatedAddress);
+  //       },
+  //     ),
+  //   );
+  // }
+///
+//   void _setDefaultAddress(WidgetRef ref, UserAddress address) {
+//     final updatedAddress = address.copyWith(isDefault: true);
+//     ref
+//         .read(userProfileNotifierProvider.notifier)
+//         .updateUserAddress(widget.userId, updatedAddress);
+//   }
+  void _setDefaultAddress(WidgetRef ref, String addressId) {
+    // Your data source already has the logic to handle unsetting the old default.
+    // We just need to call the appropriate method in the notifier.
+    // Let's assume you add a `setDefaultAddress` method to your notifier.
+    // If not, you'll need to add it. For now, this is the intended architecture.
+    // You would ideally have a method like this in your notifier:
+    // await notifier.setDefaultAddress(widget.userId, addressId);
 
-  void _setDefaultAddress(WidgetRef ref, UserAddress address) {
-    final updatedAddress = address.copyWith(isDefault: true);
-    ref
-        .read(userProfileNotifierProvider.notifier)
-        .updateUserAddress(widget.userId, updatedAddress);
+    // The existing updateUserAddress can also work if the backend logic is correct
+    final currentState = ref.read(userProfileNotifierProvider);
+    final address = currentState.maybeWhen(loaded: (user) => user.addresses.firstWhere((a) => a.id == addressId), orElse: () => null);
+    if(address != null) {
+      ref.read(userProfileNotifierProvider.notifier).updateUserAddress(widget.userId, address.copyWith(isDefault: true));
+    }
   }
 
   void _deleteAddress(BuildContext context, WidgetRef ref, UserAddress address) {
@@ -175,15 +189,15 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          // TextButton(
-          //   onPressed: () {
-          //     Navigator.pop(context);
-          //     ref
-          //         .read(userProfileNotifierProvider.notifier)
-          //         .deleteUserAddress(widget.userId, address.id);
-          //   },
-          //   child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          // ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ref
+                  .read(userProfileNotifierProvider.notifier)
+                  .deleteUserAddress(widget.userId, address.id);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );

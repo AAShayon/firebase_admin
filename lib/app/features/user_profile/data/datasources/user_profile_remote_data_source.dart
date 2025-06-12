@@ -122,7 +122,7 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
       'id': address.id,
       'type': address.type,
       'addressLine1': address.addressLine1,
-      'addressLine2': address.addressLine2,
+      'area': address.area,
       'contactNo': address.contactNo,
       'city': address.city,
       'state': address.state,

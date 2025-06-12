@@ -63,4 +63,15 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
       state = UserProfileState.error(e.toString());
     }
   }
+
+  Future<void> deleteUserAddress(String userId, String addressId) async {
+    state = const UserProfileState.loading();
+    try {
+      await ref.read(manageUserAddressProvider).removeAddress(userId, addressId);
+      state = const UserProfileState.addressUpdated();
+    } catch (e) {
+      state = UserProfileState.error(e.toString());
+    }
+  }
+
 }

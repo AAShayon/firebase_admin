@@ -37,7 +37,7 @@ class UserAddress {
   final String type;
   final String addressLine1;
   final String? contactNo;
-  final String? addressLine2;
+  final String? area;
   final String city;
   final String state;
   final String postalCode;
@@ -49,7 +49,7 @@ class UserAddress {
     required this.type,
     required this.addressLine1,
     required this.contactNo,
-    this.addressLine2,
+    this.area,
     required this.city,
     required this.state,
     required this.postalCode,
@@ -62,7 +62,7 @@ class UserAddress {
     String? type,
     String? addressLine1,
     String? contactNo,
-    String? addressLine2,
+    String? area,
     String? city,
     String? state,
     String? postalCode,
@@ -74,7 +74,7 @@ class UserAddress {
       type: type ?? this.type,
       addressLine1: addressLine1 ?? this.addressLine1,
       contactNo: contactNo ?? this.contactNo,
-      addressLine2: addressLine2 ?? this.addressLine2,
+      area: area ?? this.area,
       city: city ?? this.city,
       state: state ?? this.state,
       postalCode: postalCode ?? this.postalCode,

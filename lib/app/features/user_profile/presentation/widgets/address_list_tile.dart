@@ -27,7 +27,7 @@ class AddressListTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(address.addressLine1),
-            if (address.addressLine2 != null) Text(address.addressLine2!),
+            if (address.area != null) Text(address.area!),
             Text('${address.city}, ${address.state} ${address.postalCode}'),
             Text(address.country),
           ],
