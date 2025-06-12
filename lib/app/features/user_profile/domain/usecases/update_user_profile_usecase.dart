@@ -10,3 +10,4 @@ class UpdateUserProfileUseCase {
     return await repository.updateUserProfile(user);
   }
 }
+

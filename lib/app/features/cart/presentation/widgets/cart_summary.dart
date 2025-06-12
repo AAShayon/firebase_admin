@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/routes/app_router.dart';
 import '../../domain/entities/cart_item_entity.dart';
 
 class CartSummary extends StatelessWidget {
@@ -67,7 +69,7 @@ class CartSummary extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                // Navigate to Checkout Page
+                context.pushNamed(AppRoutes.checkout);
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),

@@ -2,6 +2,7 @@
 import '../entities/user_profile_entity.dart';
 
 abstract class UserProfileRepository {
+  Stream<UserProfileEntity> watchUserProfile(String userId);
   Future<UserProfileEntity> getUserProfile(String userId);
 
   Future<void> updateUserProfile(UserProfileEntity user);

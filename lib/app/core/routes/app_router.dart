@@ -327,6 +327,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/registration_page.dart';
 import '../../features/auth/presentation/providers/auth_notifier_provider.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
+import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/home_page/presentation/pages/home_page.dart';
 import '../../features/initialization/presentation/pages/splash_screen.dart';
@@ -360,6 +361,8 @@ class AppRoutes {
   static const cart = 'cart';
   static const addAddress = 'addAddress';
   static const editAddress = 'editAddress';
+  static const checkout = 'checkout';
+
 
   // --- Route Paths ---
   // Top-level paths
@@ -379,6 +382,7 @@ class AppRoutes {
   static const profilePath = '/profile';
   static const productDetailPath = '/product-detail';
   static const cartPath = '/cart';
+  static const checkoutPath = '/checkoutPath';
 
   // CORRECTED: Define nested paths clearly and uniquely to avoid conflicts.
   // These are relative paths used within a GoRoute's `routes` list.
@@ -592,6 +596,16 @@ final GoRouter appRouter = GoRouter(
     ),
 
     // --- Other Top-level App Routes ---
+    GoRoute(
+      name: AppRoutes.checkout,
+      path: AppRoutes.checkoutPath,
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const CheckoutPage(),
+        transitionType: AppRouteTransitionType.slideFromRight,
+      ),
+    ),
     GoRoute(
       name: AppRoutes.order,
       path: AppRoutes.orderPath,

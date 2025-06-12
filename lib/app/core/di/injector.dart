@@ -6,6 +6,7 @@ import 'package:firebase_admin/app/features/auth/domain/usecases/sign_in_with_em
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_out.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/update_password_use_case.dart';
+import 'package:firebase_admin/app/features/user_profile/domain/usecases/watch_user_profile_use_case.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -82,6 +83,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdateUserProfileUseCase>(()=>UpdateUserProfileUseCase(locator<UserProfileRepository>()));
   locator.registerLazySingleton<ManageUserAddressUseCase>(()=>ManageUserAddressUseCase(locator<UserProfileRepository>()));
   locator.registerLazySingleton<UpdateUserContactNoUseCase>(()=>UpdateUserContactNoUseCase(locator<UserProfileRepository>()));
+  locator.registerLazySingleton<WatchUserProfileUseCase>(()=>WatchUserProfileUseCase(locator<UserProfileRepository>()));
 
 
 

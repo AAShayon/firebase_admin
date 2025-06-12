@@ -8,6 +8,12 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   UserProfileRepositoryImpl({required this.remoteDataSource});
 
   @override
+  Stream<UserProfileEntity> watchUserProfile(String userId) {
+    return remoteDataSource.watchUserProfile(userId);
+  }
+
+
+  @override
   Future<UserProfileEntity> getUserProfile(String userId) async {
     return await remoteDataSource.getUserProfile(userId);
   }

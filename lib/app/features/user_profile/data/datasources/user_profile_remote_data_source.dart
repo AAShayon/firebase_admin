@@ -3,6 +3,7 @@ import '../../domain/entities/user_profile_entity.dart';
 import '../models/user_profile_model.dart';
 
 abstract class UserProfileRemoteDataSource {
+  Stream<UserProfileEntity> watchUserProfile(String userId);
   Future<UserProfileEntity> getUserProfile(String userId);
   Future<void> updateUserProfile(UserProfileEntity user);
   Future<void> addUserAddress(String userId, UserAddress address);
@@ -17,6 +18,20 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
 
   UserProfileRemoteDataSourceImpl({required FirebaseFirestore firestore})
       : _firestore = firestore;
+  @override
+  Stream<UserProfileEntity> watchUserProfile(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .snapshots() // This returns a Stream<DocumentSnapshot>
+        .map((snapshot) {
+      if (!snapshot.exists || snapshot.data() == null) {
+        throw Exception('User document does not exist.');
+      }
+      // For each event in the stream, convert the snapshot to your model
+      return UserProfileModel.fromJson(snapshot.data()!);
+    });
+  }
 
   @override
   Future<UserProfileEntity> getUserProfile(String userId) async {
