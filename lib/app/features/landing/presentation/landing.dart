@@ -12,6 +12,7 @@ import '../../order/presentation/order.dart';
 import '../../products/presentation/widgets/products_table.dart';
 import '../../settings/presentation/pages/settings_page.dart';
 import '../../customer/presentation/customers_page.dart';
+import '../../user_profile/presentation/providers/user_profile_notifier_provider.dart';
 
 class LandingPage extends ConsumerStatefulWidget {
   const LandingPage({super.key});
@@ -23,11 +24,15 @@ class LandingPage extends ConsumerStatefulWidget {
 class _LandingPageState extends ConsumerState<LandingPage> {
   int _currentIndex = 0;
   bool _isAdmin = false;
+  late String userID;
 
   @override
   void initState() {
     super.initState();
     _checkAdminStatus();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+    _loadProfile();
+    });
   }
 
   Future<void> _checkAdminStatus() async {
@@ -39,10 +44,21 @@ class _LandingPageState extends ConsumerState<LandingPage> {
       );
     });
   }
+  Future<void> _loadProfile() async {
+    final authState = ref.read(authNotifierProvider);
+    authState.maybeMap(
+      authenticated: (auth) {
+        userID = auth.user.id;
+        ref.read(userProfileNotifierProvider.notifier).loadUserProfile(userID);
+      },
+      orElse: () {},
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
+    final profileState = ref.watch(userProfileNotifierProvider);
     final user = authState.maybeMap(
       authenticated: (auth) => auth.user,
       orElse: () => null,
@@ -74,7 +90,10 @@ class _LandingPageState extends ConsumerState<LandingPage> {
             padding: EdgeInsets.zero,
             children: [
               UserAccountsDrawerHeader(
-                accountName: Text(user?.displayName ?? 'Admin User'),
+                accountName: profileState.maybeWhen(
+                  loaded: (profile) => Text(profile.displayName ?? 'No name'),
+                  orElse: () => const Text('Loading...'),
+                ),
                 accountEmail: Text(user?.email ?? 'No email'),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: Colors.white,

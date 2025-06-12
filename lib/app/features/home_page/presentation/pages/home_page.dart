@@ -4,6 +4,8 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
+import '../../../cart/presentation/providers/cart_providers.dart'; // REQUIRED for cartItemsStreamProvider
+import '../../../cart/presentation/providers/cart_state.dart'; // REQUIRED for CartState
 import '../../../cart/presentation/widgets/floating_basket_view.dart';
 import '../../../products/presentation/providers/product_providers.dart';
 import '../../../products/presentation/widgets/product_grid.dart';
@@ -12,12 +14,11 @@ import '../../../search/presentation/widgets/product_search_bar.dart';
 import '../../../search/presentation/widgets/search_results_list.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 
-
 typedef RunAnimationCallback = void Function(GlobalKey, ProductEntity);
-
 
 final homeAnimationProvider = StateProvider<RunAnimationCallback?>((ref) => null);
 
+final addingToCartProvider = StateProvider<String?>((ref) => null);
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -40,10 +41,9 @@ class _HomePageState extends ConsumerState<HomePage>
       duration: const Duration(milliseconds: 700),
     );
 
-    // 3. Set the provider's value to our actual runAnimation function
-    // This makes the function available to any widget that reads the provider.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(homeAnimationProvider.notifier).state = runAnimation;
+      // <<< CHANGE 1: The function passed to the provider is now our new handler
+      ref.read(homeAnimationProvider.notifier).state = _initiateAddToCartAndAnimation;
     });
   }
 
@@ -53,7 +53,25 @@ class _HomePageState extends ConsumerState<HomePage>
     super.dispose();
   }
 
-  void runAnimation(GlobalKey itemKey, ProductEntity product) {
+  // <<< CHANGE 2: THIS IS THE NEW HANDLER FUNCTION. It replaces the old `runAnimation` as the main entry point.
+  /// This function handles the entire process: it immediately starts the
+  /// cart logic and then conditionally triggers the visual animation.
+  void _initiateAddToCartAndAnimation(GlobalKey itemKey, ProductEntity product) {
+    // Step 1: Immediately start the core logic. This is the most important part.
+    // This ensures the item is added regardless of whether the animation can run.
+    _addToCart(product);
+
+    // Step 2: Attempt to run the animation.
+    // The check for the basket's context is now inside _runAnimation.
+    _runAnimation(itemKey, product);
+  }
+
+
+  // <<< CHANGE 3: The animation function is now purely visual.
+  // It no longer contains any business logic.
+  void _runAnimation(GlobalKey itemKey, ProductEntity product) {
+    // This guard clause is now perfect. If the basket isn't visible,
+    // we just exit, but the _addToCart logic has already been fired.
     if (itemKey.currentContext == null || _basketKey.currentContext == null) return;
 
     final itemRenderBox = itemKey.currentContext!.findRenderObject() as RenderBox;
@@ -93,14 +111,16 @@ class _HomePageState extends ConsumerState<HomePage>
 
     Overlay.of(context).insert(_overlayEntry!);
     _animationController.forward().whenComplete(() {
-      _addToCart(product);
+      // <<< CHANGE 4: The _addToCart call is REMOVED from here.
+      // It's already been called.
       _overlayEntry?.remove();
       _overlayEntry = null;
       _animationController.reset();
     });
   }
 
-  void _addToCart(ProductEntity product) {
+  // This function is now perfect as-is.
+  Future<void> _addToCart(ProductEntity product) async {
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,19 +129,52 @@ class _HomePageState extends ConsumerState<HomePage>
       return;
     }
 
-    final selectedVariant = product.variants.first;
-    final cartItem = CartItemEntity(
-      id: '',
-      userId: currentUser.id,
-      productId: product.id,
-      productTitle: product.title,
-      variantSize: selectedVariant.size,
-      variantColorName: selectedVariant.color.name,
-      variantPrice: selectedVariant.price,
-      variantImageUrl: selectedVariant.imageUrls.isNotEmpty ? selectedVariant.imageUrls.first : null,
-      quantity: 1,
-    );
-    ref.read(cartNotifierProvider.notifier).addToCart(cartItem);
+    ref.read(addingToCartProvider.notifier).state = product.id;
+
+    try {
+      final selectedVariant = product.variants.first;
+      final cartItem = CartItemEntity(
+        id: '',
+        userId: currentUser.id,
+        productId: product.id,
+        productTitle: product.title,
+        variantSize: selectedVariant.size,
+        variantColorName: selectedVariant.color.name,
+        variantPrice: selectedVariant.price,
+        variantImageUrl: selectedVariant.imageUrls.isNotEmpty
+            ? selectedVariant.imageUrls.first
+            : null,
+        quantity: 1,
+      );
+
+      await ref.read(cartNotifierProvider.notifier).addToCart(cartItem);
+
+      if(context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${product.title} added to cart!'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+
+    } catch (e) {
+      if(context.mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add item: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          ref.read(addingToCartProvider.notifier).state = null;
+        }
+      });
+    }
   }
 
   void _onViewBasket() {
@@ -144,6 +197,20 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchNotifierProvider);
+    // The invalidate logic here is not strictly necessary anymore because
+    // _addToCart now directly calls the notifier, but it's good practice
+    // to keep it as a fallback or for other cart actions.
+    ref.listen<CartState>(cartNotifierProvider, (previous, next) {
+      next.maybeWhen(
+        success: (message) {
+          final currentUser = ref.read(currentUserProvider);
+          if (currentUser != null) {
+            ref.invalidate(cartItemsStreamProvider(currentUser.id));
+          }
+        },
+        orElse: () {},
+      );
+    });
 
     return Scaffold(
       body: Stack(

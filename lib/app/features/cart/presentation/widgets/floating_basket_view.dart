@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../home_page/presentation/pages/home_page.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../providers/cart_providers.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class FloatingBasketView extends ConsumerWidget {
   final GlobalKey basketKey;
@@ -17,20 +18,18 @@ class FloatingBasketView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // This provider will need to be created, similar to currentUserProvider
     final userId = ref.watch(currentUserProvider)?.id;
+    final addingProductId = ref.watch(addingToCartProvider);
 
-    if (userId == null) {
-      return const SizedBox.shrink(); // Don't show if not logged in
-    }
+    if (userId == null) return const SizedBox.shrink();
 
     final cartItemsStream = ref.watch(cartItemsStreamProvider(userId));
 
     return cartItemsStream.maybeWhen(
       data: (items) {
-        if (items.isEmpty) {
-          return const SizedBox.shrink(); // Hide if cart is empty
-        }
+        final shouldShow = items.isNotEmpty || addingProductId != null;
+        if (!shouldShow) return const SizedBox.shrink();
+
         return Positioned(
           bottom: 20,
           left: 20,
@@ -42,46 +41,66 @@ class FloatingBasketView extends ConsumerWidget {
               key: basketKey,
               onTap: onViewBasket,
               borderRadius: BorderRadius.circular(50),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Row(
-                  children: [
-                    // Item previews
-                    ..._buildItemPreviews(items),
-                    const SizedBox(width: 8),
-                    // View Basket text
-                    const Text(
-                      'View Basket',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Basket Icon and total
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.shopping_basket_outlined, color: Colors.white, size: 20),
-                          const SizedBox(width: 4),
-                          Text(
-                            _calculateTotal(items),
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: addingProductId != null ? 0.8 : 1.0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Row(
+                    children: [
+                      // Show loading indicator or item previews
+                      if (addingProductId != null)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 8),
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           ),
-                        ],
+                        )
+                      else
+                        ..._buildItemPreviews(items),
+
+                      const SizedBox(width: 8),
+                      const Text(
+                        'View Basket',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    )
-                  ],
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.shopping_basket_outlined,
+                                color: Colors.white, size: 20),
+                            const SizedBox(width: 4),
+                            Text(
+                              _calculateTotal(items),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -93,11 +112,10 @@ class FloatingBasketView extends ConsumerWidget {
   }
 
   List<Widget> _buildItemPreviews(List<CartItemEntity> items) {
-    // Show up to 4 item images
     final previews = items.take(4).toList();
     return List.generate(previews.length, (index) {
       return Align(
-        widthFactor: 0.6, // Overlap the images
+        widthFactor: 0.6,
         child: CircleAvatar(
           radius: 18,
           backgroundColor: Colors.white,
@@ -106,7 +124,9 @@ class FloatingBasketView extends ConsumerWidget {
             backgroundImage: previews[index].variantImageUrl != null
                 ? CachedNetworkImageProvider(previews[index].variantImageUrl!)
                 : null,
-            child: previews[index].variantImageUrl == null ? const Icon(Icons.shopping_cart) : null,
+            child: previews[index].variantImageUrl == null
+                ? const Icon(Icons.shopping_cart, size: 16)
+                : null,
           ),
         ),
       );
@@ -114,7 +134,10 @@ class FloatingBasketView extends ConsumerWidget {
   }
 
   String _calculateTotal(List<CartItemEntity> items) {
-    final double total = items.fold(0.0, (sum, item) => sum + (item.variantPrice * item.quantity));
+    final double total = items.fold(
+        0.0,
+            (sum, item) => sum + (item.variantPrice * item.quantity)
+    );
     return '\$${total.toStringAsFixed(2)}';
   }
 }

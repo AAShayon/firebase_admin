@@ -59,6 +59,7 @@ class CartPage extends ConsumerWidget {
       );
     }
 
+    ///From Products Details
     final cartStream = ref.watch(cartItemsStreamProvider(user.id));
     return cartStream.when(
       data: (items) {
@@ -74,7 +75,7 @@ class CartPage extends ConsumerWidget {
         return Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 60.0),
+              padding: const EdgeInsets.only(top: 80.0),
               child: CartListView(
                 items: items,
                 userId: user.id,
@@ -88,7 +89,7 @@ class CartPage extends ConsumerWidget {
               child: CartSummary(items: items),
             ),
              Positioned(
-              top: 0,
+              top: 20,
               left: 0,
               right: 0,
               child: CartHeader(isFromLanding: isFromLanding,onPressed: () => _showClearCartDialog(context, ref, user.id),),
