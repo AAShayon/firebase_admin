@@ -4,8 +4,8 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
-import '../../../cart/presentation/providers/cart_providers.dart'; // REQUIRED for cartItemsStreamProvider
-import '../../../cart/presentation/providers/cart_state.dart'; // REQUIRED for CartState
+import '../../../cart/presentation/providers/cart_providers.dart';
+import '../../../cart/presentation/providers/cart_state.dart';
 import '../../../cart/presentation/widgets/floating_basket_view.dart';
 import '../../../products/presentation/providers/product_providers.dart';
 import '../../../products/presentation/widgets/product_grid.dart';
@@ -121,9 +121,11 @@ class _HomePageState extends ConsumerState<HomePage>
 
   // This function is now perfect as-is.
   Future<void> _addToCart(ProductEntity product) async {
+    if (!mounted) return;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Please log in to add items to your cart.')),
       );
       return;
@@ -149,25 +151,25 @@ class _HomePageState extends ConsumerState<HomePage>
 
       await ref.read(cartNotifierProvider.notifier).addToCart(cartItem);
 
-      if(context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${product.title} added to cart!'),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 1),
-          ),
-        );
-      }
+      if(!mounted) return;
+
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('${product.title} added to cart!'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+
 
     } catch (e) {
-      if(context.mounted){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add item: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('Failed to add item: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
