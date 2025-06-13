@@ -1,7 +1,7 @@
 // import 'package:firebase_admin/app/config/widgets/loading_screen.dart';
 // import 'package:firebase_admin/app/features/customer/presentation/customers_page.dart';
 // import 'package:firebase_admin/app/features/notifications/presentation/notifications_page.dart';
-// import 'package:firebase_admin/app/features/order/presentation/order.dart';
+// import 'package:firebase_admin/app/features/order/presentation/orders_page.dart';
 // import 'package:firebase_admin/app/features/products/presentation/pages/add_product_page.dart';
 // import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
 // import 'package:firebase_admin/app/features/user_profile/presentation/pages/edit_profile_page.dart';
@@ -314,7 +314,7 @@
 import 'package:firebase_admin/app/config/widgets/loading_screen.dart';
 import 'package:firebase_admin/app/features/customer/presentation/customers_page.dart';
 import 'package:firebase_admin/app/features/notifications/presentation/notifications_page.dart';
-import 'package:firebase_admin/app/features/order/presentation/order.dart';
+import 'package:firebase_admin/app/features/order/presentation/pages/orders_page.dart';
 import 'package:firebase_admin/app/features/products/presentation/pages/add_product_page.dart';
 import 'package:firebase_admin/app/features/settings/presentation/pages/settings_page.dart';
 import 'package:firebase_admin/app/features/user_profile/presentation/pages/edit_profile_page.dart';

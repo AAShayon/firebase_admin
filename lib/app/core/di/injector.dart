@@ -21,6 +21,13 @@ import '../../features/cart/domain/usecases/clear_cart_use_case.dart';
 import '../../features/cart/domain/usecases/get_cart_items_use_case.dart';
 import '../../features/cart/domain/usecases/remove_from_cart_use_cse.dart';
 import '../../features/cart/domain/usecases/update_cart_item_use_case.dart';
+import '../../features/order/data/datasources/order_remote_data_source.dart';
+import '../../features/order/data/repositories/order_repository_impl.dart';
+import '../../features/order/domain/repositories/order_repository.dart';
+import '../../features/order/domain/usecases/create_order_use_case.dart';
+import '../../features/order/domain/usecases/get_all_orders_use_case.dart';
+import '../../features/order/domain/usecases/get_user_orders_use_case.dart';
+import '../../features/order/domain/usecases/update_order_status_use_case.dart';
 import '../../features/settings/data/datasources/settings_local_data_source.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/settings_repository.dart';
@@ -104,4 +111,13 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdateCartItemQuantityUseCase>(()=>UpdateCartItemQuantityUseCase(locator<CartRepository>()));
   locator.registerLazySingleton<RemoveFromCartUseCase>(()=>RemoveFromCartUseCase(locator<CartRepository>()));
   locator.registerLazySingleton<ClearCartUseCase>(()=>ClearCartUseCase(locator<CartRepository>()));
+
+  //orders
+  locator.registerLazySingleton<OrderRemoteDataSource>(()=>OrderRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<OrderRepository>(()=>OrderRepositoryImpl(remoteDataSource: locator<OrderRemoteDataSource>()));
+  locator.registerLazySingleton<CreateOrderUseCase>(()=>CreateOrderUseCase(locator<OrderRepository>()));
+  locator.registerLazySingleton<GetUserOrdersUseCase>(()=>GetUserOrdersUseCase(locator<OrderRepository>()));
+  locator.registerLazySingleton<GetAllOrdersUseCase>(()=>GetAllOrdersUseCase(locator<OrderRepository>()));
+  locator.registerLazySingleton<UpdateOrderStatusUseCase>(()=>UpdateOrderStatusUseCase(locator<OrderRepository>()));
+
 }

@@ -8,7 +8,7 @@ import '../../auth/presentation/providers/auth_notifier_provider.dart';
 import '../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../home_page/presentation/pages/home_page.dart';
 import '../../notifications/presentation/notifications_page.dart';
-import '../../order/presentation/order.dart';
+import '../../order/presentation/pages/orders_page.dart';
 import '../../products/presentation/widgets/products_table.dart';
 import '../../settings/presentation/pages/settings_page.dart';
 import '../../customer/presentation/customers_page.dart';

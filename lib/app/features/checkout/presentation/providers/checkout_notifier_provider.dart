@@ -4,5 +4,5 @@ import 'checkout_notifier.dart';
 import 'checkout_state.dart';
 
 final checkoutNotifierProvider = StateNotifierProvider<CheckoutNotifier, CheckoutState>((ref) {
-  return CheckoutNotifier();
+  return CheckoutNotifier(ref);
 });

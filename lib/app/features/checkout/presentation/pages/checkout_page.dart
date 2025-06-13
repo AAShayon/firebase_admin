@@ -1,13 +1,16 @@
+import 'package:firebase_admin/app/features/order/presentation/pages/order_success_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_admin/app/features/cart/presentation/providers/cart_providers.dart';
-// 1. ADD THIS MISSING IMPORT
-import 'package:firebase_admin/app/features/user_profile/presentation/providers/user_profile_providers.dart';
+
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../auth/presentation/providers/auth_state.dart';
+import '../../../cart/presentation/providers/cart_providers.dart';
+import '../../../order/presentation/providers/order_notifier_provider.dart';
+import '../../../order/presentation/providers/order_state.dart';
+import '../../../user_profile/presentation/providers/user_profile_providers.dart';
 import '../providers/checkout_notifier_provider.dart';
 import '../widgets/address_selection_section.dart';
 import '../widgets/checkout_summary_card.dart';
-
 
 class CheckoutPage extends ConsumerWidget {
   const CheckoutPage({super.key});
@@ -15,6 +18,33 @@ class CheckoutPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(currentUserProvider);
+
+    // Add listener to handle order creation result
+    ref.listen<OrderState>(orderNotifierProvider, (previous, next) {
+      next.whenOrNull(
+        success: (orderId) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Order placed successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => OrderSuccessPage(orderId: orderId)),
+          );
+
+        },
+        error: (message) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $message'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        },
+      );
+    });
 
     if (currentUser == null) {
       return Scaffold(
@@ -35,16 +65,36 @@ class CheckoutPage extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Consumer(builder: (context, ref, _) {
           final checkoutState = ref.watch(checkoutNotifierProvider);
+          final orderState = ref.watch(orderNotifierProvider);
+          final bool isLoading = checkoutState.isLoading || orderState is Loading;
+
           return ElevatedButton(
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            onPressed: checkoutState.isLoading || checkoutState.shippingAddress == null
+            onPressed: isLoading ||
+                checkoutState.shippingAddress == null ||
+                (cartItemsAsync.valueOrNull?.isEmpty ?? true)
                 ? null
-                : () => ref.read(checkoutNotifierProvider.notifier).placeOrder(),
-            child: checkoutState.isLoading
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3,))
+                : () {
+              final cartItems = ref.read(cartItemsStreamProvider(userId)).value;
+              if (cartItems != null) {
+                ref.read(checkoutNotifierProvider.notifier).placeOrder(cartItems);
+              }
+            },
+            child: isLoading
+                ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 3,
+              ),
+            )
                 : const Text('Place Order'),
           );
         }),
@@ -56,17 +106,20 @@ class CheckoutPage extends ConsumerWidget {
               final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
               final checkoutState = ref.watch(checkoutNotifierProvider);
 
-              // 2. USE THE NEW 'isInitialized' FLAG
-              if (!checkoutState.isInitialized && cartItems.isNotEmpty && user.addresses.isNotEmpty) {
-                final subtotal = cartItems.fold<double>(0, (sum, item) => sum + (item.variantPrice * item.quantity));
+              if (!checkoutState.isInitialized &&
+                  cartItems.isNotEmpty &&
+                  user.addresses.isNotEmpty) {
+                final subtotal = cartItems.fold<double>(
+                  0,
+                      (sum, item) => sum + (item.variantPrice * item.quantity),
+                );
                 final defaultAddress = user.addresses.firstWhere(
                       (a) => a.isDefault,
                   orElse: () => user.addresses.first,
                 );
 
-                // Use a post-frame callback to safely call the notifier after the build phase.
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) { // Check if the widget is still in the tree
+                  if (context.mounted) {
                     checkoutNotifier.initialize(subtotal, defaultAddress);
                   }
                 });
@@ -77,10 +130,11 @@ class CheckoutPage extends ConsumerWidget {
               }
 
               if (user.addresses.isEmpty) {
-                return const Center(child: Text("Please add a shipping address to your profile first."));
+                return const Center(
+                  child: Text("Please add a shipping address to your profile first."),
+                );
               }
 
-              // The rest of your UI code...
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -90,13 +144,15 @@ class CheckoutPage extends ConsumerWidget {
                       title: 'Shipping Address',
                       addresses: user.addresses,
                       selectedAddress: checkoutState.shippingAddress,
-                      onAddressSelected: (address) => checkoutNotifier.selectShippingAddress(address),
+                      onAddressSelected: (address) =>
+                          checkoutNotifier.selectShippingAddress(address),
                     ),
                     const SizedBox(height: 24),
                     CheckboxListTile(
                       title: const Text("Billing address is same as shipping"),
                       value: checkoutState.isBillingSameAsShipping,
-                      onChanged: (value) => checkoutNotifier.toggleBillingAddress(value ?? false),
+                      onChanged: (value) =>
+                          checkoutNotifier.toggleBillingAddress(value ?? false),
                       controlAffinity: ListTileControlAffinity.leading,
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -106,11 +162,15 @@ class CheckoutPage extends ConsumerWidget {
                         title: 'Billing Address',
                         addresses: user.addresses,
                         selectedAddress: checkoutState.billingAddress,
-                        onAddressSelected: (address) => checkoutNotifier.selectBillingAddress(address),
+                        onAddressSelected: (address) =>
+                            checkoutNotifier.selectBillingAddress(address),
                       ),
                     ],
                     const SizedBox(height: 24),
-                    Text('Payment Method', style: Theme.of(context).textTheme.titleLarge),
+                    Text(
+                      'Payment Method',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                     RadioListTile<String>(
                       title: const Text('Cash on Delivery'),
                       value: 'cod',
@@ -139,7 +199,10 @@ class CheckoutPage extends ConsumerWidget {
                         padding: EdgeInsets.only(top: 8.0),
                         child: Text(
                           '+ Additional shipping charges may apply for international orders.',
-                          style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ),
                     const SizedBox(height: 20),
