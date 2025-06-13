@@ -1,4 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/routes/app_router.dart';
 
 class EmptyCartView extends StatelessWidget {
   const EmptyCartView({super.key});
@@ -33,9 +38,12 @@ class EmptyCartView extends StatelessWidget {
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
-                // Navigate to your home/products screen
-                // Example: Navigator.of(context).pop(); or use your router
-              },
+                try {
+                  context.pushNamed(AppRoutes.landing, extra: {'index': 0});
+                } on Exception catch (e) {
+                  log("$e");
+                }
+                },
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.primary,
                 foregroundColor: colorScheme.onPrimary,

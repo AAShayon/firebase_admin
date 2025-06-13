@@ -15,20 +15,23 @@ import '../../customer/presentation/customers_page.dart';
 import '../../user_profile/presentation/providers/user_profile_notifier_provider.dart';
 
 class LandingPage extends ConsumerStatefulWidget {
-  const LandingPage({super.key});
+  final int initialIndex;
 
+  // UPDATE the constructor to accept the index, with a default value of 0
+  const LandingPage({super.key, this.initialIndex = 0});
   @override
   ConsumerState<LandingPage> createState() => _LandingPageState();
 }
 
 class _LandingPageState extends ConsumerState<LandingPage> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   bool _isAdmin = false;
   late String userID;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _checkAdminStatus();
     WidgetsBinding.instance.addPostFrameCallback((_){
     _loadProfile();

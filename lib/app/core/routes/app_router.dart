@@ -332,6 +332,7 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/home_page/presentation/pages/home_page.dart';
 import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/landing/presentation/landing.dart';
+import '../../features/order/presentation/pages/order_success_page.dart';
 import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/products/presentation/widgets/products_table.dart';
 import '../../features/shared/domain/entities/product_entity.dart';
@@ -352,6 +353,7 @@ class AppRoutes {
   static const product = 'product';
   static const addProduct = 'addProduct';
   static const order = 'order';
+  static const orderSuccess = 'orderSuccess';
   static const customer = 'customer';
   static const notifications = 'notifications';
   static const settings = 'settings';
@@ -383,6 +385,7 @@ class AppRoutes {
   static const productDetailPath = '/product-detail';
   static const cartPath = '/cart';
   static const checkoutPath = '/checkoutPath';
+  static const orderSuccessPath = '/order-success/:orderId';
 
   // CORRECTED: Define nested paths clearly and uniquely to avoid conflicts.
   // These are relative paths used within a GoRoute's `routes` list.
@@ -430,13 +433,23 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       name: AppRoutes.landing,
       path: AppRoutes.landingPath,
-      pageBuilder: (context, state) => buildPageRoute(
-        context: context,
-        state: state,
-        child: const LandingPage(),
-        transitionType: AppRouteTransitionType.fade,
-      ),
+      pageBuilder: (context, state) {
+        // 1. Safely access the extra data
+        final extra = state.extra as Map<String, dynamic>?;
+
+        // 2. Extract the index, defaulting to 0 if it's not present
+        final index = extra?['index'] as int? ?? 0;
+
+        return buildPageRoute(
+          context: context,
+          state: state,
+          // 3. Pass the extracted index to the LandingPage constructor
+          child: LandingPage(initialIndex: index),
+          transitionType: AppRouteTransitionType.fade,
+        );
+      },
     ),
+
     GoRoute(
       name: AppRoutes.login,
       path: AppRoutes.loginPath,
@@ -616,6 +629,21 @@ final GoRouter appRouter = GoRouter(
         transitionType: AppRouteTransitionType.scale,
       ),
     ),
+    GoRoute(
+      name: AppRoutes.orderSuccess,
+      path: AppRoutes.orderSuccessPath,
+      pageBuilder: (context, state) {
+        // Safely extract the orderId from the path parameters
+        final orderId = state.pathParameters['orderId'] ?? 'unknown_order';
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: OrderSuccessPage(orderId: orderId),
+          transitionType: AppRouteTransitionType.fade,
+        );
+      },
+    ),
+
     GoRoute(
       name: AppRoutes.customer,
       path: AppRoutes.customerPath,
