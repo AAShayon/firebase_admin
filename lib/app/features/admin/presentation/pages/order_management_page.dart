@@ -70,7 +70,6 @@ class OrderManagementPage extends ConsumerWidget {
         ref.read(orderNotifierProvider.notifier).updateOrderStatus(
           orderId: order.id,
           newStatus: nextStatus,
-          userId: order.userId,
         );
       },
       child: Text('Mark as ${nextStatus.toString().split('.').last}'),
@@ -92,6 +91,9 @@ class OrderManagementPage extends ConsumerWidget {
       case OrderStatus.completed:
       case OrderStatus.cancelled:
         return currentStatus;
+      case OrderStatus.unknown:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 }

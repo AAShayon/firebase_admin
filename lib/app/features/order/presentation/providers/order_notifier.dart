@@ -32,7 +32,6 @@ class OrderNotifier extends StateNotifier<OrderState> {
   Future<void> updateOrderStatus({
     required String orderId,
     required OrderStatus newStatus,
-    required String userId,
   }) async {
     state = const OrderState.loading();
     try {
@@ -47,22 +46,4 @@ class OrderNotifier extends StateNotifier<OrderState> {
     }
   }
 
-  String _getStatusMessage(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.pending:
-        return 'pending';
-      case OrderStatus.accepted:
-        return 'accepted';
-      case OrderStatus.packaging:
-        return 'being packaged';
-      case OrderStatus.readyForDelivery:
-        return 'ready for delivery';
-      case OrderStatus.shipping:
-        return 'out for delivery';
-      case OrderStatus.completed:
-        return 'completed';
-      case OrderStatus.cancelled:
-        return 'cancelled';
-    }
-  }
 }

@@ -5,6 +5,6 @@ enum OrderStatus {
   readyForDelivery,
   shipping,
   completed,
-  cancelled,
+  cancelled, unknown,
 
 }

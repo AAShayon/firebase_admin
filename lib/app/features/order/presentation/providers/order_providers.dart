@@ -5,9 +5,11 @@ import '../../../../core/di/injector.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/usecases/create_order_use_case.dart';
 import '../../domain/usecases/get_all_orders_use_case.dart';
+import '../../domain/usecases/get_last_order_id_use_case.dart';
 import '../../domain/usecases/get_order_by_id_use_case.dart';
 import '../../domain/usecases/get_user_orders_use_case.dart';
 import '../../domain/usecases/update_order_status_use_case.dart';
+import '../../domain/usecases/watch_order_by_id_use_case.dart';
 
 // Use Case Providers
 final createOrderUseCaseProvider = Provider<CreateOrderUseCase>((ref) {
@@ -28,6 +30,12 @@ final updateOrderStatusUseCaseProvider = Provider<UpdateOrderStatusUseCase>((ref
 final getOrderByIdUseCaseProvider = Provider<GetOrderByIdUseCase>((ref) {
   return locator<GetOrderByIdUseCase>();
 });
+final getLastOrderIdUseCaseProvider = Provider<GetLastOrderIdUseCase>((ref) {
+  return locator<GetLastOrderIdUseCase>();
+});
+final watchOrderByIdUseCaseProvider = Provider<WatchOrderByIdUseCase>((ref) {
+  return locator<WatchOrderByIdUseCase>();
+});
 
 final userOrdersStreamProvider = StreamProvider.family<List<OrderEntity>, String>((ref, userId) {
   final useCase = ref.watch(getUserOrdersUseCaseProvider);
@@ -36,7 +44,7 @@ final userOrdersStreamProvider = StreamProvider.family<List<OrderEntity>, String
     if (kDebugMode) {
       print('--- DEBUG: User Orders Updated ---');
       print('User ID: $userId');
-      print('Number of orders: ${orders..length}');
+      print('Number of orders: ${orders.length}');
       // You can even print the details of each order
       // for (var order in orders) {
       //   print('Order ID: ${order.id}, Status: ${order.status}');
@@ -57,9 +65,8 @@ final allOrdersStreamProvider = StreamProvider<List<OrderEntity>>((ref) {
     return orders;
   });
 });
-final orderDetailsProvider = FutureProvider.autoDispose.family<OrderEntity, String>((ref, orderId) {
-  // Get the specific use case
-  final getOrderById = ref.watch(getOrderByIdUseCaseProvider);
-  // Call it with the orderId to fetch the single document directly.
-  return getOrderById(orderId);
+final orderDetailsProvider =
+StreamProvider.autoDispose.family<OrderEntity, String>((ref, orderId) {
+  final watchOrderById = ref.watch(watchOrderByIdUseCaseProvider);
+  return watchOrderById(orderId);
 });

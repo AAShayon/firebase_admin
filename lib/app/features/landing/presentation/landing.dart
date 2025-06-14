@@ -355,6 +355,8 @@ import '../../../core/routes/app_router.dart';
 import '../../../core/network/service/local_notification_service.dart';
 
 import '../../auth/presentation/providers/auth_notifier_provider.dart';
+import '../../order/domain/entities/order_entity.dart';
+import '../../order/presentation/providers/order_providers.dart';
 import '../../user_profile/presentation/providers/user_profile_notifier_provider.dart';
 
 import '../../notifications/domain/entities/notification_entity.dart';
@@ -426,6 +428,42 @@ class _LandingPageState extends ConsumerState<LandingPage> {
     // 2. LISTEN to providers to perform actions (like showing a notification)
     //    without causing a rebuild. This is the correct place for your listener logic.
     // --- The best listener logic for LandingPage build method ---
+    // Inside your LandingPage build method
+
+// --- SETUP THE USER'S ORDER STATUS LISTENER (THE CORRECTED VERSION) ---
+    // ... inside the _LandingPageState build method ...
+
+// --- FINAL AND ROBUST USER ORDER STATUS LISTENER ---
+    if (user != null && !isAdmin) { // Only run for regular users
+      ref.listen<AsyncValue<List<OrderEntity>>>(userOrdersStreamProvider(user.id), (previous, next) {
+        // We must have a previous state with data to compare against. This skips the initial load.
+        if (next is! AsyncData || previous == null || previous.valueOrNull == null) return;
+
+        final prevOrders = previous.value!;
+        final nextOrders = next.value!;
+
+        // If the lists are different lengths, something changed, but we only care about updates here.
+        if (prevOrders.length != nextOrders.length) return;
+
+        // Use a Map for efficient lookups.
+        final prevOrdersMap = {for (var order in prevOrders) order.id: order.status};
+
+        // Check each new order against its old status
+        for (final nextOrder in nextOrders) {
+          final oldStatus = prevOrdersMap[nextOrder.id];
+          // If the old status exists and is different from the new status, we found an update!
+          if (oldStatus != null && oldStatus != nextOrder.status) {
+            print("STATUS CHANGE DETECTED for order ${nextOrder.id}: $oldStatus -> ${nextOrder.status}");
+            LocalNotificationService.showNotification(
+              title: 'Order Status Updated',
+              body: 'Your order #${nextOrder.id.substring(0, 8)}... is now ${nextOrder.status.toString().split('.').last}.',
+              payload: nextOrder.id,
+            );
+          }
+        }
+      });
+    }
+
 
     if (isAdmin) {
       ref.listen<AsyncValue<List<NotificationEntity>>>(notificationsStreamProvider, (previous, next) {

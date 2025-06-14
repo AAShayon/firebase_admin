@@ -62,4 +62,26 @@ class OrderRepositoryImpl implements OrderRepository {
     // No extra conversion is needed.
     return OrderModel.fromSnapshot(doc);
   }
+  @override
+  Stream<OrderEntity> watchOrderById(String orderId) {
+    return remoteDataSource.watchOrderById(orderId).map((doc) {
+      if (!doc.exists) {
+        throw Exception('Order with ID $orderId not found.');
+      }
+      return OrderModel.fromSnapshot(doc);
+    });
+  }
+  @override
+  Future<String?> getLastOrderId() async {
+    try {
+      // We take the stream of all orders, but only need the first emission (the current list).
+      // Then we take the first order from that list (since it's sorted by date).
+      final lastOrder = await remoteDataSource.getAllOrders().first.then((orders) => orders.isNotEmpty ? orders.first : null);
+      return lastOrder?.id;
+    } catch (e) {
+      // If there are no orders or an error occurs, return null.
+      print('Could not fetch last order ID: $e');
+      return null;
+    }
+  }
 }

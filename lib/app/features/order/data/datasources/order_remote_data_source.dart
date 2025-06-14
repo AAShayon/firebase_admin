@@ -9,6 +9,7 @@ abstract class OrderRemoteDataSource {
   Stream<List<OrderModel>> getAllOrders();
   Future<void> updateOrderStatus(String orderId, OrderStatus newStatus);
   Future<DocumentSnapshot> getOrderById(String orderId);
+  Stream<DocumentSnapshot> watchOrderById(String orderId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -25,16 +26,16 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     final orderRef = _firestore.collection('orders').doc(order.id);
     batch.set(orderRef, order.toJson());
 
-    // 2. Clear cart items
-    final cartItemsRef = _firestore
-        .collection('carts')
-        .doc(order.userId)
-        .collection('items');
-
-    final cartSnapshot = await cartItemsRef.get();
-    for (final doc in cartSnapshot.docs) {
-      batch.delete(doc.reference);
-    }
+    // // 2. Clear cart items
+    // final cartItemsRef = _firestore
+    //     .collection('carts')
+    //     .doc(order.userId)
+    //     .collection('items');
+    //
+    // final cartSnapshot = await cartItemsRef.get();
+    // for (final doc in cartSnapshot.docs) {
+    //   batch.delete(doc.reference);
+    // }
 
     await batch.commit();
     return orderRef.id;
@@ -75,5 +76,9 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   @override
   Future<DocumentSnapshot> getOrderById(String orderId) {
     return _firestore.collection('orders').doc(orderId).get();
+  }
+  @override
+  Stream<DocumentSnapshot> watchOrderById(String orderId) {
+    return _firestore.collection('orders').doc(orderId).snapshots();
   }
 }

@@ -8,6 +8,7 @@ import '../../../notifications/domain/entities/notification_entity.dart';
 import '../../../notifications/presentation/providers/notification_providers.dart';
 import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/providers/order_notifier_provider.dart';
+import '../../../order/presentation/providers/order_providers.dart';
 import '../../../user_profile/domain/entities/user_profile_entity.dart';
 import '../../../../core/helpers/enums.dart'; // Ensure you have this enum file
 import 'checkout_state.dart';
@@ -20,6 +21,43 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
     // Initialize with a coupon controller.
       CheckoutState(couponController: TextEditingController())
   );
+
+  Future<String> _generateNextOrderId(String namePrefix) async {
+    try {
+      // --- ATTEMPT 1: The preferred Firestore method ---
+      final getLastOrderId = ref.read(getLastOrderIdUseCaseProvider);
+      final lastOrderId = await getLastOrderId();
+
+      if (lastOrderId != null) {
+        // Successfully found a previous order, so we can calculate the next number.
+        final RegExp numRegExp = RegExp(r'(\d+)$');
+        final match = numRegExp.firstMatch(lastOrderId);
+        if (match != null) {
+          final lastNumberStr = match.group(0);
+          if (lastNumberStr != null) {
+            final lastNumber = int.tryParse(lastNumberStr) ?? 0;
+            final nextNumber = lastNumber + 1;
+            return '${namePrefix}Order${nextNumber.toString().padLeft(7, '0')}';
+          }
+        }
+      }
+
+      // If we reach here, it means lastOrderId was null (the database is empty).
+      // We will fall through to the fallback method.
+      print("No previous orders found in Firestore. Defaulting to first order number.");
+      return '${namePrefix}Order${'1'.padLeft(7, '0')}';
+
+    } catch (e) {
+      // --- ATTEMPT 2: The fallback in-memory method ---
+      // An error occurred trying to fetch from Firestore (e.g., offline, permissions).
+      // We fall back to the simple, non-persistent generator.
+      print("Error fetching last order ID, using in-memory fallback: $e");
+      final sequentialNumber = SequentialIdGenerator.generate();
+      return '${namePrefix}Order$sequentialNumber';
+    }
+  }
+
+
 
   // Method to initialize the checkout state with data from the cart.
   void initialize(double subtotal, UserAddress defaultAddress) {
@@ -110,8 +148,8 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
         namePrefix = 'GuestUser';
       }
 
-      final sequentialNumber = SequentialIdGenerator.generate();
-      final newOrderId = '${namePrefix}Order$sequentialNumber';
+
+      final newOrderId = await _generateNextOrderId(namePrefix);
       final newOrder = OrderEntity(
         id:  newOrderId,
         userId: currentUser.id,

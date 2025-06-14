@@ -175,6 +175,8 @@ class _OrderListItem extends StatelessWidget {
         return Colors.green;
       case OrderStatus.cancelled:
         return Colors.red;
+      case OrderStatus.unknown:
+        throw UnimplementedError();
       }
   }
 }
