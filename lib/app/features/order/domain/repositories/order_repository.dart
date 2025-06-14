@@ -8,4 +8,5 @@ abstract class OrderRepository {
   Stream<List<OrderEntity>> getUserOrders(String userId);
   Stream<List<OrderEntity>> getAllOrders();
   Future<void> updateOrderStatus(String orderId, OrderStatus newStatus);
+  Future<OrderEntity> getOrderById(String orderId);
 }

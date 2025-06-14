@@ -8,6 +8,7 @@ abstract class OrderRemoteDataSource {
   Stream<List<OrderModel>> getUserOrders(String userId);
   Stream<List<OrderModel>> getAllOrders();
   Future<void> updateOrderStatus(String orderId, OrderStatus newStatus);
+  Future<DocumentSnapshot> getOrderById(String orderId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -21,7 +22,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     final batch = _firestore.batch();
 
     // 1. Create order document
-    final orderRef = _firestore.collection('orders').doc();
+    final orderRef = _firestore.collection('orders').doc(order.id);
     batch.set(orderRef, order.toJson());
 
     // 2. Clear cart items
@@ -47,11 +48,11 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         .orderBy('orderDate', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return OrderModel.fromJson(doc.id, doc.data() as Map<String, dynamic>);
-      }).toList();
+      // Use the new, correct fromSnapshot factory
+      return snapshot.docs.map((doc) => OrderModel.fromSnapshot(doc)).toList();
     });
   }
+
 
   @override
   Stream<List<OrderModel>> getAllOrders() {
@@ -60,9 +61,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         .orderBy('orderDate', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return OrderModel.fromJson(doc.id, doc.data() as Map<String, dynamic>);
-      }).toList();
+      // Use the new, correct fromSnapshot factory
+      return snapshot.docs.map((doc) => OrderModel.fromSnapshot(doc)).toList();
     });
   }
 
@@ -71,5 +71,9 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     await _firestore.collection('orders').doc(orderId).update({
       'status': newStatus.toString().split('.').last,
     });
+  }
+  @override
+  Future<DocumentSnapshot> getOrderById(String orderId) {
+    return _firestore.collection('orders').doc(orderId).get();
   }
 }

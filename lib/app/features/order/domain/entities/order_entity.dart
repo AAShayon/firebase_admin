@@ -27,6 +27,8 @@ class OrderEntity {
   });
 }
 
+// ... inside your order_entity.dart file, update the OrderItemEntity class
+
 class OrderItemEntity {
   final String productId;
   final String productTitle;
@@ -45,4 +47,31 @@ class OrderItemEntity {
     required this.quantity,
     this.imageUrl,
   });
+
+  /// --- ADD THIS FACTORY CONSTRUCTOR ---
+  /// Creates an OrderItemEntity from a JSON map (from Firestore).
+  factory OrderItemEntity.fromJson(Map<String, dynamic> json) {
+    return OrderItemEntity(
+      productId: json['productId'] ?? '',
+      productTitle: json['productTitle'] ?? 'Unknown Product',
+      variantSize: json['variantSize'] ?? 'N/A',
+      variantColorName: json['variantColorName'] ?? 'N/A',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      quantity: json['quantity'] ?? 0,
+      imageUrl: json['imageUrl'],
+    );
+  }
+
+  // Also add a toJson method, which is needed when you create an order
+  Map<String, dynamic> toJson() {
+    return {
+      'productId': productId,
+      'productTitle': productTitle,
+      'variantSize': variantSize,
+      'variantColorName': variantColorName,
+      'price': price,
+      'quantity': quantity,
+      'imageUrl': imageUrl,
+    };
+  }
 }

@@ -5,6 +5,7 @@ import '../../../../core/di/injector.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/usecases/create_order_use_case.dart';
 import '../../domain/usecases/get_all_orders_use_case.dart';
+import '../../domain/usecases/get_order_by_id_use_case.dart';
 import '../../domain/usecases/get_user_orders_use_case.dart';
 import '../../domain/usecases/update_order_status_use_case.dart';
 
@@ -24,7 +25,9 @@ final getAllOrdersUseCaseProvider = Provider<GetAllOrdersUseCase>((ref) {
 final updateOrderStatusUseCaseProvider = Provider<UpdateOrderStatusUseCase>((ref) {
   return locator<UpdateOrderStatusUseCase>();
 });
-
+final getOrderByIdUseCaseProvider = Provider<GetOrderByIdUseCase>((ref) {
+  return locator<GetOrderByIdUseCase>();
+});
 
 final userOrdersStreamProvider = StreamProvider.family<List<OrderEntity>, String>((ref, userId) {
   final useCase = ref.watch(getUserOrdersUseCaseProvider);
@@ -54,8 +57,9 @@ final allOrdersStreamProvider = StreamProvider<List<OrderEntity>>((ref) {
     return orders;
   });
 });
-final orderDetailsProvider = FutureProvider.family<OrderEntity, String>((ref, orderId) async {
-  final orders = await ref.watch(allOrdersStreamProvider.future);
-  return orders.firstWhere((order) => order.id == orderId);
+final orderDetailsProvider = FutureProvider.autoDispose.family<OrderEntity, String>((ref, orderId) {
+  // Get the specific use case
+  final getOrderById = ref.watch(getOrderByIdUseCaseProvider);
+  // Call it with the orderId to fetch the single document directly.
+  return getOrderById(orderId);
 });
-// Notification Use Case Providers

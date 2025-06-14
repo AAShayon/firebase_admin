@@ -33,6 +33,7 @@ import '../../features/order/data/repositories/order_repository_impl.dart';
 import '../../features/order/domain/repositories/order_repository.dart';
 import '../../features/order/domain/usecases/create_order_use_case.dart';
 import '../../features/order/domain/usecases/get_all_orders_use_case.dart';
+import '../../features/order/domain/usecases/get_order_by_id_use_case.dart';
 import '../../features/order/domain/usecases/get_user_orders_use_case.dart';
 import '../../features/order/domain/usecases/update_order_status_use_case.dart';
 import '../../features/settings/data/datasources/settings_local_data_source.dart';
@@ -129,6 +130,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<GetUserOrdersUseCase>(()=>GetUserOrdersUseCase(locator<OrderRepository>()));
   locator.registerLazySingleton<GetAllOrdersUseCase>(()=>GetAllOrdersUseCase(locator<OrderRepository>()));
   locator.registerLazySingleton<UpdateOrderStatusUseCase>(()=>UpdateOrderStatusUseCase(locator<OrderRepository>()));
+  locator.registerLazySingleton<GetOrderByIdUseCase>(()=>GetOrderByIdUseCase(locator<OrderRepository>()));
 
   // Notifications
   locator.registerLazySingleton<NotificationRemoteDataSource>(() => NotificationRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));

@@ -425,25 +425,30 @@ class _LandingPageState extends ConsumerState<LandingPage> {
 
     // 2. LISTEN to providers to perform actions (like showing a notification)
     //    without causing a rebuild. This is the correct place for your listener logic.
+    // --- The best listener logic for LandingPage build method ---
+
     if (isAdmin) {
       ref.listen<AsyncValue<List<NotificationEntity>>>(notificationsStreamProvider, (previous, next) {
         // We only care about successful data events.
-        if (next is AsyncData) {
-          final previousData = previous?.valueOrNull ?? [];
-          final nextData = next.valueOrNull ?? [];
+        // AND we must have a non-null 'previous' value to compare against.
+        // This elegantly skips the very first data load.
+        if (next is! AsyncData || previous == null || previous is! AsyncData) return;
 
-          // This logic finds notifications that are in the new list but weren't in the old one.
-          // This prevents showing a notification for old data when the listener first starts.
-          final newNotifications = nextData.where((n) => !previousData.any((p) => p.id == n.id)).toList();
+        final previousNotifications = previous.valueOrNull ?? [];
+        final newNotifications = next.valueOrNull ?? [];
 
-          for (final notification in newNotifications) {
-            // Show a local notification on the admin's device for each new item.
-            LocalNotificationService.showNotification(
-              title: notification.title,
-              body: notification.body,
-              payload: notification.data['orderId'] as String? ?? '',
-            );
-          }
+        // Find items that are in the new list but were NOT in the previous list.
+        final genuinelyNewItems = newNotifications
+            .where((newItem) => !previousNotifications.any((prevItem) => prevItem.id == newItem.id))
+            .toList();
+
+        // If there are any truly new items, show a notification for each one.
+        for (final notification in genuinelyNewItems) {
+          LocalNotificationService.showNotification(
+            title: notification.title,
+            body: notification.body,
+            payload: notification.data['orderId'] as String? ?? '',
+          );
         }
       });
     }

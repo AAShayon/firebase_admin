@@ -1,4 +1,3 @@
-// lib/app/features/order/data/repositories/order_repository_impl.dart
 import '../../../../core/helpers/enums.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/repositories/order_repository.dart';
@@ -10,74 +9,57 @@ class OrderRepositoryImpl implements OrderRepository {
 
   OrderRepositoryImpl({required this.remoteDataSource});
 
-  OrderModel _toModel(OrderEntity entity) {
-    return OrderModel(
-      id: entity.id,
-      userId: entity.userId,
-      items: entity.items.map((item) => OrderItem(
-        productId: item.productId,
-        productTitle: item.productTitle,
-        variantSize: item.variantSize,
-        variantColorName: item.variantColorName,
-        price: item.price,
-        quantity: item.quantity,
-        imageUrl: item.imageUrl,
-      )).toList(),
-      totalAmount: entity.totalAmount,
-      orderDate: entity.orderDate,
-      status: entity.status,
-      shippingAddress: entity.shippingAddress,
-      billingAddress: entity.billingAddress,
-      paymentMethod: entity.paymentMethod,
-      transactionId: entity.transactionId,
-    );
-  }
-
-  OrderEntity _toEntity(OrderModel model) {
-    return OrderEntity(
-      id: model.id,
-      userId: model.userId,
-      items: model.items.map((item) => OrderItemEntity(
-        productId: item.productId,
-        productTitle: item.productTitle,
-        variantSize: item.variantSize,
-        variantColorName: item.variantColorName,
-        price: item.price,
-        quantity: item.quantity,
-        imageUrl: item.imageUrl,
-      )).toList(),
-      totalAmount: model.totalAmount,
-      orderDate: model.orderDate,
-      status: model.status,
-      shippingAddress: model.shippingAddress,
-      billingAddress: model.billingAddress,
-      paymentMethod: model.paymentMethod,
-      transactionId: model.transactionId,
-    );
-  }
+  // The _toModel and _toEntity helpers are no longer needed
+  // because OrderModel is a direct subclass of OrderEntity.
 
   @override
   Future<String> createOrder(OrderEntity order) async {
-    final model = _toModel(order);
-    return await remoteDataSource.createOrder(model);
+    // We can cast the OrderEntity to an OrderModel because we know
+    // that the object coming from the Notifier was created as an OrderEntity,
+    // which our model can represent. A more robust way is to create a new model.
+    final orderModel = OrderModel(
+      id: order.id,
+      userId: order.userId,
+      items: order.items,
+      totalAmount: order.totalAmount,
+      orderDate: order.orderDate,
+      status: order.status,
+      shippingAddress: order.shippingAddress,
+      billingAddress: order.billingAddress,
+      paymentMethod: order.paymentMethod,
+      transactionId: order.transactionId,
+    );
+    return await remoteDataSource.createOrder(orderModel);
   }
 
   @override
   Stream<List<OrderEntity>> getUserOrders(String userId) {
-    return remoteDataSource.getUserOrders(userId).map((orders) {
-      return orders.map((order) => _toEntity(order)).toList();
-    });
+    // The remote data source now returns a Stream<List<OrderModel>>.
+    // Since OrderModel extends OrderEntity, the list is already compatible.
+    // No mapping is needed.
+    return remoteDataSource.getUserOrders(userId);
   }
 
   @override
   Stream<List<OrderEntity>> getAllOrders() {
-    return remoteDataSource.getAllOrders().map((orders) {
-      return orders.map((order) => _toEntity(order)).toList();
-    });
+    // Same as above, the list is already compatible.
+    return remoteDataSource.getAllOrders();
   }
 
   @override
   Future<void> updateOrderStatus(String orderId, OrderStatus newStatus) async {
+    // This method doesn't deal with models, so it's already correct.
     await remoteDataSource.updateOrderStatus(orderId, newStatus);
+  }
+
+  @override
+  Future<OrderEntity> getOrderById(String orderId) async {
+    final doc = await remoteDataSource.getOrderById(orderId);
+    if (!doc.exists) {
+      throw Exception('Order with ID $orderId not found.');
+    }
+    // The fromSnapshot factory returns an OrderModel, which is a valid OrderEntity.
+    // No extra conversion is needed.
+    return OrderModel.fromSnapshot(doc);
   }
 }
