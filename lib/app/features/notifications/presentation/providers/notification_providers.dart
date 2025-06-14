@@ -3,6 +3,7 @@ import '../../../../core/di/injector.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../../domain/usecases/create_notification_use_case.dart'; // <-- Add this
 import '../../domain/usecases/get_notifications_use_case.dart';
+import '../../domain/usecases/get_public_notifications_use_case.dart';
 import '../../domain/usecases/mark_as_read_use_case.dart';
 
 // Export the notifier provider for easy access
@@ -26,6 +27,14 @@ final createNotificationUseCaseProvider = Provider<CreateNotificationUseCase>((r
 final notificationsStreamProvider = StreamProvider.autoDispose<List<NotificationEntity>>((ref) {
   final getNotifications = ref.watch(getNotificationsUseCaseProvider);
   return getNotifications();
+});
+final getPublicNotificationsUseCaseProvider = Provider<GetPublicNotificationsUseCase>((ref) {
+  return locator<GetPublicNotificationsUseCase>();
+});
+
+final publicNotificationsStreamProvider = StreamProvider.autoDispose<List<NotificationEntity>>((ref) {
+  final getPublicNotifications = ref.watch(getPublicNotificationsUseCaseProvider);
+  return getPublicNotifications();
 });
 
 // Derived state for the number of unread notifications (for badges)

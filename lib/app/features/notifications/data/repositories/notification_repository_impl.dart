@@ -33,4 +33,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
     };
     await remoteDataSource.createNotification(data);
   }
+  @override
+  Stream<List<NotificationEntity>> getPublicNotifications() {
+    return remoteDataSource.getPublicNotifications().map((snapshots) {
+      return snapshots.map((doc) => NotificationModel.fromSnapshot(doc)).toList();
+    });
+  }
 }

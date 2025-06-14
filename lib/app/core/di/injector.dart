@@ -6,6 +6,7 @@ import 'package:firebase_admin/app/features/auth/domain/usecases/sign_in_with_em
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_out.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/update_password_use_case.dart';
+import 'package:firebase_admin/app/features/dashboard/domain/usecases/create_public_notification_use_case.dart';
 import 'package:firebase_admin/app/features/user_profile/domain/usecases/watch_user_profile_use_case.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
@@ -22,11 +23,16 @@ import '../../features/cart/domain/usecases/clear_cart_use_case.dart';
 import '../../features/cart/domain/usecases/get_cart_items_use_case.dart';
 import '../../features/cart/domain/usecases/remove_from_cart_use_cse.dart';
 import '../../features/cart/domain/usecases/update_cart_item_use_case.dart';
+import '../../features/dashboard/data/datasources/dashboard_remote_data_source.dart';
+import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
+import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
+import '../../features/dashboard/domain/usecases/get_dashboard_stats_use_case.dart';
 import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/domain/usecases/create_notification_use_case.dart';
 import '../../features/notifications/domain/usecases/get_notifications_use_case.dart';
+import '../../features/notifications/domain/usecases/get_public_notifications_use_case.dart';
 import '../../features/notifications/domain/usecases/mark_as_read_use_case.dart';
 import '../../features/order/data/datasources/order_remote_data_source.dart';
 import '../../features/order/data/repositories/order_repository_impl.dart';
@@ -142,6 +148,15 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<GetNotificationsUseCase>(() => GetNotificationsUseCase(locator<NotificationRepository>()));
   locator.registerLazySingleton<MarkAsReadUseCase>(() => MarkAsReadUseCase(locator<NotificationRepository>()));
   locator.registerLazySingleton<CreateNotificationUseCase>(() => CreateNotificationUseCase(locator<NotificationRepository>()));
+  locator.registerLazySingleton<GetPublicNotificationsUseCase>(() => GetPublicNotificationsUseCase(locator<NotificationRepository>()));
+
+
+  // Dashboard
+
+  locator.registerLazySingleton<DashboardRemoteDataSource>(() => DashboardRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<DashboardRepository>(() => DashboardRepositoryImpl(remoteDataSource: locator<DashboardRemoteDataSource>()));
+  locator.registerLazySingleton<GetDashboardStatsUseCase>(() => GetDashboardStatsUseCase(locator<DashboardRepository>()));
+  locator.registerLazySingleton<CreatePublicNotificationUseCase>(() => CreatePublicNotificationUseCase(locator<DashboardRepository>()));
 
 
 

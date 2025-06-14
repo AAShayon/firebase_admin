@@ -4,6 +4,7 @@ abstract class NotificationRemoteDataSource {
   Stream<List<DocumentSnapshot>> getNotifications();
   Future<void> markAsRead(String notificationId);
   Future<void> createNotification(Map<String, dynamic> notificationData);
+  Stream<List<DocumentSnapshot>> getPublicNotifications();
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -33,5 +34,16 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   @override
   Future<void> createNotification(Map<String, dynamic> notificationData) {
     return _firestore.collection('notifications').add(notificationData);
+  }
+  @override
+  Stream<List<DocumentSnapshot>> getPublicNotifications() {
+    // Fetches notifications marked with a 'promotion' type.
+    return _firestore
+        .collection('notifications')
+        .where('type', isEqualTo: 'promotion') // Assuming you set this from the dashboard
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) => snapshot.docs);
   }
 }

@@ -1,4 +1,4 @@
-enum NotificationType { newOrder, stockAlert, unknown }
+enum NotificationType { newOrder, stockAlert, unknown ,promotion}
 
 class NotificationEntity {
   final String id;
