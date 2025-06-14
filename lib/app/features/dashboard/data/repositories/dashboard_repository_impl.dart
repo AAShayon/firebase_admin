@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import '../../../notifications/domain/entities/notification_entity.dart';
 import '../../domain/entities/dashboard_stats_entity.dart';
+import '../../domain/entities/sales_data_entity.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 import '../datasources/dashboard_remote_data_source.dart';
 
@@ -40,5 +42,29 @@ class DashboardRepositoryImpl implements DashboardRepository {
       'data': notification.data, // e.g., {'topic': 'all_users'}
     };
     return remoteDataSource.createNotification(data);
+  }
+  @override
+  Stream<List<SalesDataEntity>> getRecentSales() {
+    return remoteDataSource.getOrdersFromLast7Days().map((snapshot) {
+      if (snapshot.docs.isEmpty) return [];
+
+      // Group orders by the day they were created
+      final groupedByDay = groupBy(
+        snapshot.docs,
+            (doc) {
+          final date = (doc.data() as Map<String, dynamic>)['orderDate']?.toDate() ?? DateTime.now();
+          return DateTime(date.year, date.month, date.day);
+        },
+      );
+
+      // Aggregate sales for each day
+      return groupedByDay.entries.map((entry) {
+        final totalSales = entry.value.fold<double>(0.0, (sum, doc) {
+          return sum + ((doc.data() as Map<String, dynamic>)['totalAmount'] as num? ?? 0.0);
+        });
+        return SalesDataEntity(date: entry.key, sales: totalSales);
+      }).toList()
+        ..sort((a, b) => a.date.compareTo(b.date)); // Sort by date
+    });
   }
 }

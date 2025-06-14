@@ -47,4 +47,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   Future<void> updateContactNo(String userId,String addressId, String contactNo)async {
    return await remoteDataSource.updateContactNo(userId, addressId, contactNo);
   }
+  @override
+  Future<List<UserProfileEntity>> getAllUsers() async {
+    return await remoteDataSource.getAllUsers();
+  }
 }

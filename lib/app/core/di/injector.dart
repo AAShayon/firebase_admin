@@ -27,6 +27,7 @@ import '../../features/dashboard/data/datasources/dashboard_remote_data_source.d
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
 import '../../features/dashboard/domain/usecases/get_dashboard_stats_use_case.dart';
+import '../../features/dashboard/domain/usecases/get_recent_sales_use_case.dart';
 import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
@@ -60,6 +61,7 @@ import '../../features/shared/domain/usecases/update_product_use_case.dart';
 import '../../features/user_profile/data/datasources/user_profile_remote_data_source.dart';
 import '../../features/user_profile/data/repositories/user_profile_repository_impl.dart';
 import '../../features/user_profile/domain/repositories/user_profile_repository.dart';
+import '../../features/user_profile/domain/usecases/get_all_users_use_case.dart';
 import '../../features/user_profile/domain/usecases/get_user_profile_usecase.dart';
 import '../../features/user_profile/domain/usecases/manage_user_address_usecase.dart';
 import '../../features/user_profile/domain/usecases/update_user_contact_use_case.dart';
@@ -110,6 +112,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<ManageUserAddressUseCase>(()=>ManageUserAddressUseCase(locator<UserProfileRepository>()));
   locator.registerLazySingleton<UpdateUserContactNoUseCase>(()=>UpdateUserContactNoUseCase(locator<UserProfileRepository>()));
   locator.registerLazySingleton<WatchUserProfileUseCase>(()=>WatchUserProfileUseCase(locator<UserProfileRepository>()));
+  locator.registerLazySingleton<GetAllUsersUseCase>(()=>GetAllUsersUseCase(locator<UserProfileRepository>()));
 
 
 
@@ -157,6 +160,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<DashboardRepository>(() => DashboardRepositoryImpl(remoteDataSource: locator<DashboardRemoteDataSource>()));
   locator.registerLazySingleton<GetDashboardStatsUseCase>(() => GetDashboardStatsUseCase(locator<DashboardRepository>()));
   locator.registerLazySingleton<CreatePublicNotificationUseCase>(() => CreatePublicNotificationUseCase(locator<DashboardRepository>()));
+  locator.registerLazySingleton<GetRecentSalesUseCase>(() => GetRecentSalesUseCase(locator<DashboardRepository>()));
 
 
 

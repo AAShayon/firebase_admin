@@ -65,8 +65,12 @@ final allOrdersStreamProvider = StreamProvider<List<OrderEntity>>((ref) {
     return orders;
   });
 });
-final orderDetailsProvider =
-StreamProvider.autoDispose.family<OrderEntity, String>((ref, orderId) {
+final orderDetailsProvider = StreamProvider.autoDispose.family<OrderEntity, String>((ref, orderId) {
   final watchOrderById = ref.watch(watchOrderByIdUseCaseProvider);
   return watchOrderById(orderId);
+});
+final userOrderCountProvider = FutureProvider.autoDispose.family<int, String>((ref, userId) async {
+  final ordersStream = ref.watch(userOrdersStreamProvider(userId).future);
+  final orders = await ordersStream;
+  return orders.length;
 });

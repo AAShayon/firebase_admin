@@ -37,6 +37,18 @@ final publicNotificationsStreamProvider = StreamProvider.autoDispose<List<Notifi
   return getPublicNotifications();
 });
 
+final userUnreadNotificationCountProvider = Provider.autoDispose.family<int, String>((ref, userId) {
+  // If userId is empty, no count.
+  if (userId.isEmpty) return 0;
+
+  final publicNotifications = ref.watch(publicNotificationsStreamProvider);
+  // In the future, you could also watch the user's own order stream here and combine the counts.
+  return publicNotifications.when(
+    data: (notifications) => notifications.where((n) => !n.isRead).length, // Note: public notifs dont have a read status yet
+    loading: () => 0,
+    error: (e, s) => 0,
+  );
+});
 // Derived state for the number of unread notifications (for badges)
 final unreadNotificationCountProvider = Provider.autoDispose<int>((ref) {
   final notificationsAsync = ref.watch(notificationsStreamProvider);

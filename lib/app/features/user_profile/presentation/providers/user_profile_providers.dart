@@ -1,6 +1,7 @@
 import 'package:firebase_admin/app/core/di/injector.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/user_profile_entity.dart';
+import '../../domain/usecases/get_all_users_use_case.dart';
 import '../../domain/usecases/get_user_profile_usecase.dart';
 import '../../domain/usecases/manage_user_address_usecase.dart';
 import '../../domain/usecases/update_user_contact_use_case.dart';
@@ -25,6 +26,14 @@ final updateUserContactUseCaseProvider = Provider<UpdateUserContactNoUseCase>((r
 final watchUserProfileUseCaseProvider = Provider<WatchUserProfileUseCase>((ref) {
   return locator<WatchUserProfileUseCase>();
 });
+final getAllUsersUseCaseProvider = Provider<GetAllUsersUseCase>((ref) {
+  return locator<GetAllUsersUseCase>();
+});
+
+final allUsersProvider = FutureProvider.autoDispose<List<UserProfileEntity>>((ref) {
+  return ref.watch(getAllUsersUseCaseProvider).call();
+});
+
 final userProfileStreamProvider = StreamProvider.autoDispose
     .family<UserProfileEntity, String>((ref, userId) {
 

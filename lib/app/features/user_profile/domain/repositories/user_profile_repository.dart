@@ -16,4 +16,6 @@ abstract class UserProfileRepository {
   Future<void> removeUserAddress(String userId, String addressId);
 
   Future<void> setDefaultAddress(String userId, String addressId);
+  Future<List<UserProfileEntity>> getAllUsers();
+
 }

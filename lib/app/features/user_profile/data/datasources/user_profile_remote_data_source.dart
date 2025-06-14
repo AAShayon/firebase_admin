@@ -4,20 +4,34 @@ import '../models/user_profile_model.dart';
 
 abstract class UserProfileRemoteDataSource {
   Stream<UserProfileEntity> watchUserProfile(String userId);
+
   Future<UserProfileEntity> getUserProfile(String userId);
+
   Future<void> updateUserProfile(UserProfileEntity user);
+
   Future<void> addUserAddress(String userId, UserAddress address);
+
   Future<void> updateUserAddress(String userId, UserAddress address);
+
   Future<void> removeUserAddress(String userId, String addressId);
+
   Future<void> setDefaultAddress(String userId, String addressId);
-  Future<void> updateContactNo(String userId, String addressId, String contactNo);
+
+  Future<void> updateContactNo(
+    String userId,
+    String addressId,
+    String contactNo,
+  );
+
+  Future<List<UserProfileEntity>> getAllUsers();
 }
 
 class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
   final FirebaseFirestore _firestore;
 
   UserProfileRemoteDataSourceImpl({required FirebaseFirestore firestore})
-      : _firestore = firestore;
+    : _firestore = firestore;
+
   @override
   Stream<UserProfileEntity> watchUserProfile(String userId) {
     return _firestore
@@ -25,12 +39,12 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
         .doc(userId)
         .snapshots() // This returns a Stream<DocumentSnapshot>
         .map((snapshot) {
-      if (!snapshot.exists || snapshot.data() == null) {
-        throw Exception('User document does not exist.');
-      }
-      // For each event in the stream, convert the snapshot to your model
-      return UserProfileModel.fromJson(snapshot.data()!);
-    });
+          if (!snapshot.exists || snapshot.data() == null) {
+            throw Exception('User document does not exist.');
+          }
+          // For each event in the stream, convert the snapshot to your model
+          return UserProfileModel.fromJson(snapshot.data()!);
+        });
   }
 
   @override
@@ -40,7 +54,6 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
       throw Exception('User not found');
     }
     return UserProfileModel.fromJson(doc.data()!);
-
   }
 
   @override
@@ -50,8 +63,13 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
       'photoUrl': user.photoUrl,
     });
   }
+
   @override
-  Future<void> updateContactNo(String userId, String addressId, String contactNo) async {
+  Future<void> updateContactNo(
+    String userId,
+    String addressId,
+    String contactNo,
+  ) async {
     final userDoc = await _firestore.collection('users').doc(userId).get();
 
     if (!userDoc.exists) {
@@ -59,7 +77,9 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
     }
 
     // Retrieve the list of addresses
-    final addresses = List<Map<String, dynamic>>.from(userDoc['addresses'] ?? []);
+    final addresses = List<Map<String, dynamic>>.from(
+      userDoc['addresses'] ?? [],
+    );
 
     // Find the address that needs to be updated by its 'id'
     final addressIndex = addresses.indexWhere((a) => a['id'] == addressId);
@@ -87,7 +107,9 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
   @override
   Future<void> updateUserAddress(String userId, UserAddress address) async {
     final userDoc = await _firestore.collection('users').doc(userId).get();
-    final addresses = List<Map<String, dynamic>>.from(userDoc['addresses'] ?? []);
+    final addresses = List<Map<String, dynamic>>.from(
+      userDoc['addresses'] ?? [],
+    );
 
     final index = addresses.indexWhere((a) => a['id'] == address.id);
     if (index == -1) throw Exception('Address not found');
@@ -102,7 +124,9 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
   @override
   Future<void> removeUserAddress(String userId, String addressId) async {
     final userDoc = await _firestore.collection('users').doc(userId).get();
-    final addresses = List<Map<String, dynamic>>.from(userDoc['addresses'] ?? []);
+    final addresses = List<Map<String, dynamic>>.from(
+      userDoc['addresses'] ?? [],
+    );
 
     addresses.removeWhere((a) => a['id'] == addressId);
 
@@ -114,7 +138,9 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
   @override
   Future<void> setDefaultAddress(String userId, String addressId) async {
     final userDoc = await _firestore.collection('users').doc(userId).get();
-    final addresses = List<Map<String, dynamic>>.from(userDoc['addresses'] ?? []);
+    final addresses = List<Map<String, dynamic>>.from(
+      userDoc['addresses'] ?? [],
+    );
 
     // Reset all defaults
     for (var addr in addresses) {
@@ -130,6 +156,14 @@ class UserProfileRemoteDataSourceImpl implements UserProfileRemoteDataSource {
     await _firestore.collection('users').doc(userId).update({
       'addresses': addresses,
     });
+  }
+
+  @override
+  Future<List<UserProfileModel>> getAllUsers() async {
+    final snapshot = await _firestore.collection('users').get();
+    return snapshot.docs
+        .map((doc) => UserProfileModel.fromJson(doc.data()!))
+        .toList();
   }
 
   Map<String, dynamic> _addressToMap(UserAddress address) {

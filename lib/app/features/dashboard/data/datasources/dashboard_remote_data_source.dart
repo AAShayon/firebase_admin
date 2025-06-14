@@ -6,6 +6,7 @@ abstract class DashboardRemoteDataSource {
   Future<int> getTotalCustomerCount();
   Future<double> getTotalSales();
   Future<int> getLowStockCount();
+  Stream<QuerySnapshot> getOrdersFromLast7Days();
 
   // --- UPDATED METHOD ---
   Future<void> createNotification(Map<String, dynamic> notificationData);
@@ -49,5 +50,13 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   @override
   Future<void> createNotification(Map<String, dynamic> notificationData) {
     return _firestore.collection('notifications').add(notificationData);
+  }
+  @override
+  Stream<QuerySnapshot> getOrdersFromLast7Days() {
+    final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+    return _firestore
+        .collection('orders')
+        .where('orderDate', isGreaterThanOrEqualTo: sevenDaysAgo)
+        .snapshots();
   }
 }
