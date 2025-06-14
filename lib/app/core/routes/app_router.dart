@@ -22,7 +22,7 @@ import '../../features/landing/presentation/landing.dart';
 import '../../features/order/presentation/pages/order_details_page.dart';
 import '../../features/order/presentation/pages/order_success_page.dart';
 import '../../features/products/presentation/pages/product_detail_page.dart';
-import '../../features/products/presentation/pages/product_collection_table_page.dart';
+import '../../features/products/presentation/pages/product_table.dart';
 import '../../features/shared/domain/entities/product_entity.dart';
 import '../../features/user_profile/domain/entities/user_profile_entity.dart';
 import '../../features/user_profile/presentation/pages/add_edit_address.dart';

@@ -17,7 +17,7 @@ import '../../notifications/presentation/notifications_page.dart';
 // --- PAGE WIDGET IMPORTS ---
 import '../../home_page/presentation/pages/home_page.dart';
 import '../../dashboard/presentation/pages/dashboard_page.dart';
-import '../../products/presentation/pages/product_collection_table_page.dart';
+import '../../products/presentation/pages/product_table.dart';
 import '../../order/presentation/pages/orders_page.dart';
 import '../../customer/presentation/customers_page.dart';
 import '../../settings/presentation/pages/settings_page.dart';
