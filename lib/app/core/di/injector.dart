@@ -34,7 +34,10 @@ import '../../features/notifications/domain/repositories/notification_repository
 import '../../features/notifications/domain/usecases/create_notification_use_case.dart';
 import '../../features/notifications/domain/usecases/get_notifications_use_case.dart';
 import '../../features/notifications/domain/usecases/get_public_notifications_use_case.dart';
+import '../../features/notifications/domain/usecases/get_targeted_notifications_use_case.dart';
+import '../../features/notifications/domain/usecases/get_user_private_notifications_use_case.dart';
 import '../../features/notifications/domain/usecases/mark_as_read_use_case.dart';
+import '../../features/notifications/domain/usecases/mark_notification_as_read_use_case.dart';
 import '../../features/order/data/datasources/order_remote_data_source.dart';
 import '../../features/order/data/repositories/order_repository_impl.dart';
 import '../../features/order/domain/repositories/order_repository.dart';
@@ -152,6 +155,10 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<MarkAsReadUseCase>(() => MarkAsReadUseCase(locator<NotificationRepository>()));
   locator.registerLazySingleton<CreateNotificationUseCase>(() => CreateNotificationUseCase(locator<NotificationRepository>()));
   locator.registerLazySingleton<GetPublicNotificationsUseCase>(() => GetPublicNotificationsUseCase(locator<NotificationRepository>()));
+  locator.registerLazySingleton<GetTargetedNotificationsUseCase>(() => GetTargetedNotificationsUseCase(locator<NotificationRepository>()));
+  locator.registerLazySingleton<GetUserPrivateNotificationsUseCase>(() => GetUserPrivateNotificationsUseCase(locator<NotificationRepository>()));
+  locator.registerLazySingleton<MarkNotificationAsReadUseCase>(() => MarkNotificationAsReadUseCase(locator<NotificationRepository>()));
+
 
 
   // Dashboard
@@ -159,9 +166,8 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<DashboardRemoteDataSource>(() => DashboardRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
   locator.registerLazySingleton<DashboardRepository>(() => DashboardRepositoryImpl(remoteDataSource: locator<DashboardRemoteDataSource>()));
   locator.registerLazySingleton<GetDashboardStatsUseCase>(() => GetDashboardStatsUseCase(locator<DashboardRepository>()));
-  locator.registerLazySingleton<CreatePublicNotificationUseCase>(() => CreatePublicNotificationUseCase(locator<DashboardRepository>()));
+  locator.registerLazySingleton<SendPromotionUseCase>(() => SendPromotionUseCase(locator<DashboardRepository>()));
   locator.registerLazySingleton<GetRecentSalesUseCase>(() => GetRecentSalesUseCase(locator<DashboardRepository>()));
-
 
 
 }

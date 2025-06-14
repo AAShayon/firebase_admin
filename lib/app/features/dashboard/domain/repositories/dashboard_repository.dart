@@ -9,4 +9,8 @@ abstract class DashboardRepository {
   // The action is now creating a notification entity.
   Future<void> createPublicNotification(NotificationEntity notification);
   Stream<List<SalesDataEntity>> getRecentSales();
+  Future<void> sendPromotionToTarget({
+    required NotificationEntity notification,
+    required String target, // 'all_users' or a specific userId
+  });
 }

@@ -7,14 +7,28 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   NotificationNotifier(this._ref) : super(const NotificationState.initial());
 
-  Future<void> markAsRead(String notificationId) async {
-    // We don't need a loading state for this quick action.
+  Future<void> markAsRead(String notificationId, String adminId) async {
     try {
-      await _ref.read(markAsReadUseCaseProvider).call(notificationId);
-      // The UI will rebuild automatically from the stream, so no success state needed.
+      await _ref.read(markAsReadUseCaseProvider).call(notificationId, adminId);
     } catch (e) {
-      // We could set an error state, but it's unlikely to fail.
       print('Error marking notification as read: $e');
+    }
+  }
+  Future<void> markNotificationAsRead({
+    required String notificationId,
+    required String userId,
+    required bool isAdmin,
+  }) async {
+    try {
+      // Call the new, smarter use case with all required parameters.
+      await _ref.read(markNotificationAsReadUseCaseProvider).call(
+        notificationId: notificationId,
+        userId: userId,
+        isAdmin: isAdmin,
+      );
+    } catch (e) {
+      print('Error marking notification as read: $e');
+      // Optionally set an error state
     }
   }
 }

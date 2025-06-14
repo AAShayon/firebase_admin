@@ -7,6 +7,13 @@ abstract class DashboardRemoteDataSource {
   Future<double> getTotalSales();
   Future<int> getLowStockCount();
   Stream<QuerySnapshot> getOrdersFromLast7Days();
+  Future<void> sendNotificationToAllUsers({
+    required Map<String, dynamic> notificationData,
+  });
+  Future<void> sendNotificationToUser({
+    required String userId,
+    required Map<String, dynamic> notificationData,
+  });
 
   // --- UPDATED METHOD ---
   Future<void> createNotification(Map<String, dynamic> notificationData);
@@ -58,5 +65,33 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
         .collection('orders')
         .where('orderDate', isGreaterThanOrEqualTo: sevenDaysAgo)
         .snapshots();
+  }
+  @override
+  Future<void> sendNotificationToUser({
+    required String userId,
+    required Map<String, dynamic> notificationData,
+  }) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notifications')
+        .add(notificationData);
+  }
+
+  @override
+  Future<void> sendNotificationToAllUsers({
+    required Map<String, dynamic> notificationData,
+  }) async {
+    // WARNING: This is inefficient for a large number of users.
+    // A backend (Cloud Function) is the proper way to do this at scale.
+    // But for your requirements, this client-side loop will work.
+    final usersSnapshot = await _firestore.collection('users').where('isAdmin', isEqualTo: false).get();
+
+    final WriteBatch batch = _firestore.batch();
+    for (final userDoc in usersSnapshot.docs) {
+      final notificationRef = userDoc.reference.collection('notifications').doc();
+      batch.set(notificationRef, notificationData);
+    }
+    return batch.commit();
   }
 }

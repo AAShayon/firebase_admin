@@ -67,4 +67,25 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ..sort((a, b) => a.date.compareTo(b.date)); // Sort by date
     });
   }
+
+  @override
+  Future<void> sendPromotionToTarget({
+    required NotificationEntity notification,
+    required String target,
+  }) {
+    final data = {
+      'title': notification.title,
+      'body': notification.body,
+      'createdAt': FieldValue.serverTimestamp(),
+      'type': 'promotion',
+      'isRead': false, // Each user will have their own read status
+    };
+
+    if (target == 'all_users') {
+      return remoteDataSource.sendNotificationToAllUsers(notificationData: data);
+    } else {
+      // It's a specific user ID
+      return remoteDataSource.sendNotificationToUser(userId: target, notificationData: data);
+    }
+  }
 }

@@ -1,4 +1,10 @@
-enum NotificationType { newOrder, stockAlert, unknown ,promotion}
+enum NotificationType {
+  newOrder,
+  promotion,
+  coupon,
+  stockAlert,
+  unknown,
+}
 
 class NotificationEntity {
   final String id;
@@ -7,7 +13,7 @@ class NotificationEntity {
   final DateTime createdAt;
   final bool isRead;
   final NotificationType type;
-  final Map<String, dynamic> data; // To store extra info like orderId
+  final Map<String, dynamic> data;
 
   NotificationEntity({
     required this.id,

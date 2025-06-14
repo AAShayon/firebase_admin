@@ -10,8 +10,8 @@ final getDashboardStatsUseCaseProvider = Provider<GetDashboardStatsUseCase>((ref
   return locator<GetDashboardStatsUseCase>();
 });
 
-final createPublicNotificationUseCaseProvider = Provider<CreatePublicNotificationUseCase>((ref) {
-  return locator<CreatePublicNotificationUseCase>();
+final sendPromotionUseCaseProvider = Provider<SendPromotionUseCase>((ref) {
+  return locator<SendPromotionUseCase>();
 });
 final getRecentSalesUseCaseProvider = Provider<GetRecentSalesUseCase>((ref) {
   return locator<GetRecentSalesUseCase>();

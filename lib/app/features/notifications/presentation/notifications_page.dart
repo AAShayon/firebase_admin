@@ -16,69 +16,59 @@ class NotificationsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(currentUserProvider);
     final bool isAdmin = currentUser?.isAdmin ?? false;
+    final userId = currentUser?.id ?? '';
 
-    // --- ROLE-BASED DATA FETCHING ---
     // Watch the appropriate stream based on the user's role.
-    // Admins see all notifications, users see public/promotional ones.
+    // This is the core of the separation.
     final notificationsAsync = ref.watch(
-        isAdmin ? notificationsStreamProvider : publicNotificationsStreamProvider
+        isAdmin ? notificationsStreamProvider : userPrivateNotificationsStreamProvider(userId)
     );
 
     return Scaffold(
-      // The AppBar is managed by LandingPage.
-      body: notificationsAsync.when(
-        data: (notifications) {
-          if (notifications.isEmpty) {
-            return const Center(
-              child: Text(
-                'You have no notifications.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              // Invalidate the correct provider to refresh the data
-              ref.invalidate(isAdmin ? notificationsStreamProvider : publicNotificationsStreamProvider);
-            },
-            child: ListView.separated(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(isAdmin ? notificationsStreamProvider : userPrivateNotificationsStreamProvider(userId));
+        },
+        child: notificationsAsync.when(
+          data: (notifications) {
+            if (notifications.isEmpty) {
+              return const Center(
+                child: Text('You have no notifications.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+              );
+            }
+            return ListView.separated(
               itemCount: notifications.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
+              separatorBuilder: (context, index) => const Divider(height: 1, thickness: 0.5),
               itemBuilder: (context, index) {
                 final notification = notifications[index];
 
-                // Determine the icon and if the item is tappable
                 final IconData iconData;
-                bool isTappable = false;
-                if (notification.type == NotificationType.newOrder) {
-                  iconData = Icons.receipt_long;
-                  isTappable = isAdmin; // Only admins can tap order notifications
-                } else {
-                  iconData = Icons.campaign; // Icon for promotions
-                  isTappable = false; // Promotions are not tappable for now
+                switch (notification.type) {
+                  case NotificationType.newOrder:
+                    iconData = Icons.receipt_long;
+                    break;
+                  case NotificationType.promotion:
+                  default:
+                    iconData = Icons.campaign;
+                    break;
                 }
 
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: notification.isRead && isAdmin // Only admins see read status
-                        ? Colors.grey.shade300
-                        : Theme.of(context).primaryColor,
-                    child: Icon(
-                      iconData,
-                      color: notification.isRead && isAdmin ? Colors.grey[600] : Colors.white,
-                    ),
+                    backgroundColor: notification.isRead ? Colors.grey.shade300 : Theme.of(context).primaryColor,
+                    child: Icon(iconData, color: notification.isRead ? Colors.grey.shade700 : Colors.white),
                   ),
                   title: Text(
                     notification.title,
                     style: TextStyle(
-                      fontWeight: !notification.isRead && isAdmin ? FontWeight.bold : FontWeight.normal,
-                      color: !notification.isRead && isAdmin ? Colors.black87 : Colors.grey[600],
+                      fontWeight: !notification.isRead ? FontWeight.bold : FontWeight.normal,
+                      color: !notification.isRead ? Theme.of(context).textTheme.bodyLarge?.color : Colors.grey.shade600,
                     ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(notification.body),
+                      Text(notification.body, maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       Text(
                         timeago.format(notification.createdAt),
@@ -87,23 +77,46 @@ class NotificationsPage extends ConsumerWidget {
                     ],
                   ),
                   isThreeLine: true,
-                  onTap: isTappable ? () {
-                    if (isAdmin && !notification.isRead) {
-                      ref.read(notificationNotifierProvider.notifier).markAsRead(notification.id);
-                    }
-                    final orderId = notification.data['orderId'] as String?;
-                    if (orderId != null) {
-                      context.pushNamed(AppRoutes.orderDetails, pathParameters: {'orderId': orderId});
-                    }
-                  } : null,
+                  onTap: () => _handleNotificationTap(context, ref, notification),
                 );
               },
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => Center(child: Text('Error loading notifications: $e')),
+        ),
       ),
     );
+  }
+
+  void _handleNotificationTap(BuildContext context, WidgetRef ref, NotificationEntity notification) {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) return;
+
+    if (!notification.isRead) {
+      // --- THIS CALL IS NOW CORRECT ---
+      ref.read(notificationNotifierProvider.notifier).markNotificationAsRead(
+        notificationId: notification.id,
+        userId: currentUser.id,
+        isAdmin: currentUser.isAdmin,
+      );
+    }
+
+    // Navigation logic
+    if (notification.type == NotificationType.newOrder && currentUser.isAdmin) {
+      final orderId = notification.data['orderId'] as String?;
+      if (orderId != null) {
+        context.pushNamed(AppRoutes.orderDetails, pathParameters: {'orderId': orderId});
+      }
+    } else if (notification.type != NotificationType.newOrder) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(notification.title),
+          content: Text(notification.body),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        ),
+      );
+    }
   }
 }

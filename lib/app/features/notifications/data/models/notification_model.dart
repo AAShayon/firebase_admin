@@ -12,13 +12,14 @@ class NotificationModel extends NotificationEntity {
     required super.data,
   });
 
+  // This factory is now simple and correct. It only parses the document.
   factory NotificationModel.fromSnapshot(DocumentSnapshot doc) {
     final json = doc.data() as Map<String, dynamic>;
     return NotificationModel(
       id: doc.id,
       title: json['title'] ?? 'No Title',
       body: json['body'] ?? 'No Body',
-      createdAt: (json['createdAt'] as Timestamp).toDate(),
+      createdAt: (json['createdAt'] as Timestamp? ?? Timestamp.now()).toDate(),
       isRead: json['isRead'] ?? false,
       type: _stringToNotificationType(json['type']),
       data: json['data'] as Map<String, dynamic>? ?? {},
@@ -27,12 +28,11 @@ class NotificationModel extends NotificationEntity {
 
   static NotificationType _stringToNotificationType(String? type) {
     switch (type) {
-      case 'new_order':
-        return NotificationType.newOrder;
-      case 'stock_alert':
-        return NotificationType.stockAlert;
-      default:
-        return NotificationType.unknown;
+      case 'newOrder': return NotificationType.newOrder;
+      case 'promotion': return NotificationType.promotion;
+      case 'coupon': return NotificationType.coupon;
+      case 'stock_alert': return NotificationType.stockAlert;
+      default: return NotificationType.unknown;
     }
   }
 }

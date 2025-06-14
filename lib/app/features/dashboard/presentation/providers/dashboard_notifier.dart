@@ -45,7 +45,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         data: {'target': target},
       );
 
-      await _ref.read(createPublicNotificationUseCaseProvider).call(notification);
+      await _ref.read(sendPromotionUseCaseProvider).call(notification: notification, target: target);
 
       notificationTitleController.clear();
       notificationBodyController.clear();
