@@ -65,4 +65,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> assignSubAdminRole(String userId, {bool isSubAdmin = true}) async {
     return await remoteDataSource.assignSubAdminRole(userId, isSubAdmin: isSubAdmin);
   }
+
+  @override
+  Future<void> saveAdminDeviceToken(String adminId)async {
+  return await remoteDataSource.saveAdminDeviceToken(adminId);
+  }
 }

@@ -1,50 +1,39 @@
+// lib/app/features/auth/data/models/user_model.dart
+
 import '../../domain/entities/user_entity.dart';
 
-class UserModel {
-  final String id;
-  final bool isAdmin;
-  final bool isSubAdmin;
-  final String? email;
-  final String? displayName;
-  final String? photoUrl;
-
+class UserModel extends UserEntity {
   UserModel({
-    required this.id,
-    required this.isAdmin,
-    required this.isSubAdmin,
-    this.email,
-    this.displayName,
-    this.photoUrl,
+    required super.id,
+    required super.isAdmin,
+    required super.isSubAdmin,
+    super.email,
+    super.displayName,
+    super.photoUrl,
   });
 
-  UserEntity toEntity() => UserEntity(
-    id: id,
-    isAdmin: isAdmin,
-    isSubAdmin: isSubAdmin,
-    displayName: displayName,
-    email: email,
-    photoUrl: photoUrl,
-  );
-
+  // This factory is the key. It takes the map from Firestore and builds our object.
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'],
+      email: json['email'],
+      displayName: json['displayName'],
+      photoUrl: json['photoUrl'],
+      // Safely parse the boolean fields. Default to `false` if they don't exist.
       isAdmin: json['isAdmin'] ?? false,
       isSubAdmin: json['isSubAdmin'] ?? false,
-      photoUrl: json['photoUrl'] ?? '',
-      displayName: json['displayName'] ?? '',
-      email: json['email'],
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'isAdmin': isAdmin,
-      'isSubAdmin': isSubAdmin,
-      'email': email,
-      'displayName': displayName,
-      'photoUrl': photoUrl,
-    };
+  // Helper method to convert the model back to an entity for the repository.
+  UserEntity toEntity() {
+    return UserEntity(
+      id: id,
+      email: email,
+      displayName: displayName,
+      photoUrl: photoUrl,
+      isAdmin: isAdmin,
+      isSubAdmin: isSubAdmin,
+    );
   }
 }

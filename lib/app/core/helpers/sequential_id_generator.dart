@@ -4,6 +4,6 @@ class SequentialIdGenerator {
   static int _counter = 0;
   static String generate() {
     _counter++;
-    return _counter.toString().padLeft(6, '0');
+    return _counter.toString().padLeft(7, '0');
   }
 }

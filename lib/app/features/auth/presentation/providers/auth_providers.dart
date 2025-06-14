@@ -7,6 +7,7 @@ import '../../domain/usecases/admin_use_case.dart';
 import '../../domain/usecases/assign_admin_role_use_case.dart';
 import '../../domain/usecases/assign_sub_admin_use_case.dart';
 import '../../domain/usecases/get_current_user_use_case.dart';
+import '../../domain/usecases/save_admin_token_use_case.dart';
 import '../../domain/usecases/sign_in_with_email_passWord_useCase.dart';
 import '../../domain/usecases/sign_in_with_google.dart';
 import '../../domain/usecases/sign_out.dart';
@@ -53,6 +54,9 @@ final assignSubAdminRoleProvider = Provider<AssignSubAdminRole>((ref) {
 
 final getCurrentUserProvider = Provider<CurrentUserUseCase>((ref) {
   return locator<CurrentUserUseCase>();
+});
+final saveAdminTokenProvider = Provider<SaveAdminTokenUseCase>((ref) {
+  return locator<SaveAdminTokenUseCase>();
 });
 // ... (your existing providers)
 

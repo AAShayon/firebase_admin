@@ -11,6 +11,7 @@ import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/domain/usecases/get_current_user_use_case.dart';
+import '../../features/auth/domain/usecases/save_admin_token_use_case.dart';
 import '../../features/auth/domain/usecases/sign_up_with_email_password_use_case.dart';
 import '../../features/auth/domain/usecases/sub_admin_use_case.dart';
 import '../../features/cart/data/datasources/cart_remote_data_sources.dart';
@@ -21,6 +22,12 @@ import '../../features/cart/domain/usecases/clear_cart_use_case.dart';
 import '../../features/cart/domain/usecases/get_cart_items_use_case.dart';
 import '../../features/cart/domain/usecases/remove_from_cart_use_cse.dart';
 import '../../features/cart/domain/usecases/update_cart_item_use_case.dart';
+import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
+import '../../features/notifications/data/repositories/notification_repository_impl.dart';
+import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/domain/usecases/create_notification_use_case.dart';
+import '../../features/notifications/domain/usecases/get_notifications_use_case.dart';
+import '../../features/notifications/domain/usecases/mark_as_read_use_case.dart';
 import '../../features/order/data/datasources/order_remote_data_source.dart';
 import '../../features/order/data/repositories/order_repository_impl.dart';
 import '../../features/order/domain/repositories/order_repository.dart';
@@ -83,6 +90,9 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdatePasswordUseCase>(()=>UpdatePasswordUseCase(locator<AuthRepository>()));
   locator.registerLazySingleton<IsSubAdminUseCase>(()=>IsSubAdminUseCase(locator<AuthRepository>()));
   locator.registerLazySingleton<CurrentUserUseCase>(()=>CurrentUserUseCase(locator<AuthRepository>()));
+  locator.registerLazySingleton<SaveAdminTokenUseCase>(()=>SaveAdminTokenUseCase(locator<AuthRepository>()));
+
+
   //userProfile
   locator.registerLazySingleton<UserProfileRemoteDataSource>(()=>UserProfileRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
   locator.registerLazySingleton<UserProfileRepository>(()=>UserProfileRepositoryImpl(remoteDataSource: locator<UserProfileRemoteDataSource>()));
@@ -119,5 +129,14 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<GetUserOrdersUseCase>(()=>GetUserOrdersUseCase(locator<OrderRepository>()));
   locator.registerLazySingleton<GetAllOrdersUseCase>(()=>GetAllOrdersUseCase(locator<OrderRepository>()));
   locator.registerLazySingleton<UpdateOrderStatusUseCase>(()=>UpdateOrderStatusUseCase(locator<OrderRepository>()));
+
+  // Notifications
+  locator.registerLazySingleton<NotificationRemoteDataSource>(() => NotificationRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(remoteDataSource: locator<NotificationRemoteDataSource>()));
+  locator.registerLazySingleton<GetNotificationsUseCase>(() => GetNotificationsUseCase(locator<NotificationRepository>()));
+  locator.registerLazySingleton<MarkAsReadUseCase>(() => MarkAsReadUseCase(locator<NotificationRepository>()));
+  locator.registerLazySingleton<CreateNotificationUseCase>(() => CreateNotificationUseCase(locator<NotificationRepository>()));
+
+
 
 }

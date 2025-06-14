@@ -33,7 +33,7 @@ final userOrdersStreamProvider = StreamProvider.family<List<OrderEntity>, String
     if (kDebugMode) {
       print('--- DEBUG: User Orders Updated ---');
       print('User ID: $userId');
-      print('Number of orders: ${orders.length}');
+      print('Number of orders: ${orders..length}');
       // You can even print the details of each order
       // for (var order in orders) {
       //   print('Order ID: ${order.id}, Status: ${order.status}');

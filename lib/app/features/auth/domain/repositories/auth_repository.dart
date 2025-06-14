@@ -3,6 +3,7 @@ import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
   Future<UserEntity> signInWithEmailAndPassword(String email, String password);
+  Future<void> saveAdminDeviceToken(String adminId);
   Future<void> signOut();
   Future<UserEntity> signInWithGoogle();
   Future<void> signUpWithEmailAndPassword(String email, String password);
