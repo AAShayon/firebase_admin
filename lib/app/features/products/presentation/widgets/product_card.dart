@@ -2,38 +2,41 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // NEW: Import riverpod
-import '../../../home_page/presentation/pages/home_page.dart'; // NEW: Import for addingToCartProvider
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../home_page/presentation/pages/home_page.dart';
 import '../../../home_page/presentation/widgets/admin_action_menu.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 
-// CHANGED: From StatelessWidget to ConsumerWidget
 class ProductCard extends ConsumerWidget {
   final ProductEntity product;
   final VoidCallback onTap;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
   final bool isAdmin;
-  final ValueSetter<GlobalKey> onAddToCart;
+  final ValueSetter<GlobalKey>? onAddToCart;
 
   const ProductCard({
     super.key,
     this.isAdmin = false,
     required this.product,
     required this.onTap,
-    required this.onEdit,
-    required this.onDelete,
-    required this.onAddToCart,
+    this.onEdit,
+    this.onDelete,
+    this.onAddToCart,
   });
 
-  // CHANGED: Build method now includes WidgetRef
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final addButtonKey = GlobalKey();
-
-    // NEW: Watch the provider to see if THIS card is being added.
     final currentlyAddingId = ref.watch(addingToCartProvider);
     final isAdding = currentlyAddingId == product.id;
+
+    // Check if any variant has stock available
+    final hasAvailableStock = product.variants.any((v) => v.quantity > 0);
+    final firstAvailableVariant = product.variants.firstWhere(
+          (v) => v.quantity > 0,
+      orElse: () => product.variants.first,
+    );
 
     return Card(
       elevation: 4,
@@ -49,45 +52,74 @@ class ProductCard extends ConsumerWidget {
                 fit: StackFit.expand,
                 children: [
                   _buildProductImage(),
-                  if (isAdmin)
+                  if (isAdmin && onEdit != null && onDelete != null)
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: AdminActionMenu(onEdit: onEdit, onDelete: onDelete),
-                    ),
-                  Positioned(
-                    bottom: 8,
-                    left: 8,
-                    child: GestureDetector(
-                      // Disable taps while loading
-                      onTap: isAdding ? null : () {
-                        onAddToCart(addButtonKey);
-                      },
-                      child: Container(
-                        key: addButtonKey,
-                        width: 36,
-                        height: 36,
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        // Conditionally show icon or loader
-                        child: isAdding
-                            ? const Center(
-                          child: SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                            : const Icon(Icons.add, color: Colors.white),
+                      child: AdminActionMenu(
+                        onEdit: onEdit!,
+                        onDelete: onDelete!,
                       ),
                     ),
-                  ),
+                  if (hasAvailableStock && onAddToCart != null)
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      child: GestureDetector(
+                        onTap: isAdding
+                            ? null
+                            : () {
+                          if (firstAvailableVariant.quantity > 0) {
+                            onAddToCart!(addButtonKey);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('This product is out of stock'),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          key: addButtonKey,
+                          width: 36,
+                          height: 36,
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: isAdding
+                              ? const Center(
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                              : const Icon(Icons.add, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  if (!hasAvailableStock)
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Out of Stock',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
                   Positioned(
                     bottom: 8,
                     right: 8,
