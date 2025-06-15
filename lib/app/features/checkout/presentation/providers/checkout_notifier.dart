@@ -149,9 +149,8 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       }
 
 
-      final newOrderId = await _generateNextOrderId(namePrefix);
       final newOrder = OrderEntity(
-        id:  newOrderId,
+        id:  '',
         userId: currentUser.id,
         items: orderItems,
         totalAmount: state.grandTotal,
@@ -166,7 +165,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       );
 
       // THIS IS THE KEY CONNECTION
-      await ref.read(orderNotifierProvider.notifier).createOrder(newOrder);
+      await ref.read(orderNotifierProvider.notifier).createOrder(newOrder,namePrefix);
       ref.read(cartNotifierProvider.notifier).clearCart(currentUser.id);
 
       // The UI will listen to the orderNotifierProvider for success/error.

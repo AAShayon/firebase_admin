@@ -13,12 +13,10 @@ class OrderRepositoryImpl implements OrderRepository {
   // because OrderModel is a direct subclass of OrderEntity.
 
   @override
-  Future<String> createOrder(OrderEntity order) async {
-    // We can cast the OrderEntity to an OrderModel because we know
-    // that the object coming from the Notifier was created as an OrderEntity,
-    // which our model can represent. A more robust way is to create a new model.
+  Future<String> createOrder(OrderEntity order, String namePrefix) async {
+    // Create a temporary model just to use its `toJson()` method.
     final orderModel = OrderModel(
-      id: order.id,
+      id: '', // Ignored
       userId: order.userId,
       items: order.items,
       totalAmount: order.totalAmount,
@@ -29,8 +27,11 @@ class OrderRepositoryImpl implements OrderRepository {
       paymentMethod: order.paymentMethod,
       transactionId: order.transactionId,
     );
-    return await remoteDataSource.createOrder(orderModel);
+
+    // Call the single, correct `createOrder` method in the data source.
+    return await remoteDataSource.createOrder(orderModel.toJson(), namePrefix);
   }
+
 
   @override
   Stream<List<OrderEntity>> getUserOrders(String userId) {

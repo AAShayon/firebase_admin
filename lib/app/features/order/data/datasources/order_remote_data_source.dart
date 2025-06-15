@@ -1,10 +1,12 @@
-// lib/app/features/order/data/datasources/order_remote_data_source.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/helpers/enums.dart';
 import '../models/order_model.dart';
 
 abstract class OrderRemoteDataSource {
-  Future<String> createOrder(OrderModel order);
+  // --- THIS IS NOW THE ONLY createOrder METHOD ---
+  Future<String> createOrder(Map<String, dynamic> orderData, String namePrefix);
+
+  // The rest of the interface is correct
   Stream<List<OrderModel>> getUserOrders(String userId);
   Stream<List<OrderModel>> getAllOrders();
   Future<void> updateOrderStatus(String orderId, OrderStatus newStatus);
@@ -18,28 +20,70 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   OrderRemoteDataSourceImpl({required FirebaseFirestore firestore})
       : _firestore = firestore;
 
+  // --- THIS IS THE IMPLEMENTATION FOR THE NEW createOrder ---
   @override
-  Future<String> createOrder(OrderModel order) async {
-    final batch = _firestore.batch();
+  Future<String> createOrder(Map<String, dynamic> orderData, String namePrefix) async {
+    final counterRef = _firestore.collection('counters').doc('order_counter');
 
-    // 1. Create order document
-    final orderRef = _firestore.collection('orders').doc(order.id);
-    batch.set(orderRef, order.toJson());
+    // A Firestore Transaction handles reads and writes together atomically.
+    return _firestore.runTransaction((transaction) async {
+      // --- 1. ID Generation (within the transaction) ---
+      final counterSnapshot = await transaction.get(counterRef);
+      if (!counterSnapshot.exists) {
+        throw Exception("Critical Error: 'order_counter' document not found.");
+      }
+      final currentNumber = counterSnapshot.data()!['currentNumber'] as int;
+      final newNumber = currentNumber + 1;
+      final newOrderId = '${namePrefix}Order${newNumber.toString().padLeft(7, '0')}';
 
-    // // 2. Clear cart items
-    // final cartItemsRef = _firestore
-    //     .collection('carts')
-    //     .doc(order.userId)
-    //     .collection('items');
-    //
-    // final cartSnapshot = await cartItemsRef.get();
-    // for (final doc in cartSnapshot.docs) {
-    //   batch.delete(doc.reference);
-    // }
+      // --- 2. Stock Update Logic (within the transaction) ---
+      final List<Map<String, dynamic>> orderItems = orderData['items'];
+      for (final item in orderItems) {
+        final productId = item['productId'];
+        final productRef = _firestore.collection('products').doc(productId);
 
-    await batch.commit();
-    return orderRef.id;
+        // Read the product document *inside* the transaction.
+        final productDoc = await transaction.get(productRef);
+        if (!productDoc.exists) {
+          throw Exception('Product with ID $productId not found.');
+        }
+
+        final productData = productDoc.data()!;
+        final List<dynamic> variants = productData['variants'] ?? [];
+
+        final variantIndex = variants.indexWhere((v) =>
+        v['size'] == item['variantSize'] &&
+            v['colorName'] == item['variantColorName']);
+
+        if (variantIndex != -1) {
+          final currentQuantity = variants[variantIndex]['quantity'] as int;
+          final newQuantity = currentQuantity - (item['quantity'] as int);
+
+          if (newQuantity < 0) {
+            throw Exception('Insufficient stock for ${productData['title']}.');
+          }
+
+          variants[variantIndex]['quantity'] = newQuantity;
+          // Queue the update for the product document.
+          transaction.update(productRef, {'variants': variants});
+        } else {
+          throw Exception('Variant for ${productData['title']} not found.');
+        }
+      }
+
+      // --- 3. Order Creation (within the transaction) ---
+      final newOrderRef = _firestore.collection('orders').doc(newOrderId);
+      transaction.set(newOrderRef, orderData);
+
+      // --- 4. Counter Update (within the transaction) ---
+      transaction.update(counterRef, {'currentNumber': newNumber});
+
+      // All operations will be committed together by Firestore.
+      return newOrderId;
+    });
   }
+
+  // --- THE OLD createOrder(OrderModel order) METHOD HAS BEEN DELETED ---
 
   @override
   Stream<List<OrderModel>> getUserOrders(String userId) {
@@ -48,12 +92,8 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         .where('userId', isEqualTo: userId)
         .orderBy('orderDate', descending: true)
         .snapshots()
-        .map((snapshot) {
-      // Use the new, correct fromSnapshot factory
-      return snapshot.docs.map((doc) => OrderModel.fromSnapshot(doc)).toList();
-    });
+        .map((snapshot) => snapshot.docs.map((doc) => OrderModel.fromSnapshot(doc)).toList());
   }
-
 
   @override
   Stream<List<OrderModel>> getAllOrders() {
@@ -61,10 +101,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         .collection('orders')
         .orderBy('orderDate', descending: true)
         .snapshots()
-        .map((snapshot) {
-      // Use the new, correct fromSnapshot factory
-      return snapshot.docs.map((doc) => OrderModel.fromSnapshot(doc)).toList();
-    });
+        .map((snapshot) => snapshot.docs.map((doc) => OrderModel.fromSnapshot(doc)).toList());
   }
 
   @override
@@ -73,10 +110,12 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       'status': newStatus.toString().split('.').last,
     });
   }
+
   @override
   Future<DocumentSnapshot> getOrderById(String orderId) {
     return _firestore.collection('orders').doc(orderId).get();
   }
+
   @override
   Stream<DocumentSnapshot> watchOrderById(String orderId) {
     return _firestore.collection('orders').doc(orderId).snapshots();

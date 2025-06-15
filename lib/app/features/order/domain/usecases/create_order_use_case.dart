@@ -7,7 +7,7 @@ class CreateOrderUseCase {
 
   CreateOrderUseCase(this.repository);
 
-  Future<String> call(OrderEntity order) async {
-    return await repository.createOrder(order);
+  Future<String> call(OrderEntity order, String namePrefix) async {
+    return await repository.createOrder(order,namePrefix);
   }
 }

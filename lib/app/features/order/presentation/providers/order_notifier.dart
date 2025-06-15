@@ -16,11 +16,11 @@ class OrderNotifier extends StateNotifier<OrderState> {
 
       ) : super(const OrderState.initial());
 
-  Future<void> createOrder(OrderEntity order) async {
+  Future<void> createOrder(OrderEntity order, String namePrefix) async {
     state = const OrderState.loading();
     try {
       final useCase = _ref.read(createOrderUseCaseProvider);
-      final orderId = await useCase.call(order);
+      final orderId = await useCase.call(order,namePrefix);
 
 
       state = OrderState.success(orderId);
