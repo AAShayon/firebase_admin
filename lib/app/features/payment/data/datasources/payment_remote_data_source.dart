@@ -20,13 +20,12 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     try {
       Sslcommerz sslcommerz = Sslcommerz(
         initializer: SSLCommerzInitialization(
-          store_id: "edigi677dec8fa96b7", // Using your requested sandbox ID
-          store_passwd: "edigi677dec8fa96b7@ssl", // Matching sandbox password
-          ipn_url: "your_ipn_listener_url", // Optional: for server-to-server confirmation
+          store_id: "edigi677dec8fa96b7",
+          store_passwd: "edigi677dec8fa96b7@ssl",
           total_amount: amount,
-          tran_id: transactionId, // The unique ID we generate
+          tran_id: transactionId,
           currency: SSLCurrencyType.BDT,
-          sdkType: SSLCSdkType.TESTBOX, // Use TESTBOX for sandbox
+          sdkType: SSLCSdkType.TESTBOX, //
           product_category: "E-Commerce",
           multi_card_name: "visa,master,bkash",
         ),
@@ -34,11 +33,29 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
 
       final response = await sslcommerz.payNow();
 
-      if (response != null && response.status?.toLowerCase() == 'valid') {
-        log("SSLCommerz Payment Successful: ${response.toJson()}");
+      if (response.status == 'VALID') {
+        log("SSL commerze response ${response.toString()}");
+        log('Payment completed, TRX ID: ${response.tranId}');
+        log('Payment Date: ${response.tranDate}');
+        log('Amount: ${response.amount}');
+        log('Currency: ${response.tranId}');
+
+        // Check for additional details like bank transaction ID if available
+        if (response.bankTranId != null && response.bankTranId!.isNotEmpty) {
+          log('Bank Transaction ID: ${response.bankTranId}');
+        }
+        // Payment completed successfully
+        log('Payment completed, TRX ID: ${response.tranId}');
+        log('Payment Date: ${response.tranDate}');
         return true;
-      } else {
-        log("SSLCommerz Payment Failed or Closed: ${response?.status} - ${response?.bankTranId}");
+      } else if (response.status == 'Closed') {
+        log('Payment closed');
+        return false;
+      } else if (response.status == 'FAILED') {
+        log('Payment failed');
+        return false;
+      }
+      else{
         return false;
       }
     } catch (e) {

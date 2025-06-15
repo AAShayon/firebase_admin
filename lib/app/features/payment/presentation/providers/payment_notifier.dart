@@ -6,11 +6,8 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
   final Ref _ref;
   PaymentNotifier(this._ref) : super(const PaymentState.initial());
 
-  // Generates a unique transaction ID.
-  // Inspiration from your order ID logic, but for transactions.
+
   String _generateTransactionId() {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    // Format: TRX-YYYYMMDD-HHMMSS-ms
     return 'TRX-${DateTime.now().toIso8601String().replaceAll(RegExp(r'[^0-9]'), '')}';
   }
 
