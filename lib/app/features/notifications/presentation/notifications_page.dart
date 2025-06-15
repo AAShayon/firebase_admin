@@ -6,7 +6,6 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/routes/app_router.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../domain/entities/notification_entity.dart';
-import 'providers/notification_notifier_provider.dart';
 import 'providers/notification_providers.dart';
 
 class NotificationsPage extends ConsumerWidget {
@@ -107,6 +106,7 @@ class NotificationsPage extends ConsumerWidget {
       final orderId = notification.data['orderId'] as String?;
       if (orderId != null) {
         context.pushNamed(AppRoutes.orderDetails, pathParameters: {'orderId': orderId});
+
       }
     } else if (notification.type != NotificationType.newOrder) {
       showDialog(

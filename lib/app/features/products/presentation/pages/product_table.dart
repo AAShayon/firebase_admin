@@ -41,14 +41,28 @@ class ProductsTable extends ConsumerWidget {
             children: [
               Align(
                 alignment: Alignment.centerRight,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add New Product'),
-                  onPressed: () => context.pushNamed(AppRoutes.addProduct),
-                  style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold)
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add New Images'),
+                      onPressed: () => context.pushNamed(AppRoutes.addGalleryImage),
+                      style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add New Product'),
+                      onPressed: () => context.pushNamed(AppRoutes.addProduct),
+                      style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),

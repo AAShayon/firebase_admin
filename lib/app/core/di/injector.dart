@@ -29,6 +29,12 @@ import '../../features/dashboard/data/repositories/dashboard_repository_impl.dar
 import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
 import '../../features/dashboard/domain/usecases/get_dashboard_stats_use_case.dart';
 import '../../features/dashboard/domain/usecases/get_recent_sales_use_case.dart';
+import '../../features/image_gallery/data/datasources/image_gallery_remote_data_source.dart';
+import '../../features/image_gallery/data/repositories/image_gallery_repository_impl.dart';
+import '../../features/image_gallery/domain/repositories/image_gallery_repository.dart';
+import '../../features/image_gallery/domain/usecase/add_image_url_use_case.dart';
+import '../../features/image_gallery/domain/usecase/delete_image_use_case.dart';
+import '../../features/image_gallery/domain/usecase/get_gallery_images_use_case.dart';
 import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
@@ -179,5 +185,10 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<SendPromotionUseCase>(() => SendPromotionUseCase(locator<DashboardRepository>()));
   locator.registerLazySingleton<GetRecentSalesUseCase>(() => GetRecentSalesUseCase(locator<DashboardRepository>()));
 
-
+  // --- ADD THIS NEW BLOCK FOR IMAGE GALLERY ---
+  locator.registerLazySingleton<ImageGalleryRemoteDataSource>(() => ImageGalleryRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<ImageGalleryRepository>(() => ImageGalleryRepositoryImpl(remoteDataSource: locator<ImageGalleryRemoteDataSource>()));
+  locator.registerLazySingleton<GetGalleryImagesUseCase>(() => GetGalleryImagesUseCase(locator<ImageGalleryRepository>()));
+  locator.registerLazySingleton<AddImageUrlUseCase>(() => AddImageUrlUseCase(locator<ImageGalleryRepository>()));
+  locator.registerLazySingleton<DeleteImageUrlUseCase>(() => DeleteImageUrlUseCase(locator<ImageGalleryRepository>()));
 }

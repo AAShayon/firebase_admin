@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
-import '../../../notifications/domain/entities/notification_entity.dart';
-import '../../../notifications/presentation/providers/notification_providers.dart';
 import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/providers/order_notifier_provider.dart';
 import '../../../user_profile/domain/entities/user_profile_entity.dart';
@@ -130,25 +128,6 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       await ref.read(orderNotifierProvider.notifier).createOrder(newOrder,namePrefix);
       ref.read(cartNotifierProvider.notifier).clearCart(currentUser.id);
 
-      // The UI will listen to the orderNotifierProvider for success/error.
-      // We only need to reset our own loading state if there's an error on our end.
-      // The listener on the page will handle navigation.
-      final createNotification = ref.read(createNotificationUseCaseProvider);
-      await createNotification(
-        NotificationEntity(
-          id: '', // Firestore will generate this
-          title: '🎉 New Order Received!',
-          body: 'From: ${currentUser.displayName ?? 'A Customer'}. Total: \$${newOrder.totalAmount.toStringAsFixed(2)}',
-          createdAt: DateTime.now(), // This will be replaced by server timestamp
-          data: {'orderId': newOrder.id},
-          type: NotificationType.newOrder,
-        ),
-      );
-      // await FcmService.sendNewOrderNotificationToAdmins(
-      //   orderId: newOrder.id,
-      //   customerName: currentUser.displayName ?? 'A Customer',
-      //   totalAmount: newOrder.totalAmount,
-      // );
       state = state.copyWith(isLoading: false);
 
     } catch (e) {

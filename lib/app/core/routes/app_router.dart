@@ -17,6 +17,7 @@ import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/checkout/presentation/pages/checkout_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/home_page/presentation/pages/home_page.dart';
+import '../../features/image_gallery/presentation/pages/image_gallery_page.dart';
 import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/landing/presentation/landing.dart';
 import '../../features/order/presentation/pages/order_details_page.dart';
@@ -43,6 +44,7 @@ class AppRoutes {
   static const order = 'order';
   static const orderSuccess = 'orderSuccess';
   static const orderDetails = 'orderDetails';
+  static const addGalleryImage="addGalleryImage";
 
   static const customer = 'customer';
   static const notifications = 'notifications';
@@ -54,6 +56,7 @@ class AppRoutes {
   static const addAddress = 'addAddress';
   static const editAddress = 'editAddress';
   static const checkout = 'checkout';
+
 
 
   // --- Route Paths ---
@@ -75,8 +78,10 @@ class AppRoutes {
   static const productDetailPath = '/product-detail';
   static const cartPath = '/cart';
   static const checkoutPath = '/checkoutPath';
+  static const addGalleryImagePath = '/addGalleryImagePath';
   static const orderSuccessPath = '/order-success/:orderId';
   static const orderDetailsPath = '/order-details/:orderId';
+
 
   // CORRECTED: Define nested paths clearly and uniquely to avoid conflicts.
   // These are relative paths used within a GoRoute's `routes` list.
@@ -192,6 +197,16 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
+      name: AppRoutes.addGalleryImage,
+      path: AppRoutes.addGalleryImagePath,
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child:  ImageGalleryPage(),
+        transitionType: AppRouteTransitionType.scale,
+      ),
+    ),
+    GoRoute(
       name: AppRoutes.addProduct,
       path: AppRoutes.addProductPath,
       pageBuilder: (context, state) {
@@ -302,7 +317,6 @@ final GoRouter appRouter = GoRouter(
       name: AppRoutes.orderDetails,
       path: AppRoutes.orderDetailsPath,
       pageBuilder: (context, state) {
-        // Safely extract the orderId from the path parameters
         final orderId = state.pathParameters['orderId'] ?? 'unknown';
         return buildPageRoute(
           context: context,
