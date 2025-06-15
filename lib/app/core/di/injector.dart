@@ -7,6 +7,7 @@ import 'package:firebase_admin/app/features/auth/domain/usecases/sign_in_with_go
 import 'package:firebase_admin/app/features/auth/domain/usecases/sign_out.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/update_password_use_case.dart';
 import 'package:firebase_admin/app/features/dashboard/domain/usecases/create_public_notification_use_case.dart';
+import 'package:firebase_admin/app/features/payment/domain/usecases/process_sslcommerz_payment_use_case.dart';
 import 'package:firebase_admin/app/features/user_profile/domain/usecases/watch_user_profile_use_case.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
@@ -48,6 +49,9 @@ import '../../features/order/domain/usecases/get_order_by_id_use_case.dart';
 import '../../features/order/domain/usecases/get_user_orders_use_case.dart';
 import '../../features/order/domain/usecases/update_order_status_use_case.dart';
 import '../../features/order/domain/usecases/watch_order_by_id_use_case.dart';
+import '../../features/payment/data/datasources/payment_remote_data_source.dart';
+import '../../features/payment/data/repositories/payment_repository_impl.dart';
+import '../../features/payment/domain/repositories/payment_repository.dart';
 import '../../features/settings/data/datasources/settings_local_data_source.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/settings_repository.dart';
@@ -136,6 +140,12 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdateCartItemQuantityUseCase>(()=>UpdateCartItemQuantityUseCase(locator<CartRepository>()));
   locator.registerLazySingleton<RemoveFromCartUseCase>(()=>RemoveFromCartUseCase(locator<CartRepository>()));
   locator.registerLazySingleton<ClearCartUseCase>(()=>ClearCartUseCase(locator<CartRepository>()));
+
+  //payment
+
+  locator.registerLazySingleton<PaymentRemoteDataSource>(()=>PaymentRemoteDataSourceImpl());
+  locator.registerLazySingleton<PaymentRepository>(()=>PaymentRepositoryImpl(remoteDataSource: locator<PaymentRemoteDataSource>()));
+  locator.registerLazySingleton<ProcessSslCommerzPaymentUseCase>(()=>ProcessSslCommerzPaymentUseCase(locator<PaymentRepository>()));
 
   //orders
   locator.registerLazySingleton<OrderRemoteDataSource>(()=>OrderRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));

@@ -20,18 +20,16 @@ class CheckoutPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(currentUserProvider);
 
-
+    // Listen to order state
     ref.listen<OrderState>(orderNotifierProvider, (previous, next) {
       next.whenOrNull(
         success: (orderId) {
-
           context.goNamed(
             AppRoutes.orderSuccess,
             pathParameters: {'orderId': orderId},
           );
         },
         error: (message) {
-          // Show a snackbar if there was an error placing the order.
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error: $message'),
@@ -42,7 +40,7 @@ class CheckoutPage extends ConsumerWidget {
       );
     });
 
-    // Handle case where user is not logged in.
+    // Handle case where user is not logged in
     if (currentUser == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Checkout')),
@@ -60,7 +58,7 @@ class CheckoutPage extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // When leaving the page, reset the checkout state to avoid stale data.
+            // Reset checkout state when leaving the page
             ref.invalidate(checkoutNotifierProvider);
             context.pop();
           },
@@ -81,7 +79,6 @@ class CheckoutPage extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            // Disable the button if loading, no address is selected, or the cart is empty.
             onPressed: isLoading ||
                 checkoutState.shippingAddress == null ||
                 (cartItemsAsync.valueOrNull?.isEmpty ?? true)
@@ -90,9 +87,7 @@ class CheckoutPage extends ConsumerWidget {
               final cartItems =
                   ref.read(cartItemsStreamProvider(userId)).value;
               if (cartItems != null) {
-                ref
-                    .read(checkoutNotifierProvider.notifier)
-                    .placeOrder(cartItems);
+                ref.read(checkoutNotifierProvider.notifier).placeOrder(cartItems);
               }
             },
             child: isLoading
@@ -110,20 +105,15 @@ class CheckoutPage extends ConsumerWidget {
       ),
       body: cartItemsAsync.when(
         data: (cartItems) {
-          // The state of the UI is now derived directly from the cart's contents.
-          // If the cart is empty (e.g., after a successful order), this message shows.
           if (cartItems.isEmpty) {
             return const Center(child: Text("Your cart is empty."));
           }
 
-          // If the cart has items, proceed to show the checkout form.
           return userProfileAsync.when(
             data: (user) {
-              final checkoutNotifier =
-              ref.read(checkoutNotifierProvider.notifier);
+              final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
               final checkoutState = ref.watch(checkoutNotifierProvider);
 
-              // Initialize the checkout state once with cart and profile data.
               if (!checkoutState.isInitialized && user.addresses.isNotEmpty) {
                 final subtotal = cartItems.fold<double>(
                   0,
@@ -134,7 +124,7 @@ class CheckoutPage extends ConsumerWidget {
                   orElse: () => user.addresses.first,
                 );
 
-                // Use addPostFrameCallback to avoid trying to update state during a build.
+                // Initialize checkout with cart and profile data
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (context.mounted) {
                     checkoutNotifier.initialize(subtotal, defaultAddress);
@@ -142,7 +132,6 @@ class CheckoutPage extends ConsumerWidget {
                 });
               }
 
-              // Handle case where user has no addresses.
               if (user.addresses.isEmpty) {
                 return Center(
                   child: Column(
@@ -154,7 +143,7 @@ class CheckoutPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () => context.go(AppRoutes.profilePath),
+                        onPressed: () => context.pushNamed(AppRoutes.profilePath),
                         child: const Text('Go to Profile'),
                       ),
                     ],
@@ -162,7 +151,6 @@ class CheckoutPage extends ConsumerWidget {
                 );
               }
 
-              // Build the main checkout form.
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -178,7 +166,8 @@ class CheckoutPage extends ConsumerWidget {
                     CheckboxListTile(
                       title: const Text("Billing address is same as shipping"),
                       value: checkoutState.isBillingSameAsShipping,
-                      onChanged: (value) => checkoutNotifier.toggleBillingAddress(value ?? false),
+                      onChanged: (value) =>
+                          checkoutNotifier.toggleBillingAddress(value ?? false),
                       controlAffinity: ListTileControlAffinity.leading,
                       contentPadding: EdgeInsets.zero,
                     ),
