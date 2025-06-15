@@ -23,25 +23,47 @@ class CheckoutPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(currentUserProvider);
+    // Get userId early for use in listeners and builders
+    final userId = currentUser?.id;
 
     // --- LISTENERS for async operations ---
     ref.listen<OrderState>(orderNotifierProvider, (_, next) {
       next.whenOrNull(
-        success: (orderId) => context.goNamed(
-          AppRoutes.orderSuccess,
-          pathParameters: {'orderId': orderId},
-        ),
+        success: (orderId) {
+          // On successful order creation, go to the success page
+          context.goNamed(
+            AppRoutes.orderSuccess,
+            pathParameters: {'orderId': orderId},
+          );
+        },
         error: (message) => ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error placing order: $message'), backgroundColor: Colors.red),
         ),
       );
     });
 
+    // --- THIS LISTENER IS NOW THE KEY TO CONNECTING PAYMENT AND ORDER CREATION ---
     ref.listen<PaymentState>(paymentNotifierProvider, (_, next) {
+      // We only care about user actions, so if userId is null, do nothing.
+      if (userId == null) return;
+
       next.maybeWhen(
+        // SUCCESS: This is where the magic happens!
+        success: (transactionId) {
+          // When payment succeeds, we get the transactionId here.
+          // Now, we can place the order with the transaction ID.
+          final cartItems = ref.read(cartItemsStreamProvider(userId)).value;
+          if (cartItems != null && cartItems.isNotEmpty) {
+            ref.read(checkoutNotifierProvider.notifier).placeOrder(
+              cartItems,transactionId,// Pass the ID here!
+            );
+          }
+        },
+        // FAILURE: Show an error message.
         failure: (message) => ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message), backgroundColor: Colors.red),
         ),
+        // orElse: We don't need to do anything for .initial() or .loading() states here.
         orElse: () {},
       );
     });
@@ -53,16 +75,16 @@ class CheckoutPage extends ConsumerWidget {
         body: const Center(child: Text('Please log in to checkout')),
       );
     }
-    final userId = currentUser.id;
+    // userId is already defined above
 
-    final cartItemsAsync = ref.watch(cartItemsStreamProvider(userId));
+    final cartItemsAsync = ref.watch(cartItemsStreamProvider(userId!));
     final userProfileAsync = ref.watch(userProfileStreamProvider(userId));
 
     final checkoutState = ref.watch(checkoutNotifierProvider);
     final orderState = ref.watch(orderNotifierProvider);
     final paymentState = ref.watch(paymentNotifierProvider);
 
-    // --- CORRECTED LOADING STATE CHECKS ---
+    // --- LOADING STATE CHECKS (This logic remains correct) ---
     final isPlacingOrder = checkoutState.isLoading || orderState.maybeWhen(loading: () => true, orElse: () => false);
     final isPaymentProcessing = paymentState.maybeWhen(loading: () => true, orElse: () => false);
     final isOverallLoading = isPlacingOrder || isPaymentProcessing;
@@ -86,27 +108,28 @@ class CheckoutPage extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 16),
             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
+          // --- THE ONPRESSED LOGIC IS NOW CLEAN AND SEPARATED ---
           onPressed: isOverallLoading ||
               checkoutState.shippingAddress == null ||
               (cartItemsAsync.valueOrNull?.isEmpty ?? true)
               ? null
-              : () async {
+              : () { // No longer needs to be async!
             final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
-            final paymentNotifier = ref.read(paymentNotifierProvider.notifier);
             final currentCheckoutState = ref.read(checkoutNotifierProvider);
             final cartItems = ref.read(cartItemsStreamProvider(userId)).value;
 
             if (cartItems == null || cartItems.isEmpty) return;
 
+            // SCENARIO 1: Online Payment
             if (currentCheckoutState.selectedPaymentMethod == 'online') {
-
-
-              final paymentSuccess = await paymentNotifier.processPayment(amount: currentCheckoutState.grandTotal);
-              if (paymentSuccess) {
-                checkoutNotifier.placeOrder(cartItems);
-              }
-            } else {
-              checkoutNotifier.placeOrder(cartItems);
+              // Just trigger the payment process.
+              // The `ref.listen` block above will handle what to do on success.
+              ref.read(paymentNotifierProvider.notifier).processPayment(amount: currentCheckoutState.grandTotal);
+            }
+            // SCENARIO 2: Cash on Delivery
+            else {
+              // Place the order directly. The transactionId will be null by default.
+              checkoutNotifier.placeOrder(cartItems,"N/A");
             }
           },
           child: _buildButtonChild(isPlacingOrder, isPaymentProcessing, checkoutState.selectedPaymentMethod),
@@ -121,11 +144,8 @@ class CheckoutPage extends ConsumerWidget {
             data: (user) {
               final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
 
-              // --- CORRECTED INITIALIZATION LOGIC ---
               if (!checkoutState.isInitialized && user.addresses.isNotEmpty) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  // This is the simplest safe check. If the widget that holds this BuildContext
-                  // is still in the tree, we can proceed.
                   if (context.mounted) {
                     final subtotal = cartItems.fold<double>(0, (sum, item) => sum + (item.variantPrice * item.quantity));
                     final defaultAddress = user.addresses.firstWhere((a) => a.isDefault, orElse: () => user.addresses.first);
@@ -142,9 +162,6 @@ class CheckoutPage extends ConsumerWidget {
                       const Text("Please add a shipping address to your profile first.", textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        // --- CORRECTED NAVIGATION ---
-                        // Use pushNamed for dialogs or pages that should appear ON TOP of the current stack.
-                        // Use goNamed to replace the current stack. Here, push is better.
                         onPressed: () => context.pushNamed(AppRoutes.addAddress),
                         child: const Text('Add Address'),
                       ),
@@ -153,6 +170,7 @@ class CheckoutPage extends ConsumerWidget {
                 );
               }
 
+              // The rest of your UI remains the same
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(

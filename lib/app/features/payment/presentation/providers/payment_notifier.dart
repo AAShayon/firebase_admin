@@ -17,10 +17,10 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
       final useCase = _ref.read(processSslCommerzPaymentUseCaseProvider);
       final transactionId = _generateTransactionId();
 
-      final success = await useCase(amount: amount, transactionId: transactionId);
+      final successfulTransactionId = await useCase(amount: amount, transactionId: transactionId);
 
-      if (success) {
-        state = const PaymentState.success();
+      if (successfulTransactionId != null) {
+        state = PaymentState.success(successfulTransactionId);
         return true;
       } else {
         state = const PaymentState.failure('Payment failed or was cancelled by the user.');

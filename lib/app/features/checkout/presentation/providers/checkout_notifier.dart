@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/helpers/sequential_id_generator.dart';
+
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
@@ -8,7 +8,6 @@ import '../../../notifications/domain/entities/notification_entity.dart';
 import '../../../notifications/presentation/providers/notification_providers.dart';
 import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/providers/order_notifier_provider.dart';
-import '../../../order/presentation/providers/order_providers.dart';
 import '../../../user_profile/domain/entities/user_profile_entity.dart';
 import '../../../../core/helpers/enums.dart'; // Ensure you have this enum file
 import 'checkout_state.dart';
@@ -21,43 +20,6 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
     // Initialize with a coupon controller.
       CheckoutState(couponController: TextEditingController())
   );
-
-  Future<String> _generateNextOrderId(String namePrefix) async {
-    try {
-      // --- ATTEMPT 1: The preferred Firestore method ---
-      final getLastOrderId = ref.read(getLastOrderIdUseCaseProvider);
-      final lastOrderId = await getLastOrderId();
-
-      if (lastOrderId != null) {
-        // Successfully found a previous order, so we can calculate the next number.
-        final RegExp numRegExp = RegExp(r'(\d+)$');
-        final match = numRegExp.firstMatch(lastOrderId);
-        if (match != null) {
-          final lastNumberStr = match.group(0);
-          if (lastNumberStr != null) {
-            final lastNumber = int.tryParse(lastNumberStr) ?? 0;
-            final nextNumber = lastNumber + 1;
-            return '${namePrefix}Order${nextNumber.toString().padLeft(7, '0')}';
-          }
-        }
-      }
-
-      // If we reach here, it means lastOrderId was null (the database is empty).
-      // We will fall through to the fallback method.
-      print("No previous orders found in Firestore. Defaulting to first order number.");
-      return '${namePrefix}Order${'1'.padLeft(7, '0')}';
-
-    } catch (e) {
-      // --- ATTEMPT 2: The fallback in-memory method ---
-      // An error occurred trying to fetch from Firestore (e.g., offline, permissions).
-      // We fall back to the simple, non-persistent generator.
-      print("Error fetching last order ID, using in-memory fallback: $e");
-      final sequentialNumber = SequentialIdGenerator.generate();
-      return '${namePrefix}Order$sequentialNumber';
-    }
-  }
-
-
 
   // Method to initialize the checkout state with data from the cart.
   void initialize(double subtotal, UserAddress defaultAddress) {
@@ -119,7 +81,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
     return '${address.addressLine1}, ${address.area ?? ''}, ${address.city}, ${address.state}, ${address.postalCode}, ${address.country}';
   }
   // --- The main logic to place the order ---
-  Future<void> placeOrder(List<CartItemEntity> cartItems) async {
+  Future<void> placeOrder(List<CartItemEntity> cartItems, String? transactionId) async {
     final currentUser = ref.read(currentUserProvider);
     final userDisplayName = currentUser?.displayName;
     if (currentUser == null || state.shippingAddress == null || cartItems.isEmpty) {
@@ -161,7 +123,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
             ? _formatAddress(state.shippingAddress)
             : _formatAddress(state.billingAddress),
         paymentMethod: state.selectedPaymentMethod,
-        transactionId: null,
+        transactionId: transactionId,
       );
 
       // THIS IS THE KEY CONNECTION

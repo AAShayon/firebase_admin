@@ -6,7 +6,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
   PaymentRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<bool> processSslCommerzPayment({
+  Future<String?> processSslCommerzPayment({
     required double amount,
     required String transactionId,
   }) {

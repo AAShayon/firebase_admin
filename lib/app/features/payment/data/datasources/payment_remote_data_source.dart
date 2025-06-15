@@ -5,7 +5,7 @@ import 'package:flutter_sslcommerz/model/SSLCurrencyType.dart';
 import 'package:flutter_sslcommerz/sslcommerz.dart';
 
 abstract class PaymentRemoteDataSource {
-  Future<bool> processSslCommerzPayment({
+  Future<String?> processSslCommerzPayment({
     required double amount,
     required String transactionId,
   });
@@ -13,7 +13,7 @@ abstract class PaymentRemoteDataSource {
 
 class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
   @override
-  Future<bool> processSslCommerzPayment({
+  Future<String?> processSslCommerzPayment({
     required double amount,
     required String transactionId,
   }) async {
@@ -47,20 +47,20 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         // Payment completed successfully
         log('Payment completed, TRX ID: ${response.tranId}');
         log('Payment Date: ${response.tranDate}');
-        return true;
+        return response.tranId;
       } else if (response.status == 'Closed') {
         log('Payment closed');
-        return false;
+        return null;
       } else if (response.status == 'FAILED') {
         log('Payment failed');
-        return false;
+        return null;
       }
       else{
-        return false;
+        return null;
       }
     } catch (e) {
       log('Error during SSLCommerz payment: $e');
-      return false;
+      return null;
     }
   }
 }
