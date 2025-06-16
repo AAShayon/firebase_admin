@@ -11,7 +11,6 @@ abstract class ProductRemoteDataSource {
   Future<void> updateProduct(Product product); // ADDED
   Future<void> deleteProduct(String productId); // ADDED
   Future<List<Product>> searchProducts(String query);
-  Future<void> addToWishlist(String productId, String userId);
 
 }
 
@@ -79,14 +78,5 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       return titleMatches || idMatches;
     }).toList();
   }
-  @override
-  Future<void> addToWishlist(String productId, String userId) async {
-    await _firestore.collection('wishlist').add({
-      'productId': productId,
-      'userId': userId,
-      'addedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
 
 }

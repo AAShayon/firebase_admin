@@ -29,3 +29,12 @@ final updateProductProvider = Provider<UpdateProductUseCase>((ref) {
 final deleteProductProvider = Provider<DeleteProductUseCase>((ref) {
   return locator<DeleteProductUseCase>(); // Assuming you use GetIt/locator
 });
+
+final singleProductProvider = FutureProvider.autoDispose.family<ProductEntity?, String>((ref, productId) async {
+  final products = await ref.watch(productsStreamProvider.future);
+  try {
+    return products.firstWhere((p) => p.id == productId);
+  } catch (e) {
+    return null; // Return null if not found
+  }
+});

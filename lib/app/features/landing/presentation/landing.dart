@@ -1,3 +1,4 @@
+import 'package:firebase_admin/app/features/wishlist/presentation/pages/wishlist_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -58,6 +59,21 @@ class _LandingPageState extends ConsumerState<LandingPage> {
       },
     );
   }
+  // --- NEW: Define the pages and titles for each role ---
+  static const List<Widget> _adminPages = [
+    HomePage(), DashboardPage(), ProductsTable(), OrderPage(),
+    CustomersPage(), NotificationsPage(), SettingsPage(), CartPage(isFromLanding: false)
+  ];
+  static const List<String> _adminTitles = [
+    'Home', 'Dashboard', 'Products', 'Orders', 'Customers', 'Notifications', 'Settings', 'Cart'
+  ];
+
+  static const List<Widget> _userPages = [
+    HomePage(), WishlistPage(), OrderPage(), NotificationsPage(), SettingsPage(), CartPage(isFromLanding: false)
+  ];
+  static const List<String> _userTitles = [
+    'Home', 'My Wishlist', 'My Orders', 'Notifications', 'Settings', 'My Cart'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -109,18 +125,14 @@ class _LandingPageState extends ConsumerState<LandingPage> {
         }
       });
     }
-
+    final pages = isAdmin ? _adminPages : _userPages;
+    final titles = isAdmin ? _adminTitles : _userTitles;
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_getTitle(_currentIndex)),
+          title: Text(titles.length > _currentIndex ? titles[_currentIndex] : titles.first),
           actions: [
-            if (_currentIndex == 2 && isAdmin)
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () => context.pushNamed(AppRoutes.addProduct),
-              ),
             IconButton(
               tooltip: 'Notifications',
               icon: badges.Badge(
@@ -158,14 +170,26 @@ class _LandingPageState extends ConsumerState<LandingPage> {
                   ),
                 ),
               ),
+              // --- DYNAMIC DRAWER ITEMS ---
               _buildDrawerItem(icon: Icons.home_outlined, title: 'Home', index: 0),
-              if (isAdmin) _buildDrawerItem(icon: Icons.dashboard_outlined, title: 'Dashboard', index: 1),
-              if (isAdmin) _buildDrawerItem(icon: Icons.inventory_2_outlined, title: 'Products', index: 2),
-              _buildDrawerItem(icon: Icons.receipt_long_outlined, title: 'Orders', index: 3),
-              if (isAdmin) _buildDrawerItem(icon: Icons.people_outline, title: 'Customers', index: 4),
-              _buildDrawerItem(icon: Icons.notifications_outlined, title: 'Notifications', index: 5),
-              _buildDrawerItem(icon: Icons.settings_outlined, title: 'Settings', index: 6),
-              _buildDrawerItem(icon: Icons.shopping_cart_outlined, title: 'Cart', index: 7),
+
+              if (isAdmin)
+                _buildDrawerItem(icon: Icons.dashboard_outlined, title: 'Dashboard', index: 1)
+              else
+                _buildDrawerItem(icon: Icons.favorite_border, title: 'My Wishlist', index: 1),
+
+              if (isAdmin)
+                _buildDrawerItem(icon: Icons.inventory_2_outlined, title: 'Products', index: 2),
+
+              _buildDrawerItem(icon: Icons.receipt_long_outlined, title: 'My Orders', index: isAdmin ? 3 : 2),
+
+              if (isAdmin)
+                _buildDrawerItem(icon: Icons.people_outline, title: 'Customers', index: 4),
+
+              _buildDrawerItem(icon: Icons.notifications_outlined, title: 'Notifications', index: isAdmin ? 5 : 3),
+              _buildDrawerItem(icon: Icons.settings_outlined, title: 'Settings', index: isAdmin ? 6 : 4),
+              _buildDrawerItem(icon: Icons.shopping_cart_outlined, title: 'My Cart', index: isAdmin ? 7 : 5),
+
               const Divider(),
               Consumer(
                 builder: (context, ref, _) {
@@ -194,7 +218,7 @@ class _LandingPageState extends ConsumerState<LandingPage> {
             ],
           ),
         ),
-        body: _getPage(_currentIndex),
+        body: pages.length > _currentIndex ? pages[_currentIndex] : pages.first,
       ),
     );
   }
@@ -212,18 +236,18 @@ class _LandingPageState extends ConsumerState<LandingPage> {
     );
   }
 
-  String _getTitle(int index) {
-    const titles = ['Home', 'Dashboard', 'Products', 'Orders', 'Customers', 'Notifications', 'Settings', 'Cart'];
-    return titles.length > index ? titles[index] : 'Home';
-  }
+  // String _getTitle(int index) {
+  //   const titles = ['Home', 'Dashboard', 'Products', 'Orders', 'Customers', 'Notifications', 'Settings', 'Cart'];
+  //   return titles.length > index ? titles[index] : 'Home';
+  // }
 
-  Widget _getPage(int index) {
-    const pages = [
-      HomePage(), DashboardPage(), ProductsTable(), OrderPage(),
-      CustomersPage(), NotificationsPage(), SettingsPage(), CartPage(isFromLanding: false),
-    ];
-    return pages.length > index ? pages[index] : const HomePage();
-  }
+  // Widget _getPage(int index) {
+  //   const pages = [
+  //     HomePage(), DashboardPage(), ProductsTable(), OrderPage(),
+  //     CustomersPage(), NotificationsPage(), SettingsPage(), CartPage(isFromLanding: false),WishlistPage()
+  //   ];
+  //   return pages.length > index ? pages[index] : const HomePage();
+  // }
 
   Future<bool> _onWillPop() async {
     if (_currentIndex != 0) {

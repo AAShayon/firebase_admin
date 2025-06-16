@@ -28,6 +28,7 @@ import '../../features/shared/domain/entities/product_entity.dart';
 import '../../features/user_profile/domain/entities/user_profile_entity.dart';
 import '../../features/user_profile/presentation/pages/add_edit_address.dart';
 import '../../features/user_profile/presentation/providers/user_profile_notifier_provider.dart';
+import '../../features/wishlist/presentation/pages/wishlist_page.dart';
 import 'app_transitions.dart';
 
 class AppRoutes {
@@ -56,6 +57,7 @@ class AppRoutes {
   static const addAddress = 'addAddress';
   static const editAddress = 'editAddress';
   static const checkout = 'checkout';
+  static const wishlist = 'wishlist';
 
 
 
@@ -88,6 +90,7 @@ class AppRoutes {
   static const editProfilePath = 'details/edit'; // Full path will be: /profile/details/edit
   static const addAddressPath = 'address/add'; // Full path will be: /profile/address/add
   static const editAddressPath = 'address/edit/:addressId'; // Full path: /profile/address/edit/some-id
+  static const wishlistPath = '/wishlist';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -402,6 +405,16 @@ final GoRouter appRouter = GoRouter(
         state: state,
         child: const SettingsPage(),
         transitionType: AppRouteTransitionType.scale,
+      ),
+    ),
+    GoRoute(
+      name: AppRoutes.wishlist,
+      path: AppRoutes.wishlistPath,
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context,
+        state: state,
+        child: const WishlistPage(),
+        transitionType: AppRouteTransitionType.slideFromRight,
       ),
     ),
   ],

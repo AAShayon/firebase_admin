@@ -16,6 +16,15 @@ class ProductVariantEntity {
     required this.imageUrls,
     required this.color,
   });
+  factory ProductVariantEntity.empty() {
+    return ProductVariantEntity(
+      size: 'N/A',
+      price: 0.0,
+      quantity: 0,
+      imageUrls: [],
+      color: ProductColor.custom,
+    );
+  }
 }
 
 class ProductEntity {
@@ -37,4 +46,5 @@ class ProductEntity {
     required this.category,
     required this.createdAt,
   });
+
 }

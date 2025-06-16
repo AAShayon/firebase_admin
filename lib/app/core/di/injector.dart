@@ -9,7 +9,6 @@ import 'package:firebase_admin/app/features/auth/domain/usecases/sign_out.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/update_password_use_case.dart';
 import 'package:firebase_admin/app/features/dashboard/domain/usecases/create_public_notification_use_case.dart';
 import 'package:firebase_admin/app/features/payment/domain/usecases/process_sslcommerz_payment_use_case.dart';
-import 'package:firebase_admin/app/features/shared/domain/usecases/add_to_wish_list.dart';
 import 'package:firebase_admin/app/features/user_profile/domain/usecases/watch_user_profile_use_case.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
@@ -84,6 +83,13 @@ import '../../features/user_profile/domain/usecases/get_user_profile_usecase.dar
 import '../../features/user_profile/domain/usecases/manage_user_address_usecase.dart';
 import '../../features/user_profile/domain/usecases/update_user_contact_use_case.dart';
 import '../../features/user_profile/domain/usecases/update_user_profile_usecase.dart';
+import '../../features/wishlist/data/datasources/wishlist_remote_data_source.dart';
+import '../../features/wishlist/data/repositories/wishlist_repository_impl.dart';
+import '../../features/wishlist/domain/repositories/wishlist_repository.dart';
+import '../../features/wishlist/domain/usecase/add_to_wishlist_use_case.dart';
+import '../../features/wishlist/domain/usecase/get_wishlist_ids_use_case.dart';
+import '../../features/wishlist/domain/usecase/get_wishlist_items_use_case.dart';
+import '../../features/wishlist/domain/usecase/remove_from_wishlist_use_case.dart';
 import '../network/dio_factory.dart';
 import '../network/firebase_provider.dart';
 
@@ -158,7 +164,6 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdateProductUseCase>(()=>UpdateProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<DeleteProductUseCase>(()=>DeleteProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<SearchProductUseCase>(()=>SearchProductUseCase(locator<ProductRepository>()));
-  locator.registerLazySingleton<AddToWishListUseCase>(()=>AddToWishListUseCase(locator<ProductRepository>()));
 
   //cart
   locator.registerLazySingleton<CartRemoteDataSource>(()=>CartRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
@@ -168,6 +173,14 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdateCartItemQuantityUseCase>(()=>UpdateCartItemQuantityUseCase(locator<CartRepository>()));
   locator.registerLazySingleton<RemoveFromCartUseCase>(()=>RemoveFromCartUseCase(locator<CartRepository>()));
   locator.registerLazySingleton<ClearCartUseCase>(()=>ClearCartUseCase(locator<CartRepository>()));
+
+  //wishlist
+  locator.registerLazySingleton<WishlistRemoteDataSource>(() => WishlistRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<WishlistRepository>(() => WishlistRepositoryImpl(remoteDataSource: locator<WishlistRemoteDataSource>(),));
+  locator.registerLazySingleton<GetWishlistItemsUseCase>(() => GetWishlistItemsUseCase(locator<WishlistRepository>()));
+  locator.registerLazySingleton<GetWishlistIdsUseCase>(() => GetWishlistIdsUseCase(locator<WishlistRepository>()));
+  locator.registerLazySingleton<AddToWishlistUseCase>(() => AddToWishlistUseCase(locator<WishlistRepository>()));
+  locator.registerLazySingleton<RemoveFromWishlistUseCase>(() => RemoveFromWishlistUseCase(locator<WishlistRepository>()));
 
   //payment
 
