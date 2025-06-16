@@ -18,4 +18,15 @@ class GalleryImageModel extends GalleryImageEntity {
       createdAt: (data['createdAt'] as Timestamp? ?? Timestamp.now()).toDate(),
     );
   }
+  factory GalleryImageModel.fromApi(Map<String, dynamic> json) {
+    final String id = json['id'] ?? 'unknown';
+    return GalleryImageModel(
+      id: id,
+      // Construct the optimized URL directly
+      url: 'https://picsum.photos/id/$id/500/500',
+      name: 'By ${json['author'] ?? 'Unknown Artist'}',
+      // API data doesn't have a creation date, so we can leave it null
+      createdAt: null,
+    );
+  }
 }

@@ -1,4 +1,5 @@
 // lib/core/di/injector.dart
+import 'package:dio/dio.dart';
 import 'package:firebase_admin/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:firebase_admin/app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/admin_use_case.dart';
@@ -11,6 +12,8 @@ import 'package:firebase_admin/app/features/payment/domain/usecases/process_sslc
 import 'package:firebase_admin/app/features/user_profile/domain/usecases/watch_user_profile_use_case.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/domain/usecases/get_current_user_use_case.dart';
 import '../../features/auth/domain/usecases/save_admin_token_use_case.dart';
@@ -34,6 +37,7 @@ import '../../features/image_gallery/data/repositories/image_gallery_repository_
 import '../../features/image_gallery/domain/repositories/image_gallery_repository.dart';
 import '../../features/image_gallery/domain/usecase/add_image_url_use_case.dart';
 import '../../features/image_gallery/domain/usecase/delete_image_use_case.dart';
+import '../../features/image_gallery/domain/usecase/fetch_api_images_use_case.dart';
 import '../../features/image_gallery/domain/usecase/get_gallery_images_use_case.dart';
 import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
@@ -79,7 +83,7 @@ import '../../features/user_profile/domain/usecases/get_user_profile_usecase.dar
 import '../../features/user_profile/domain/usecases/manage_user_address_usecase.dart';
 import '../../features/user_profile/domain/usecases/update_user_contact_use_case.dart';
 import '../../features/user_profile/domain/usecases/update_user_profile_usecase.dart';
-import '../network/api_provider.dart';
+import '../network/dio_factory.dart';
 import '../network/firebase_provider.dart';
 
 final locator = GetIt.instance;
@@ -88,6 +92,16 @@ GetStorage get appData => locator<GetStorage>();
 Future<void> initDependencies() async {
   await GetStorage.init();
   locator.registerSingleton<GetStorage>(GetStorage());
+
+  //hive for dio cache
+  final appDocumentDir = await getApplicationDocumentsDirectory();
+  await Hive.initFlutter(appDocumentDir.path);
+
+
+  // 2. Register factories for your API services.
+  //    Each one gets the DioFactory and creates a Dio instance with a specific base URL.
+
+
   //theme
   locator.registerLazySingleton<SettingsLocalDataSource>(
           () => SettingsLocalDataSourceImpl(locator<GetStorage>()));
@@ -100,8 +114,14 @@ Future<void> initDependencies() async {
   await FirebaseProvider.initialize();
   locator.registerLazySingleton(() => FirebaseProvider());
 
+  //dio
+  locator.registerLazySingleton(() => DioFactory());
+  locator.registerFactory<Dio>(
+        () => locator<DioFactory>().create('https://picsum.photos'),
+    instanceName: 'PicsumDio', // <-- We will use this name consistently.
+  );
   // Network
-  locator.registerLazySingleton(() => ApiProvider());
+  // locator.registerLazySingleton(() => ApiProvider());
 
   // Auth
   locator.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(auth: FirebaseProvider.auth, googleSignIn: FirebaseProvider.googleSignIn, firestore: FirebaseProvider.firestore),);
@@ -186,9 +206,10 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<GetRecentSalesUseCase>(() => GetRecentSalesUseCase(locator<DashboardRepository>()));
 
   // --- ADD THIS NEW BLOCK FOR IMAGE GALLERY ---
-  locator.registerLazySingleton<ImageGalleryRemoteDataSource>(() => ImageGalleryRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<ImageGalleryRemoteDataSource>(() => ImageGalleryRemoteDataSourceImpl(firestore: FirebaseProvider.firestore, dio: locator<Dio>(instanceName: 'PicsumDio'),));
   locator.registerLazySingleton<ImageGalleryRepository>(() => ImageGalleryRepositoryImpl(remoteDataSource: locator<ImageGalleryRemoteDataSource>()));
   locator.registerLazySingleton<GetGalleryImagesUseCase>(() => GetGalleryImagesUseCase(locator<ImageGalleryRepository>()));
   locator.registerLazySingleton<AddImageUrlUseCase>(() => AddImageUrlUseCase(locator<ImageGalleryRepository>()));
   locator.registerLazySingleton<DeleteImageUrlUseCase>(() => DeleteImageUrlUseCase(locator<ImageGalleryRepository>()));
+  locator.registerLazySingleton<FetchApiImagesUseCase>(() => FetchApiImagesUseCase(locator<ImageGalleryRepository>()));
 }

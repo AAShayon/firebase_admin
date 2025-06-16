@@ -1,3 +1,4 @@
+import 'package:firebase_admin/app/features/image_gallery/presentation/pages/browse_api_images_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -111,6 +112,14 @@ class ImageGalleryPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Image Gallery'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.public),
+            onPressed: () {
+              // Navigate to the new page. You'll need to add this route.
+             Navigator.push(context, MaterialPageRoute(builder: (context)=>BrowseApiImagesPage()));
+            },
+            tooltip: 'Browse Public Images',
+          ),
           IconButton(
             icon: const Icon(Icons.add_photo_alternate_outlined),
             onPressed: showAddImageDialog,

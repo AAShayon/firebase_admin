@@ -5,7 +5,7 @@ class ApiProvider {
   final Dio _dio = Dio();
 
   ApiProvider() {
-    _dio.options.baseUrl = 'https://your-api-endpoint.com';
+    _dio.options.baseUrl = 'https://picsum.photos';
     _dio.interceptors.add(LogInterceptor(
       request: true,
       requestHeader: true,
@@ -33,7 +33,7 @@ class ApiProvider {
 
   // Add other HTTP methods as needed
 
-  dynamic _handleError(DioError error) {
+  dynamic _handleError(DioException error) {
     // Custom error handling
     throw error;
   }
