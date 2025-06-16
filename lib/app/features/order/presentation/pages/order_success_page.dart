@@ -37,7 +37,7 @@ class OrderSuccessPage extends StatelessWidget {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  context.goNamed(AppRoutes.landing, extra: {'index': 3});
+                  context.goNamed(AppRoutes.landing, extra: {'index': 2});
                 },
                 child: const Text('View My Orders'),
               ),
