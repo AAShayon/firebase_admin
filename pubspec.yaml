@@ -58,7 +58,6 @@ dependencies:
   badges: ^3.1.2
   fl_chart: ^1.0.0
   flutter_sslcommerz: ^2.5.1
-#  flutter_sslcommerz: ^2.5.1
 
 dev_dependencies:
   flutter_test:
