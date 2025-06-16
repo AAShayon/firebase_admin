@@ -97,4 +97,8 @@ class ProductRepositoryImpl implements ProductRepository {
     final productModels = await remoteDataSource.searchProducts(query);
     return productModels.map((model) => _toEntity(model)).toList();
   }
+  @override
+  Future<void> addToWishlist(String productId, String userId) async {
+    await remoteDataSource.addToWishlist(productId, userId);
+  }
 }

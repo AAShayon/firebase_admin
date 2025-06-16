@@ -9,6 +9,7 @@ import 'package:firebase_admin/app/features/auth/domain/usecases/sign_out.dart';
 import 'package:firebase_admin/app/features/auth/domain/usecases/update_password_use_case.dart';
 import 'package:firebase_admin/app/features/dashboard/domain/usecases/create_public_notification_use_case.dart';
 import 'package:firebase_admin/app/features/payment/domain/usecases/process_sslcommerz_payment_use_case.dart';
+import 'package:firebase_admin/app/features/shared/domain/usecases/add_to_wish_list.dart';
 import 'package:firebase_admin/app/features/user_profile/domain/usecases/watch_user_profile_use_case.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
@@ -157,6 +158,7 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<UpdateProductUseCase>(()=>UpdateProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<DeleteProductUseCase>(()=>DeleteProductUseCase(locator<ProductRepository>()));
   locator.registerLazySingleton<SearchProductUseCase>(()=>SearchProductUseCase(locator<ProductRepository>()));
+  locator.registerLazySingleton<AddToWishListUseCase>(()=>AddToWishListUseCase(locator<ProductRepository>()));
 
   //cart
   locator.registerLazySingleton<CartRemoteDataSource>(()=>CartRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));

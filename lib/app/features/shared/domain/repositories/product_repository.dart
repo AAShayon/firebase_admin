@@ -10,5 +10,5 @@ abstract class ProductRepository {
   Future<void> updateProduct(ProductEntity product); // ADDED
   Future<void> deleteProduct(String productId);
   Future<List<ProductEntity>> searchProducts(String query);
-
+  Future<void> addToWishlist(String productId, String userId);
 }
