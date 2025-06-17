@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_options.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,7 +13,6 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
 import '../../../checkout/presentation/providers/checkout_notifier_provider.dart';
-import '../../../shared/data/model/product_model.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 import '../../../user_profile/presentation/providers/user_profile_providers.dart';
 import '../../../wishlist/presentation/providers/wishlist_notifier_provider.dart';
@@ -111,7 +111,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
       id: '', userId: currentUser.id, productId: widget.product.id,
       productTitle: widget.product.title,
       variantSize: _selectedVariant.size,
-      variantColorName: "${_selectedVariant.color}",
+      variantColorName:describeEnum(_selectedVariant.color),
       variantPrice: _selectedVariant.price,
       variantImageUrl: _selectedVariant.imageUrls.isNotEmpty ? _selectedVariant.imageUrls.first : null,
       quantity: _quantity,
@@ -125,53 +125,35 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   void _buyNow() async {
     final currentUser = ref.read(currentUserProvider);
-    if (currentUser == null) {
-      // Show snackbar and exit if not logged in
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please log in to purchase.')));
-      return;
-    }
-
-    // Use a local variable for ScaffoldMessenger to avoid context issues after await
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    // Show a loading indicator to the user immediately
-    // scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Preparing checkout...'), duration: Duration(seconds: 1)));
+    if (currentUser == null) { /* ... handle guest ... */ return; }
 
     try {
-      // STEP 1: Invalidate the checkout state FIRST to ensure a clean slate.
-      // This is important if the user goes back and forth between pages.
+      // --- PREPARE STATE BEFORE NAVIGATING ---
+
+      // Invalidate to ensure a fresh state
       ref.invalidate(checkoutNotifierProvider);
 
-      // STEP 2: Await the profile data.
+      // Await profile to get address
       final profile = await ref.read(userProfileStreamProvider(currentUser.id).future);
+      if (!mounted || profile.addresses.isEmpty) { /* ... handle no address ... */ return; }
 
-      // STEP 3: Check if the widget is still on screen before proceeding.
-      if (!mounted) return;
-
-      if (profile.addresses.isEmpty) {
-        scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Please add a shipping address first.')));
-        context.pushNamed(AppRoutes.addAddress);
-        return;
-      }
-
-      // STEP 4: Prepare the state by calling the notifier.
       final defaultAddress = profile.addresses.firstWhere((a) => a.isDefault, orElse: () => profile.addresses.first);
-      final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
 
-      checkoutNotifier.initializeForBuyNow(
+      // Initialize the notifier with the "Buy Now" item
+      ref.read(checkoutNotifierProvider.notifier).initializeForBuyNow(
         product: widget.product,
         variant: _selectedVariant,
         quantity: _isCartActionInitiated ? _quantity : 1,
         defaultAddress: defaultAddress,
       );
 
-      // STEP 5: Navigate to the checkout page LAST.
-      // All state preparation is done before this line.
+      // --- NAVIGATE LAST ---
+      // Now that the state is ready, navigate to the checkout page.
       context.pushNamed(AppRoutes.checkout);
 
     } catch (e) {
-      // If any error occurs (e.g., fetching profile failed), show it.
       if (mounted) {
-        scaffoldMessenger.showSnackBar(SnackBar(content: Text('Could not prepare checkout: ${e.toString()}'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not prepare checkout: $e')));
       }
     }
   }

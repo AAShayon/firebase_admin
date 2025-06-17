@@ -1,12 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// Core and Feature imports
 import '../../../../core/helpers/enums.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
+import '../../../cart/presentation/providers/cart_providers.dart';
 import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/providers/order_notifier_provider.dart';
 import '../../../shared/domain/entities/product_entity.dart';
@@ -20,19 +19,23 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       CheckoutState(couponController: TextEditingController())
   );
 
-  /// --- METHOD 1: For checking out from the full cart ---
-  void initializeFromCart(double subtotal, UserAddress defaultAddress) {
+  /// Initializes the checkout state from the user's full shopping cart.
+  void initializeFromCart({
+    required List<CartItemEntity> cartItems,
+    required UserAddress defaultAddress,
+  }) {
+    final subtotal = cartItems.fold(0.0, (sum, item) => sum + (item.variantPrice * item.quantity));
     state = state.copyWith(
       subtotal: subtotal,
       shippingAddress: defaultAddress,
       billingAddress: state.isBillingSameAsShipping ? defaultAddress : null,
       isInitialized: true,
       deliveryFee: _calculateDeliveryFee(defaultAddress),
-      buyNowItems: null, // CRITICAL: Ensure this is null for a cart checkout
+      itemsToCheckout: cartItems,
     );
   }
 
-  /// --- METHOD 2: For the "Buy Now" feature ---
+  /// Initializes the checkout state for a single "Buy Now" item.
   void initializeForBuyNow({
     required ProductEntity product,
     required ProductVariantEntity variant,
@@ -41,13 +44,12 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
   }) {
     final subtotal = variant.price * quantity;
 
-    // Create a temporary CartItemEntity to represent this single purchase
     final buyNowItem = CartItemEntity(
       id: '', userId: '', // These are temporary and not used in this context
       productId: product.id,
       productTitle: product.title,
       variantSize: variant.size,
-      variantColorName:describeEnum(variant.color),
+      variantColorName: describeEnum(variant.color),
       variantPrice: variant.price,
       variantImageUrl: variant.imageUrls.isNotEmpty ? variant.imageUrls.first : null,
       quantity: quantity,
@@ -59,7 +61,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       billingAddress: state.isBillingSameAsShipping ? defaultAddress : null,
       isInitialized: true,
       deliveryFee: _calculateDeliveryFee(defaultAddress),
-      buyNowItems: [buyNowItem], // Store the single item in the state
+      itemsToCheckout: [buyNowItem],
     );
   }
 
@@ -100,18 +102,20 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
     state = state.copyWith(discount: 0.0, isCouponApplied: false);
   }
 
-  /// Places the order using either the full cart or the single "Buy Now" item.
-  Future<void> placeOrder(
-      List<CartItemEntity> itemsToOrder, {
-        String? transactionId,
-      }) async {
+  /// Places the order using the items currently in the state.
+  /// This method NO LONGER manages its own loading state.
+  Future<void> placeOrder({String? transactionId}) async {
     final currentUser = ref.read(currentUserProvider);
+    // Get the items to order DIRECTLY from the current state.
+    final itemsToOrder = state.itemsToCheckout;
+
     if (currentUser == null || state.shippingAddress == null || itemsToOrder.isEmpty) {
-      return;
+      // Throw an error that can be caught by the UI if necessary
+      throw Exception("Cannot place order. Missing user, address, or items.");
     }
 
-    if (state.isLoading) return;
-    state = state.copyWith(isLoading: true);
+    // The loading state is now managed entirely by the OrderNotifier and PaymentNotifier,
+    // which the UI watches directly. We don't set it here.
 
     try {
       final userDisplayName = currentUser.displayName;
@@ -138,32 +142,36 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
         transactionId: transactionId,
       );
 
+      // Call the order notifier. Its state change will be picked up by the UI listener.
       await ref.read(orderNotifierProvider.notifier).createOrder(newOrder, namePrefix);
 
-      // Only clear the user's main cart if this was a cart checkout.
-      if (state.buyNowItems == null) {
+      // Clear the main cart if this was a cart checkout.
+      // Heuristic: If the number of items ordered is the same as the number in the cart,
+      // it was a cart checkout. This is safer than checking for buyNowItems being null,
+      // as the state could change.
+      final cartItemCount = ref.read(cartItemsStreamProvider(currentUser.id)).value?.length ?? -1;
+      if (itemsToOrder.length == cartItemCount && cartItemCount > 0) {
         ref.read(cartNotifierProvider.notifier).clearCart(currentUser.id);
       }
-      
 
     } catch (e) {
-      print("Error in placeOrder: $e");
-    } finally {
-      if (mounted) {
-        state = state.copyWith(isLoading: false);
-      }
+      // The error is primarily handled by the OrderNotifier's state.
+      // We just log it here for debugging and re-throw it so the UI's catch block can see it.
+      print("Error during placeOrder initiation: $e");
+      rethrow;
     }
   }
 
+  // --- Private Helper Methods ---
   double _calculateDeliveryFee(UserAddress? address) {
     if (address == null) return 0.0;
     if (address.country.toLowerCase() != 'bangladesh') return 10.0;
     if (address.city.toLowerCase() == 'dhaka') return 1.0;
     return 1.5;
   }
+
   String? _formatAddress(UserAddress? address) {
     if (address == null) return null;
-    // This creates a clean, readable string. Adjust fields as needed.
     return '${address.addressLine1}, ${address.area ?? ''}, ${address.city}, ${address.state}, ${address.postalCode}, ${address.country}';
   }
 

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/routes/app_router.dart';
 import '../../domain/entities/cart_item_entity.dart';
 
 class CartSummary extends StatelessWidget {
   final List<CartItemEntity> items;
-  const CartSummary({super.key, required this.items});
+  final VoidCallback onCheckout; // <-- 1. ADD THIS NEW PARAMETER
+
+  const CartSummary({
+    super.key,
+    required this.items,
+    required this.onCheckout, // <-- 2. MAKE IT REQUIRED IN THE CONSTRUCTOR
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +72,9 @@ class CartSummary extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                context.pushNamed(AppRoutes.checkout);
-              },
+              // --- 3. USE THE CALLBACK HERE ---
+              // The button now calls the function that was passed in from the parent.
+              onPressed: onCheckout,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 textStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),

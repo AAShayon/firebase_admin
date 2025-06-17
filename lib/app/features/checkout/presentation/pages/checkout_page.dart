@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 // Core and Feature imports
 import '../../../../core/routes/app_router.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../cart/domain/entities/cart_item_entity.dart';
-import '../../../cart/presentation/providers/cart_providers.dart';
 import '../../../order/presentation/providers/order_notifier_provider.dart';
 import '../../../order/presentation/providers/order_state.dart';
 import '../../../payment/presentation/providers/payment_notifier_provider.dart';
@@ -23,21 +21,14 @@ class CheckoutPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserProvider);
-    final userId = currentUser?.id ?? '';
-
-    // --- LISTENERS for async operations ---
-    // Listens for the final order creation result to navigate on success
+    // --- SETUP LISTENERS ---
+    // These react to the results of actions initiated on this page.
     ref.listen<OrderState>(orderNotifierProvider, (_, next) {
       next.whenOrNull(
         success: (orderId) {
-          // Reset states to ensure the page is fresh if the user comes back
           ref.invalidate(checkoutNotifierProvider);
           ref.invalidate(paymentNotifierProvider);
-          context.goNamed(
-            AppRoutes.orderSuccess,
-            pathParameters: {'orderId': orderId},
-          );
+          context.goNamed(AppRoutes.orderSuccess, pathParameters: {'orderId': orderId});
         },
         error: (message) => ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error placing order: $message'), backgroundColor: Colors.red),
@@ -45,42 +36,43 @@ class CheckoutPage extends ConsumerWidget {
       );
     });
 
-    // Listens for the payment result to trigger order placement
     ref.listen<PaymentState>(paymentNotifierProvider, (_, next) {
-      if (userId.isEmpty) return; // Don't do anything if there's no user
-
       next.maybeWhen(
         success: (transactionId) {
-          // When payment succeeds, get the items to order (either from "Buy Now" or the cart)
-          final itemsToOrder = ref.read(checkoutNotifierProvider).buyNowItems ?? ref.read(cartItemsStreamProvider(userId)).value;
-
-          if (itemsToOrder != null && itemsToOrder.isNotEmpty) {
-            ref.read(checkoutNotifierProvider.notifier).placeOrder(
-              itemsToOrder,
-              transactionId: transactionId,
-            );
-          }
+          ref.read(checkoutNotifierProvider.notifier).placeOrder(transactionId: transactionId);
         },
-        failure: (message) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: Colors.red),
-        ),
+        failure: (message) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something error "), backgroundColor: Colors.red)),
         orElse: () {},
       );
     });
 
-    // --- UI STATE ---
-    if (currentUser == null) {
-      return Scaffold(appBar: AppBar(title: const Text('Checkout')), body: const Center(child: Text('Please log in')));
+    // --- WATCH STATES FOR UI ---
+    final checkoutState = ref.watch(checkoutNotifierProvider);
+    final userId = ref.watch(currentUserProvider)?.id ?? '';
+
+    // If state hasn't been prepared, it's a sign of a navigation error or delay.
+    if (!checkoutState.isInitialized) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Checkout')),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Preparing your checkout..."),
+              SizedBox(height: 16),
+              CircularProgressIndicator(),
+            ],
+          ),
+        ),
+      );
     }
 
-    final cartItemsAsync = ref.watch(cartItemsStreamProvider(userId));
-    final userProfileAsync = ref.watch(userProfileStreamProvider(userId));
-    final checkoutState = ref.watch(checkoutNotifierProvider);
-
-    // Combine all loading states into one flag for the UI
+    // After initialization, we can safely build the UI.
     final isPlacingOrder = checkoutState.isLoading || ref.watch(orderNotifierProvider).maybeWhen(loading: () => true, orElse: () => false);
     final isPaymentProcessing = ref.watch(paymentNotifierProvider).maybeWhen(loading: () => true, orElse: () => false);
     final isOverallLoading = isPlacingOrder || isPaymentProcessing;
+
+    final userProfileAsync = ref.watch(userProfileStreamProvider(userId));
 
     return Scaffold(
       appBar: AppBar(
@@ -101,64 +93,40 @@ class CheckoutPage extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 16),
             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          onPressed: isOverallLoading ||
-              checkoutState.shippingAddress == null ||
-              ((checkoutState.buyNowItems ?? cartItemsAsync.valueOrNull)?.isEmpty ?? true)
+          onPressed: isOverallLoading || checkoutState.shippingAddress == null || checkoutState.itemsToCheckout.isEmpty
               ? null
               : () {
             final paymentNotifier = ref.read(paymentNotifierProvider.notifier);
-            final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
-            final itemsToOrder = checkoutState.buyNowItems ?? ref.read(cartItemsStreamProvider(userId)).value;
-
-            if (itemsToOrder == null || itemsToOrder.isEmpty) return;
-
             if (checkoutState.selectedPaymentMethod == 'online') {
-              // Fire-and-forget: The listener will handle the success case.
               paymentNotifier.processPayment(amount: checkoutState.grandTotal);
             } else {
-              // For COD, place the order directly.
-              checkoutNotifier.placeOrder(itemsToOrder, transactionId: 'N/A');
+              ref.read(checkoutNotifierProvider.notifier).placeOrder(transactionId: 'N/A');
             }
           },
           child: _buildButtonChild(isPlacingOrder, isPaymentProcessing, checkoutState.selectedPaymentMethod),
         ),
       ),
-      // The body now correctly handles displaying the form for EITHER cart items or "Buy Now" items.
       body: userProfileAsync.when(
         data: (user) {
-          final itemsForDisplay = checkoutState.buyNowItems ?? cartItemsAsync.valueOrNull;
-
-          // Initialize state if needed. This is the key logic.
-          if (!checkoutState.isInitialized && user.addresses.isNotEmpty) {
-            // Only initialize from the cart IF it's not a "Buy Now" flow.
-            if (checkoutState.buyNowItems == null && (cartItemsAsync.valueOrNull?.isNotEmpty ?? false)) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (context.mounted) {
-                  final cartItems = cartItemsAsync.value!;
-                  final subtotal = cartItems.fold<double>(0, (sum, item) => sum + (item.variantPrice * item.quantity));
-                  final defaultAddress = user.addresses.firstWhere((a) => a.isDefault, orElse: () => user.addresses.first);
-                  ref.read(checkoutNotifierProvider.notifier).initializeFromCart(subtotal, defaultAddress);
-                }
-              });
-            }
-          }
-
-          if (itemsForDisplay == null || itemsForDisplay.isEmpty) {
-            return const Center(child: Text("Your cart is empty."));
-          }
-
           if (user.addresses.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Please add a shipping address to your profile first.", textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.pushNamed(AppRoutes.addAddress),
-                    child: const Text('Add Address'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.location_off, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    const Text("No Shipping Address", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    const Text("Please add a shipping address to your profile before you can proceed.", textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey)),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => context.pushNamed(AppRoutes.addAddress),
+                      child: const Text('Add Address'),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -204,8 +172,10 @@ class CheckoutPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 CheckoutSummaryCard(
-                  subtotal: checkoutState.subtotal, deliveryFee: checkoutState.deliveryFee,
-                  discount: checkoutState.discount, total: checkoutState.grandTotal,
+                  subtotal: checkoutState.subtotal,
+                  deliveryFee: checkoutState.deliveryFee,
+                  discount: checkoutState.discount,
+                  total: checkoutState.grandTotal,
                   couponController: checkoutState.couponController,
                   isCouponApplied: checkoutState.isCouponApplied,
                   onApplyCoupon: ref.read(checkoutNotifierProvider.notifier).applyCoupon,
@@ -217,26 +187,14 @@ class CheckoutPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error loading profile: $e')),
+        error: (e, s) => Center(child: Text('Error loading user profile: $e')),
       ),
     );
   }
 
   Widget _buildButtonChild(bool isPlacingOrder, bool isPaymentProcessing, String selectedMethod) {
-    if (isPaymentProcessing) {
-      return const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
-        SizedBox(width: 16),
-        Text('PROCESSING PAYMENT...'),
-      ]);
-    }
-    if (isPlacingOrder) {
-      return const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
-        SizedBox(width: 16),
-        Text('PLACING ORDER...'),
-      ]);
-    }
+    if (isPaymentProcessing) return const Row(mainAxisAlignment: MainAxisAlignment.center, children: [SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white)), SizedBox(width: 16), Text('PROCESSING PAYMENT...')]);
+    if (isPlacingOrder) return const Row(mainAxisAlignment: MainAxisAlignment.center, children: [SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white)), SizedBox(width: 16), Text('PLACING ORDER...')]);
     return Text(selectedMethod == 'online' ? 'Proceed to Pay' : 'Place Order');
   }
 }

@@ -21,10 +21,10 @@ mixin _$CheckoutState {
   UserAddress? get shippingAddress => throw _privateConstructorUsedError;
   UserAddress? get billingAddress => throw _privateConstructorUsedError;
   bool get isBillingSameAsShipping =>
-      throw _privateConstructorUsedError; // --- KEY ADDITION for "Buy Now" ---
-  /// This will hold the single item when buying now.
-  /// It will be null when checking out from the full cart.
-  List<CartItemEntity>? get buyNowItems =>
+      throw _privateConstructorUsedError; // --- THIS IS THE CRITICAL FIELD ---
+  /// This list holds the items for the current checkout session,
+  /// whether it's from the full cart or a single "Buy Now" item.
+  List<CartItemEntity> get itemsToCheckout =>
       throw _privateConstructorUsedError; // Payment
   String get selectedPaymentMethod =>
       throw _privateConstructorUsedError; // Coupon and Totals
@@ -34,8 +34,7 @@ mixin _$CheckoutState {
   double get deliveryFee => throw _privateConstructorUsedError;
   double get discount => throw _privateConstructorUsedError;
   bool get isCouponApplied => throw _privateConstructorUsedError; // Status
-  bool get isLoading =>
-      throw _privateConstructorUsedError; // ---- ADD THIS LINE ----
+  bool get isLoading => throw _privateConstructorUsedError;
   bool get isInitialized => throw _privateConstructorUsedError;
 
   /// Create a copy of CheckoutState
@@ -56,7 +55,7 @@ abstract class $CheckoutStateCopyWith<$Res> {
     UserAddress? shippingAddress,
     UserAddress? billingAddress,
     bool isBillingSameAsShipping,
-    List<CartItemEntity>? buyNowItems,
+    List<CartItemEntity> itemsToCheckout,
     String selectedPaymentMethod,
     TextEditingController couponController,
     double subtotal,
@@ -86,7 +85,7 @@ class _$CheckoutStateCopyWithImpl<$Res, $Val extends CheckoutState>
     Object? shippingAddress = freezed,
     Object? billingAddress = freezed,
     Object? isBillingSameAsShipping = null,
-    Object? buyNowItems = freezed,
+    Object? itemsToCheckout = null,
     Object? selectedPaymentMethod = null,
     Object? couponController = null,
     Object? subtotal = null,
@@ -113,11 +112,11 @@ class _$CheckoutStateCopyWithImpl<$Res, $Val extends CheckoutState>
                     ? _value.isBillingSameAsShipping
                     : isBillingSameAsShipping // ignore: cast_nullable_to_non_nullable
                         as bool,
-            buyNowItems:
-                freezed == buyNowItems
-                    ? _value.buyNowItems
-                    : buyNowItems // ignore: cast_nullable_to_non_nullable
-                        as List<CartItemEntity>?,
+            itemsToCheckout:
+                null == itemsToCheckout
+                    ? _value.itemsToCheckout
+                    : itemsToCheckout // ignore: cast_nullable_to_non_nullable
+                        as List<CartItemEntity>,
             selectedPaymentMethod:
                 null == selectedPaymentMethod
                     ? _value.selectedPaymentMethod
@@ -177,7 +176,7 @@ abstract class _$$CheckoutStateImplCopyWith<$Res>
     UserAddress? shippingAddress,
     UserAddress? billingAddress,
     bool isBillingSameAsShipping,
-    List<CartItemEntity>? buyNowItems,
+    List<CartItemEntity> itemsToCheckout,
     String selectedPaymentMethod,
     TextEditingController couponController,
     double subtotal,
@@ -206,7 +205,7 @@ class __$$CheckoutStateImplCopyWithImpl<$Res>
     Object? shippingAddress = freezed,
     Object? billingAddress = freezed,
     Object? isBillingSameAsShipping = null,
-    Object? buyNowItems = freezed,
+    Object? itemsToCheckout = null,
     Object? selectedPaymentMethod = null,
     Object? couponController = null,
     Object? subtotal = null,
@@ -233,11 +232,11 @@ class __$$CheckoutStateImplCopyWithImpl<$Res>
                 ? _value.isBillingSameAsShipping
                 : isBillingSameAsShipping // ignore: cast_nullable_to_non_nullable
                     as bool,
-        buyNowItems:
-            freezed == buyNowItems
-                ? _value._buyNowItems
-                : buyNowItems // ignore: cast_nullable_to_non_nullable
-                    as List<CartItemEntity>?,
+        itemsToCheckout:
+            null == itemsToCheckout
+                ? _value._itemsToCheckout
+                : itemsToCheckout // ignore: cast_nullable_to_non_nullable
+                    as List<CartItemEntity>,
         selectedPaymentMethod:
             null == selectedPaymentMethod
                 ? _value.selectedPaymentMethod
@@ -290,7 +289,7 @@ class _$CheckoutStateImpl extends _CheckoutState {
     this.shippingAddress,
     this.billingAddress,
     this.isBillingSameAsShipping = true,
-    final List<CartItemEntity>? buyNowItems,
+    final List<CartItemEntity> itemsToCheckout = const [],
     this.selectedPaymentMethod = 'cod',
     required this.couponController,
     this.subtotal = 0.0,
@@ -299,7 +298,7 @@ class _$CheckoutStateImpl extends _CheckoutState {
     this.isCouponApplied = false,
     this.isLoading = false,
     this.isInitialized = false,
-  }) : _buyNowItems = buyNowItems,
+  }) : _itemsToCheckout = itemsToCheckout,
        super._();
 
   // Address selection
@@ -310,20 +309,19 @@ class _$CheckoutStateImpl extends _CheckoutState {
   @override
   @JsonKey()
   final bool isBillingSameAsShipping;
-  // --- KEY ADDITION for "Buy Now" ---
-  /// This will hold the single item when buying now.
-  /// It will be null when checking out from the full cart.
-  final List<CartItemEntity>? _buyNowItems;
-  // --- KEY ADDITION for "Buy Now" ---
-  /// This will hold the single item when buying now.
-  /// It will be null when checking out from the full cart.
+  // --- THIS IS THE CRITICAL FIELD ---
+  /// This list holds the items for the current checkout session,
+  /// whether it's from the full cart or a single "Buy Now" item.
+  final List<CartItemEntity> _itemsToCheckout;
+  // --- THIS IS THE CRITICAL FIELD ---
+  /// This list holds the items for the current checkout session,
+  /// whether it's from the full cart or a single "Buy Now" item.
   @override
-  List<CartItemEntity>? get buyNowItems {
-    final value = _buyNowItems;
-    if (value == null) return null;
-    if (_buyNowItems is EqualUnmodifiableListView) return _buyNowItems;
+  @JsonKey()
+  List<CartItemEntity> get itemsToCheckout {
+    if (_itemsToCheckout is EqualUnmodifiableListView) return _itemsToCheckout;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_itemsToCheckout);
   }
 
   // Payment
@@ -349,14 +347,13 @@ class _$CheckoutStateImpl extends _CheckoutState {
   @override
   @JsonKey()
   final bool isLoading;
-  // ---- ADD THIS LINE ----
   @override
   @JsonKey()
   final bool isInitialized;
 
   @override
   String toString() {
-    return 'CheckoutState(shippingAddress: $shippingAddress, billingAddress: $billingAddress, isBillingSameAsShipping: $isBillingSameAsShipping, buyNowItems: $buyNowItems, selectedPaymentMethod: $selectedPaymentMethod, couponController: $couponController, subtotal: $subtotal, deliveryFee: $deliveryFee, discount: $discount, isCouponApplied: $isCouponApplied, isLoading: $isLoading, isInitialized: $isInitialized)';
+    return 'CheckoutState(shippingAddress: $shippingAddress, billingAddress: $billingAddress, isBillingSameAsShipping: $isBillingSameAsShipping, itemsToCheckout: $itemsToCheckout, selectedPaymentMethod: $selectedPaymentMethod, couponController: $couponController, subtotal: $subtotal, deliveryFee: $deliveryFee, discount: $discount, isCouponApplied: $isCouponApplied, isLoading: $isLoading, isInitialized: $isInitialized)';
   }
 
   @override
@@ -374,8 +371,8 @@ class _$CheckoutStateImpl extends _CheckoutState {
                 ) ||
                 other.isBillingSameAsShipping == isBillingSameAsShipping) &&
             const DeepCollectionEquality().equals(
-              other._buyNowItems,
-              _buyNowItems,
+              other._itemsToCheckout,
+              _itemsToCheckout,
             ) &&
             (identical(other.selectedPaymentMethod, selectedPaymentMethod) ||
                 other.selectedPaymentMethod == selectedPaymentMethod) &&
@@ -401,7 +398,7 @@ class _$CheckoutStateImpl extends _CheckoutState {
     shippingAddress,
     billingAddress,
     isBillingSameAsShipping,
-    const DeepCollectionEquality().hash(_buyNowItems),
+    const DeepCollectionEquality().hash(_itemsToCheckout),
     selectedPaymentMethod,
     couponController,
     subtotal,
@@ -426,7 +423,7 @@ abstract class _CheckoutState extends CheckoutState {
     final UserAddress? shippingAddress,
     final UserAddress? billingAddress,
     final bool isBillingSameAsShipping,
-    final List<CartItemEntity>? buyNowItems,
+    final List<CartItemEntity> itemsToCheckout,
     final String selectedPaymentMethod,
     required final TextEditingController couponController,
     final double subtotal,
@@ -444,11 +441,11 @@ abstract class _CheckoutState extends CheckoutState {
   @override
   UserAddress? get billingAddress;
   @override
-  bool get isBillingSameAsShipping; // --- KEY ADDITION for "Buy Now" ---
-  /// This will hold the single item when buying now.
-  /// It will be null when checking out from the full cart.
+  bool get isBillingSameAsShipping; // --- THIS IS THE CRITICAL FIELD ---
+  /// This list holds the items for the current checkout session,
+  /// whether it's from the full cart or a single "Buy Now" item.
   @override
-  List<CartItemEntity>? get buyNowItems; // Payment
+  List<CartItemEntity> get itemsToCheckout; // Payment
   @override
   String get selectedPaymentMethod; // Coupon and Totals
   @override
@@ -462,7 +459,7 @@ abstract class _CheckoutState extends CheckoutState {
   @override
   bool get isCouponApplied; // Status
   @override
-  bool get isLoading; // ---- ADD THIS LINE ----
+  bool get isLoading;
   @override
   bool get isInitialized;
 

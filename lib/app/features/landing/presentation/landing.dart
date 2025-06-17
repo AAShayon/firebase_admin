@@ -127,7 +127,7 @@ class _LandingPageState extends ConsumerState<LandingPage> {
                 ),
                 child: const Icon(Icons.notifications_outlined),
               ),
-              onPressed: () => setState(() => _currentIndex = 5),
+              onPressed: () => setState(() => _currentIndex = 6),
             ),
             IconButton(
               tooltip: 'Profile',
