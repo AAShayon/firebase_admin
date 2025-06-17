@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../user_profile/domain/entities/user_profile_entity.dart';
 
 part 'checkout_state.freezed.dart';
@@ -11,6 +12,10 @@ class CheckoutState with _$CheckoutState {
     UserAddress? shippingAddress,
     UserAddress? billingAddress,
     @Default(true) bool isBillingSameAsShipping,
+    // --- KEY ADDITION for "Buy Now" ---
+    /// This will hold the single item when buying now.
+    /// It will be null when checking out from the full cart.
+    List<CartItemEntity>? buyNowItems,
 
     // Payment
     @Default('cod') String selectedPaymentMethod,

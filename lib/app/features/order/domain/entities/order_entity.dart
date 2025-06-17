@@ -1,5 +1,6 @@
 // lib/app/features/order/domain/entities/order_entity.dart
 import '../../../../core/helpers/enums.dart';
+import '../../../cart/domain/entities/cart_item_entity.dart';
 
 class OrderEntity {
   final String id;
@@ -61,6 +62,18 @@ class OrderItemEntity {
       imageUrl: json['imageUrl'],
     );
   }
+  factory OrderItemEntity.fromCartItem(CartItemEntity cartItem) {
+    return OrderItemEntity(
+      productId: cartItem.productId,
+      productTitle: cartItem.productTitle,
+      variantSize: cartItem.variantSize,
+      variantColorName: cartItem.variantColorName,
+      price: cartItem.variantPrice,
+      quantity: cartItem.quantity,
+      imageUrl: cartItem.variantImageUrl,
+    );
+  }
+
 
   // Also add a toJson method, which is needed when you create an order
   Map<String, dynamic> toJson() {
