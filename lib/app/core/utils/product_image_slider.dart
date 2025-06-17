@@ -95,11 +95,22 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
         Positioned(bottom: 10,right: 10,child:    OutlinedButton(
           onPressed: widget.onPressed,
           style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(7),
             shape: const CircleBorder(),
           ),
-          child:  Icon(  widget.isWishlisted ? Icons.favorite : Icons.favorite_border,
-            color:widget.isWishlisted ? Colors.pink : Colors.white,),
+          child:  Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: widget.isWishlisted ? Colors.pink.shade300 : Theme.of(context).colorScheme.secondary.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+            ),
+            child: Icon(
+             widget.isWishlisted ? Icons.favorite : Icons.favorite_border,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
         ),)
       ],
     );
