@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // for describeEnum
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+// --- FEATURE IMPORTS ---
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
@@ -14,10 +18,9 @@ import '../../../search/presentation/widgets/product_search_bar.dart';
 import '../../../search/presentation/widgets/search_results_list.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 
+// --- PROVIDERS FOR THIS PAGE ---
 typedef RunAnimationCallback = void Function(GlobalKey, ProductEntity);
-
 final homeAnimationProvider = StateProvider<RunAnimationCallback?>((ref) => null);
-
 final addingToCartProvider = StateProvider<String?>((ref) => null);
 
 class HomePage extends ConsumerStatefulWidget {
@@ -27,8 +30,7 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderStateMixin {
   final GlobalKey _basketKey = GlobalKey();
   OverlayEntry? _overlayEntry;
   late AnimationController _animationController;
@@ -42,7 +44,6 @@ class _HomePageState extends ConsumerState<HomePage>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // <<< CHANGE 1: The function passed to the provider is now our new handler
       ref.read(homeAnimationProvider.notifier).state = _initiateAddToCartAndAnimation;
     });
   }
@@ -50,144 +51,122 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   void dispose() {
     _animationController.dispose();
+    _overlayEntry?.remove();
     super.dispose();
   }
 
-  // <<< CHANGE 2: THIS IS THE NEW HANDLER FUNCTION. It replaces the old `runAnimation` as the main entry point.
-  /// This function handles the entire process: it immediately starts the
-  /// cart logic and then conditionally triggers the visual animation.
   void _initiateAddToCartAndAnimation(GlobalKey itemKey, ProductEntity product) {
-    // Step 1: Immediately start the core logic. This is the most important part.
-    // This ensures the item is added regardless of whether the animation can run.
     _addToCart(product);
-
-    // Step 2: Attempt to run the animation.
-    // The check for the basket's context is now inside _runAnimation.
     _runAnimation(itemKey, product);
   }
 
-
-  // <<< CHANGE 3: The animation function is now purely visual.
-  // It no longer contains any business logic.
   void _runAnimation(GlobalKey itemKey, ProductEntity product) {
-    // This guard clause is now perfect. If the basket isn't visible,
-    // we just exit, but the _addToCart logic has already been fired.
     if (itemKey.currentContext == null || _basketKey.currentContext == null) return;
-
     final itemRenderBox = itemKey.currentContext!.findRenderObject() as RenderBox;
     final basketRenderBox = _basketKey.currentContext!.findRenderObject() as RenderBox;
+    if (!itemRenderBox.hasSize || !basketRenderBox.hasSize) return;
+
     final itemPosition = itemRenderBox.localToGlobal(Offset.zero);
     final basketPosition = basketRenderBox.localToGlobal(Offset.zero);
 
     _overlayEntry = OverlayEntry(
       builder: (context) {
         final animation = CurvedAnimation(parent: _animationController, curve: Curves.easeInOutCubic);
-        final tween = Tween<Offset>(
-          begin: itemPosition,
-          end: Offset(basketPosition.dx + 20, basketPosition.dy + 10),
-        ).animate(animation);
+        final tween = Tween<Offset>(begin: itemPosition, end: Offset(basketPosition.dx + 20, basketPosition.dy + 10)).animate(animation);
+
+        String? imageUrl;
+        if(product.variants.isNotEmpty && product.variants.first.imageUrls.isNotEmpty) {
+          imageUrl = product.variants.first.imageUrls.first;
+        }
 
         return AnimatedBuilder(
           animation: _animationController,
-          builder: (context, child) {
-            return Positioned(
-              left: tween.value.dx,
-              top: tween.value.dy,
-              child: Opacity(
-                opacity: 1.0 - _animationController.value,
-                child: Material(
-                  color: Colors.transparent,
-                  child: CircleAvatar(
-                    radius: 15,
-                    backgroundImage: NetworkImage(product.variants.first.imageUrls.first),
-                  ),
+          builder: (context, child) => Positioned(
+            left: tween.value.dx,
+            top: tween.value.dy,
+            child: Opacity(
+              opacity: 1.0 - (_animationController.value * 0.5),
+              child: Material(
+                color: Colors.transparent,
+                child: CircleAvatar(
+                  radius: 15,
+                  backgroundImage: (imageUrl != null && imageUrl.startsWith('http')) ? CachedNetworkImageProvider(imageUrl) : null,
+                  child: (imageUrl == null || !imageUrl.startsWith('http')) ? const Icon(Icons.image, size: 15) : null,
                 ),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
 
     Overlay.of(context).insert(_overlayEntry!);
     _animationController.forward().whenComplete(() {
-      // <<< CHANGE 4: The _addToCart call is REMOVED from here.
-      // It's already been called.
       _overlayEntry?.remove();
       _overlayEntry = null;
       _animationController.reset();
     });
   }
 
-  // This function is now perfect as-is.
   Future<void> _addToCart(ProductEntity product) async {
     if (!mounted) return;
+
+    // --- Immediately disable the button for this product ---
+    ref.read(addingToCartProvider.notifier).state = product.id;
+
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final currentUser = ref.read(currentUserProvider);
+
     if (currentUser == null) {
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Please log in to add items to your cart.')),
-      );
+      scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Please log in to add items to your cart.')));
+      ref.read(addingToCartProvider.notifier).state = null; // Re-enable on failure
       return;
     }
 
-    ref.read(addingToCartProvider.notifier).state = product.id;
-
     try {
-      final selectedVariant = product.variants.first;
+      final selectedVariant = product.variants.firstWhere((v) => v.quantity > 0, orElse: () => product.variants.first);
+
       final cartItem = CartItemEntity(
-        id: '',
-        userId: currentUser.id,
-        productId: product.id,
+        id: '', userId: currentUser.id, productId: product.id,
         productTitle: product.title,
         variantSize: selectedVariant.size,
-        variantColorName: selectedVariant.color.name,
+        variantColorName: describeEnum(selectedVariant.color), // Use describeEnum
         variantPrice: selectedVariant.price,
-        variantImageUrl: selectedVariant.imageUrls.isNotEmpty
-            ? selectedVariant.imageUrls.first
-            : null,
+        variantImageUrl: selectedVariant.imageUrls.isNotEmpty ? selectedVariant.imageUrls.first : null,
         quantity: 1,
       );
 
       await ref.read(cartNotifierProvider.notifier).addToCart(cartItem);
 
-      if(!mounted) return;
-
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text('${product.title} added to cart!'),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 1),
-        ),
-      );
-
-
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('${product.title} added to cart!'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
-      if (!mounted) return;
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text('Failed to add item: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(SnackBar(content: Text('Failed to add item: ${e.toString()}'), backgroundColor: Colors.red));
+      }
     } finally {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
+      // --- Re-enable the button after a delay ---
+      await Future.delayed(const Duration(milliseconds: 700)); // Should match animation duration
+      if (mounted) {
+        if (ref.read(addingToCartProvider) == product.id) {
           ref.read(addingToCartProvider.notifier).state = null;
         }
-      });
+      }
     }
   }
 
   void _onViewBasket() {
     showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        minChildSize: 0.4,
-        maxChildSize: 0.95,
+        initialChildSize: 0.8, minChildSize: 0.4, maxChildSize: 0.95,
         builder: (_, controller) => ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: CartPage(scrollController: controller),
@@ -199,9 +178,6 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchNotifierProvider);
-    // The invalidate logic here is not strictly necessary anymore because
-    // _addToCart now directly calls the notifier, but it's good practice
-    // to keep it as a fallback or for other cart actions.
     ref.listen<CartState>(cartNotifierProvider, (previous, next) {
       next.maybeWhen(
         success: (message) {

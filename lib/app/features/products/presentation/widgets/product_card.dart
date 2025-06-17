@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,24 +34,14 @@ class ProductCard extends ConsumerWidget {
     final isAdding = currentlyAddingId == product.id;
     final currentUser = ref.watch(currentUserProvider);
 
-    // --- THIS IS THE NEW, ROBUST WISHLIST LOGIC ---
-    // 1. Get the AsyncValue object for the wishlist IDs.
-    //    We pass an empty string if the user is logged out, which the provider handles gracefully.
     final wishlistIdsAsync = ref.watch(wishlistIdsProvider(currentUser?.id ?? ''));
-
-    // 2. Determine the wishlist status by handling all states of the AsyncValue.
     final bool isInWishlist = wishlistIdsAsync.when(
-      data: (ids) => ids.contains(product.id), // If data is available, check it.
-      loading: () => false, // While loading, assume it's not in the wishlist.
-      error: (e, s) => false, // On error, assume it's not in the wishlist.
+      data: (ids) => ids.contains(product.id),
+      loading: () => false,
+      error: (e, s) => false,
     );
-    // --- END OF CORRECTION ---
 
     final hasAvailableStock = product.variants.any((v) => v.quantity > 0);
-    final firstAvailableVariant = product.variants.firstWhere(
-          (v) => v.quantity > 0,
-      orElse: () => product.variants.isNotEmpty ? product.variants.first : ProductVariantEntity.empty(),
-    );
 
     return Card(
       elevation: 3,
@@ -70,52 +59,20 @@ class ProductCard extends ConsumerWidget {
                   _buildProductImage(),
                   if (isAdmin && onEdit != null && onDelete != null)
                     Positioned(
-                      top: 4,
-                      right: 4,
+                      top: 4, right: 4,
                       child: AdminActionMenu(onEdit: onEdit!, onDelete: onDelete!),
                     ),
                   if (hasAvailableStock && onAddToCart != null)
                     Positioned(
-                      bottom: 8,
-                      left: 8,
-                      child: _buildAddToCartButton(context, ref, isAdding, addButtonKey, firstAvailableVariant),
+                      bottom: 8, left: 8,
+                      child: _buildAddToCartButton(context, ref, isAdding, addButtonKey),
                     ),
                   if (!hasAvailableStock)
                     _buildOutOfStockBadge(),
 
                   Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () {
-                        if (currentUser == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please log in to use the wishlist.'))
-                          );
-                          return;
-                        }
-
-                        final notifier = ref.read(wishlistNotifierProvider.notifier);
-                        if (isInWishlist) {
-                          notifier.removeFromWishlist(currentUser.id, product.id);
-                        } else {
-                          notifier.addToWishlist(currentUser.id, product);
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: isInWishlist ? Colors.pink.shade300 : Theme.of(context).colorScheme.secondary.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
-                        ),
-                        child: Icon(
-                          isInWishlist ? Icons.favorite : Icons.favorite_border,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                    ),
+                    bottom: 8, right: 8,
+                    child: _buildWishlistButton(context, ref, isInWishlist),
                   ),
                 ],
               ),
@@ -135,8 +92,7 @@ class ProductCard extends ConsumerWidget {
 
     if (firstImageUrl != null && firstImageUrl.startsWith('http')) {
       return CachedNetworkImage(
-        imageUrl: firstImageUrl,
-        fit: BoxFit.cover,
+        imageUrl: firstImageUrl, fit: BoxFit.cover,
         placeholder: (context, url) => Container(color: Colors.grey[200]),
         errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.grey),
       );
@@ -174,19 +130,15 @@ class ProductCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildAddToCartButton(BuildContext context, WidgetRef ref, bool isAdding, GlobalKey addButtonKey, ProductVariantEntity firstAvailableVariant) {
+  Widget _buildAddToCartButton(BuildContext context, WidgetRef ref, bool isAdding, GlobalKey addButtonKey) {
     return GestureDetector(
       onTap: isAdding ? null : () {
-        if (onAddToCart != null) {
-          // You could pass the selected variant to the add to cart logic if needed
-          onAddToCart!(addButtonKey);
-        }
+        if (onAddToCart != null) onAddToCart!(addButtonKey);
       },
       child: Container(
-        key: addButtonKey,
-        width: 36, height: 36,
+        key: addButtonKey, width: 36, height: 36,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
+          color: isAdding ? Colors.grey.shade400 : Theme.of(context).colorScheme.primary,
           borderRadius: BorderRadius.circular(8),
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
         ),
@@ -197,16 +149,44 @@ class ProductCard extends ConsumerWidget {
     );
   }
 
+  Widget _buildWishlistButton(BuildContext context, WidgetRef ref, bool isInWishlist) {
+    return GestureDetector(
+      onTap: () {
+        final currentUser = ref.read(currentUserProvider);
+        if (currentUser == null) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please log in to use the wishlist.')));
+          return;
+        }
+        final notifier = ref.read(wishlistNotifierProvider.notifier);
+        if (isInWishlist) {
+          notifier.removeFromWishlist(currentUser.id, product.id);
+        } else {
+          notifier.addToWishlist(currentUser.id, product);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: isInWishlist ? Colors.pink.shade300 : Theme.of(context).colorScheme.secondary.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        ),
+        child: Icon(
+          isInWishlist ? Icons.favorite : Icons.favorite_border,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
+    );
+  }
+
   Widget _buildOutOfStockBadge() {
     return Positioned(
       bottom: 8,
       left: 8,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(8)),
         child: const Text('Out of Stock', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
       ),
     );
