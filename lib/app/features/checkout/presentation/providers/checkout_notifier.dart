@@ -8,6 +8,7 @@ import '../../../cart/presentation/providers/cart_notifier_provider.dart';
 import '../../../cart/presentation/providers/cart_providers.dart';
 import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/providers/order_notifier_provider.dart';
+import '../../../promotions/domain/entities/promotion_entity.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 import '../../../user_profile/domain/entities/user_profile_entity.dart';
 import 'checkout_state.dart';
@@ -18,6 +19,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
   CheckoutNotifier(this.ref) : super(
       CheckoutState(couponController: TextEditingController())
   );
+  PromotionEntity? _appliedPromotion;
 
   /// Initializes the checkout state from the user's full shopping cart.
   void initializeFromCart({

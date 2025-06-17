@@ -1,3 +1,4 @@
+import 'package:firebase_admin/app/features/promotions/presentation/pages/promotions_management_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,7 +50,7 @@ class ProductsTable extends ConsumerWidget {
                       label: const Text('Add New Images'),
                       onPressed: () => context.pushNamed(AppRoutes.addGalleryImage),
                       style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           textStyle: const TextStyle(fontWeight: FontWeight.bold)
                       ),
                     ),
@@ -58,7 +59,18 @@ class ProductsTable extends ConsumerWidget {
                       label: const Text('Add New Product'),
                       onPressed: () => context.pushNamed(AppRoutes.addProduct),
                       style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.event),
+                      label: const Text('Promotion'),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>PromotionsManagementPage()));
+                      },
+                      style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           textStyle: const TextStyle(fontWeight: FontWeight.bold)
                       ),
                     ),

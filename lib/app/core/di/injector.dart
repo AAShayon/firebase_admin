@@ -62,6 +62,16 @@ import '../../features/order/domain/usecases/watch_order_by_id_use_case.dart';
 import '../../features/payment/data/datasources/payment_remote_data_source.dart';
 import '../../features/payment/data/repositories/payment_repository_impl.dart';
 import '../../features/payment/domain/repositories/payment_repository.dart';
+import '../../features/promotions/data/datasources/promotion_remote_data_source.dart';
+import '../../features/promotions/data/repositories/promotion_repository_impl.dart';
+import '../../features/promotions/domain/repositories/promotion_repository.dart';
+import '../../features/promotions/domain/usecases/create_promotion_use_case.dart';
+import '../../features/promotions/domain/usecases/delete_promotion_use_case.dart';
+import '../../features/promotions/domain/usecases/get_active_promotions_use_case.dart';
+import '../../features/promotions/domain/usecases/get_all_promotions_use_case.dart';
+import '../../features/promotions/domain/usecases/redeem_coupon_use_case.dart';
+import '../../features/promotions/domain/usecases/update_promotion_use_case.dart';
+import '../../features/promotions/domain/usecases/validate_coupon_use_case.dart';
 import '../../features/settings/data/datasources/settings_local_data_source.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/settings_repository.dart';
@@ -227,4 +237,15 @@ Future<void> initDependencies() async {
   locator.registerLazySingleton<AddImageUrlUseCase>(() => AddImageUrlUseCase(locator<ImageGalleryRepository>()));
   locator.registerLazySingleton<DeleteImageUrlUseCase>(() => DeleteImageUrlUseCase(locator<ImageGalleryRepository>()));
   locator.registerLazySingleton<FetchApiImagesUseCase>(() => FetchApiImagesUseCase(locator<ImageGalleryRepository>()));
+
+  // --- PROMOTIONS ---
+  locator.registerLazySingleton<PromotionRemoteDataSource>(() => PromotionRemoteDataSourceImpl(firestore: FirebaseProvider.firestore));
+  locator.registerLazySingleton<PromotionRepository>(() => PromotionRepositoryImpl(remoteDataSource: locator<PromotionRemoteDataSource>()));
+  locator.registerLazySingleton<CreatePromotionUseCase>(() => CreatePromotionUseCase(locator<PromotionRepository>()));
+  locator.registerLazySingleton<GetAllPromotionsUseCase>(() => GetAllPromotionsUseCase(locator<PromotionRepository>()));
+  locator.registerLazySingleton<GetActivePromotionsUseCase>(() => GetActivePromotionsUseCase(locator<PromotionRepository>()));
+  locator.registerLazySingleton<UpdatePromotionUseCase>(() => UpdatePromotionUseCase(locator<PromotionRepository>()));
+  locator.registerLazySingleton<DeletePromotionUseCase>(() => DeletePromotionUseCase(locator<PromotionRepository>()));
+  locator.registerLazySingleton<ValidateCouponUseCase>(() => ValidateCouponUseCase(locator<PromotionRepository>()));
+  locator.registerLazySingleton<RedeemCouponUseCase>(() => RedeemCouponUseCase(locator<PromotionRepository>()));
 }
