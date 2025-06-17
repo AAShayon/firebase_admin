@@ -8,6 +8,7 @@ class ProductImageSlider extends StatefulWidget {
   final CarouselSliderController? controller;
   final ValueChanged<int> onImageChanged;
   final VoidCallback? onPressed;
+  final bool isWishlisted;
 
 
   const ProductImageSlider({
@@ -16,6 +17,7 @@ class ProductImageSlider extends StatefulWidget {
     required this.imageUrls,
     required this.onImageChanged,
     this.onPressed,
+    required this.isWishlisted,
   });
 
   @override
@@ -96,7 +98,8 @@ class _ProductImageSliderState extends State<ProductImageSlider> {
             padding: const EdgeInsets.all(12),
             shape: const CircleBorder(),
           ),
-          child: const Icon(Icons.favorite_border),
+          child:  Icon(  widget.isWishlisted ? Icons.favorite : Icons.favorite_border,
+            color:widget.isWishlisted ? Colors.pink : Colors.white,),
         ),)
       ],
     );

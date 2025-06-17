@@ -8,6 +8,7 @@ class CustomSliverAppBar extends StatelessWidget {
   final CarouselSliderController controller;
   final Function(int) onImageChanged;
   final VoidCallback onWishlistPressed;
+  final bool isWishlisted;
 
   const CustomSliverAppBar({
     super.key,
@@ -15,6 +16,7 @@ class CustomSliverAppBar extends StatelessWidget {
     required this.controller,
     required this.onImageChanged,
     required this.onWishlistPressed,
+    required this.isWishlisted,
   });
 
   @override
@@ -28,6 +30,7 @@ class CustomSliverAppBar extends StatelessWidget {
           controller: controller,
           onImageChanged: onImageChanged,
           onPressed: onWishlistPressed,
+          isWishlisted: isWishlisted,
         ),
       ),
     );

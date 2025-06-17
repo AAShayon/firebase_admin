@@ -11,6 +11,8 @@ import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
 import '../../../shared/data/model/product_model.dart';
 import '../../../shared/domain/entities/product_entity.dart';
+import '../../../wishlist/presentation/providers/wishlist_notifier_provider.dart';
+import '../../../wishlist/presentation/providers/wishlist_providers.dart';
 import '../widgets/product_description_section.dart';
 import '../widgets/product_info_section.dart';
 import '../widgets/variant_selector.dart';
@@ -164,6 +166,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentUserProvider);
+    final wishlistIdsAsync = ref.watch(wishlistIdsProvider(currentUser?.id ?? ''));
+    final isInWishlist = wishlistIdsAsync.when(
+      data: (ids) => ids.contains(widget.product.id),
+      loading: () => false,
+      error: (e, s) => false,
+    );
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -171,7 +180,23 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             imageUrls: allImages,
             controller: _carouselController,
             onImageChanged: _onImageSlide,
-            onWishlistPressed: () { /* Wishlist logic */ },
+            isWishlisted: isInWishlist,
+            onWishlistPressed: () {
+              if (currentUser == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please log in to use the wishlist.'))
+                );
+                return;
+              }
+
+              final notifier = ref.read(wishlistNotifierProvider.notifier);
+              if (isInWishlist) {
+                notifier.removeFromWishlist(currentUser.id, widget.product.id);
+              } else {
+                notifier.addToWishlist(currentUser.id, widget.product);
+              }
+            },
+            // wishlistButtonColor: {/* chnage according to is that wishlist or not */},
           ),
           SliverToBoxAdapter(
             child: Column(
