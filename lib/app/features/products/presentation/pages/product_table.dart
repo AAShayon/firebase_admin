@@ -163,12 +163,7 @@ class ProductsTable extends ConsumerWidget {
                     ActionChip(
                       avatar: const Icon(Icons.local_offer, size: 18),
                       label: const Text('Promotions'),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PromotionsManagementPage(),
-                        ),
-                      ),
+                      onPressed: () => context.goNamed(AppRoutes.managePromotions),
                       backgroundColor: Colors.orange.shade100,
                     ),
                   ],

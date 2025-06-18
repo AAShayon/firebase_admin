@@ -30,7 +30,7 @@ class PromotionRulesForm extends StatelessWidget {
               ),
               // Ensure coupon codes are uppercase and have no spaces
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                 _UpperCaseTextFormatter(),
               ],
             ),

@@ -58,6 +58,12 @@ class _CreatePromotionPageState extends ConsumerState<CreatePromotionPage> {
   @override
   void dispose() {
     // ... dispose all controllers
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _discountValueController.dispose();
+    _couponCodeController.dispose();
+    _usageLimitController.dispose();
+
     super.dispose();
   }
 

@@ -24,6 +24,9 @@ import '../../features/order/presentation/pages/order_details_page.dart';
 import '../../features/order/presentation/pages/order_success_page.dart';
 import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/products/presentation/pages/product_table.dart';
+import '../../features/promotions/domain/entities/promotion_entity.dart';
+import '../../features/promotions/presentation/pages/create_promotion_page.dart';
+import '../../features/promotions/presentation/pages/promotions_management_page.dart';
 import '../../features/shared/domain/entities/product_entity.dart';
 import '../../features/user_profile/domain/entities/user_profile_entity.dart';
 import '../../features/user_profile/presentation/pages/add_edit_address.dart';
@@ -58,6 +61,8 @@ class AppRoutes {
   static const editAddress = 'editAddress';
   static const checkout = 'checkout';
   static const wishlist = 'wishlist';
+  static const managePromotions = 'managePromotions';
+  static const createPromotion = 'createPromotion';
 
 
 
@@ -91,6 +96,8 @@ class AppRoutes {
   static const addAddressPath = 'address/add'; // Full path will be: /profile/address/add
   static const editAddressPath = 'address/edit/:addressId'; // Full path: /profile/address/edit/some-id
   static const wishlistPath = '/wishlist';
+  static const managePromotionsPath = '/manage-promotions';
+  static const createPromotionPath = '/create-promotion';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -416,6 +423,27 @@ final GoRouter appRouter = GoRouter(
         child: const WishlistPage(),
         transitionType: AppRouteTransitionType.slideFromRight,
       ),
+    ),
+    GoRoute(
+      name: AppRoutes.managePromotions,
+      path: AppRoutes.managePromotionsPath,
+      pageBuilder: (context, state) => buildPageRoute(
+        context: context, state: state, child: const PromotionsManagementPage(),   transitionType: AppRouteTransitionType.slideFromRight,
+      ),
+    ),
+    GoRoute(
+      name: AppRoutes.createPromotion,
+      path: AppRoutes.createPromotionPath,
+      pageBuilder: (context, state) {
+        // This handles both create (extra is null) and edit (extra is a PromotionEntity)
+        final promotion = state.extra as PromotionEntity?;
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: CreatePromotionPage(promotionToEdit: promotion),
+          transitionType: AppRouteTransitionType.slideFromRight,
+        );
+      },
     ),
   ],
 );
