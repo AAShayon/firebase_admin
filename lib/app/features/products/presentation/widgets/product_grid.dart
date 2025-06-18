@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routes/app_router.dart';
 import '../../../home_page/presentation/pages/home_page.dart';
+import '../../../promotions/domain/entities/promotion_entity.dart'; // <-- IMPORT THIS
 import '../../../shared/domain/entities/product_entity.dart';
 import '../providers/product_notifier_provider.dart';
 import 'product_card.dart';
@@ -11,82 +12,63 @@ import 'product_card.dart';
 class ProductGrid extends ConsumerWidget {
   final List<ProductEntity> products;
   final bool isAdmin;
-  final ScrollController? scrollController;
+  final PromotionEntity? promotion; // <-- ADD THIS NEW PROPERTY
 
   const ProductGrid({
     super.key,
     required this.products,
     this.isAdmin = false,
-    this.scrollController,
+    this.promotion, // <-- ADD TO CONSTRUCTOR
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GridView.builder(
-      controller: scrollController,
+    final runAnimation = ref.read(homeAnimationProvider);
+
+    return SliverGrid.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
+        crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
         childAspectRatio: 0.70,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
-      padding: const EdgeInsets.all(12),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
-        final hasAvailableStock = product.variants.any((v) => v.quantity > 0);
 
         return ProductCard(
           product: product,
           isAdmin: isAdmin,
-          onTap: () => context.pushNamed(
-              AppRoutes.productDetail,
-              extra: product
-          ),
-          onEdit: isAdmin
-              ? () => context.pushNamed(
-              AppRoutes.addProduct,
-              extra: product
-          )
-              : null,
-          onDelete: isAdmin
-              ? () => _showDeleteDialog(context, ref, product)
-              : null,
-          onAddToCart: hasAvailableStock
-              ? (key) {
-            final runAnimation = ref.read(homeAnimationProvider);
+          promotion: promotion, // <-- PASS THE PROMOTION DOWN TO THE CARD
+          onTap: () => context.pushNamed(AppRoutes.productDetail, extra: product),
+          onEdit: isAdmin ? () => context.pushNamed(AppRoutes.addProduct, extra: product) : null,
+          onDelete: isAdmin ? () => _showDeleteDialog(context, ref, product) : null,
+          onAddToCart: (key) {
             if (runAnimation != null) {
               runAnimation(key, product);
             }
-          }
-              : null,
+          },
         );
       },
     );
   }
 
-  void _showDeleteDialog(
-      BuildContext context,
-      WidgetRef ref,
-      ProductEntity product
-      ) {
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, ProductEntity product) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Product?'),
-        content: Text(
-            'Are you sure you want to delete "${product.title}"? This action cannot be undone.'),
+        content: Text('Are you sure you want to delete "${product.title}"? This action cannot be undone.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancel'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              ref.read(productNotifierProvider.notifier)
-                  .deleteProduct(product.id);
-              Navigator.of(context).pop();
+              ref.read(productNotifierProvider.notifier).deleteProduct(product.id);
+              Navigator.of(dialogContext).pop();
             },
             child: const Text('Delete'),
           ),

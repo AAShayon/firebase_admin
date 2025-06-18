@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../home_page/presentation/pages/home_page.dart';
 import '../../../home_page/presentation/widgets/admin_action_menu.dart';
+import '../../../promotions/domain/entities/promotion_entity.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 import '../../../wishlist/presentation/providers/wishlist_notifier_provider.dart';
 import '../../../wishlist/presentation/providers/wishlist_providers.dart';
@@ -16,6 +18,7 @@ class ProductCard extends ConsumerWidget {
   final VoidCallback? onDelete;
   final bool isAdmin;
   final ValueSetter<GlobalKey>? onAddToCart;
+  final PromotionEntity? promotion; // <-- THE NEW, OPTIONAL PROPERTY
 
   const ProductCard({
     super.key,
@@ -25,6 +28,7 @@ class ProductCard extends ConsumerWidget {
     this.onEdit,
     this.onDelete,
     this.onAddToCart,
+    this.promotion, // <-- ADDED TO THE CONSTRUCTOR
   });
 
   @override
@@ -58,25 +62,16 @@ class ProductCard extends ConsumerWidget {
                 children: [
                   _buildProductImage(),
                   if (isAdmin && onEdit != null && onDelete != null)
-                    Positioned(
-                      top: 4, right: 4,
-                      child: AdminActionMenu(onEdit: onEdit!, onDelete: onDelete!),
-                    ),
+                    Positioned(top: 4, right: 4, child: AdminActionMenu(onEdit: onEdit!, onDelete: onDelete!)),
                   if (hasAvailableStock && onAddToCart != null)
-                    Positioned(
-                      bottom: 8, left: 8,
-                      child: _buildAddToCartButton(context, ref, isAdding, addButtonKey),
-                    ),
+                    Positioned(bottom: 8, left: 8, child: _buildAddToCartButton(context, ref, isAdding, addButtonKey)),
                   if (!hasAvailableStock)
                     _buildOutOfStockBadge(),
-
-                  Positioned(
-                    bottom: 8, right: 8,
-                    child: _buildWishlistButton(context, ref, isInWishlist),
-                  ),
+                  Positioned(bottom: 8, right: 8, child: _buildWishlistButton(context, ref, isInWishlist)),
                 ],
               ),
             ),
+            // The info section is now separate and handles promotional pricing
             _buildProductInfo(context),
           ],
         ),
@@ -92,7 +87,8 @@ class ProductCard extends ConsumerWidget {
 
     if (firstImageUrl != null && firstImageUrl.startsWith('http')) {
       return CachedNetworkImage(
-        imageUrl: firstImageUrl, fit: BoxFit.cover,
+        imageUrl: firstImageUrl,
+        fit: BoxFit.cover,
         placeholder: (context, url) => Container(color: Colors.grey[200]),
         errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.grey),
       );
@@ -104,27 +100,73 @@ class ProductCard extends ConsumerWidget {
     }
   }
 
+  // --- THIS IS THE FINAL, CORRECTED INFO WIDGET ---
   Widget _buildProductInfo(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (product.variants.isEmpty) {
+      return const Padding(padding: EdgeInsets.all(8.0), child: Text('Not Available'));
+    }
+
+    final originalPrice = product.variants.first.price;
+    double? discountedPrice;
+
+    // Calculate the discounted price if a valid promotion exists for this product
+    if (promotion != null && promotion!.isActive) {
+      if (promotion!.scope == PromotionScope.allProducts || promotion!.productIds.contains(product.id)) {
+        if (promotion!.discountType == DiscountType.fixedAmount) {
+          discountedPrice = originalPrice - promotion!.discountValue;
+        } else { // Percentage
+          discountedPrice = originalPrice * (1 - (promotion!.discountValue / 100));
+        }
+      }
+    }
+
+    // Ensure the price doesn't go below zero
+    if (discountedPrice != null && discountedPrice < 0) discountedPrice = 0;
+
+    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
             product.title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
-          if (product.variants.isNotEmpty)
-            Text(
-              '\$${product.variants.first.price.toStringAsFixed(2)}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+          // Price display logic
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                currencyFormat.format(discountedPrice ?? originalPrice),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: discountedPrice != null ? Colors.blue : colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // Show original price with strikethrough ONLY if there's a discount
+              if (discountedPrice != null)
+                Text(
+                  currencyFormat.format(originalPrice),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: Colors.red,
+                    decoration: TextDecoration.lineThrough,
+                    fontSize: 10
+                  ),
+                ),
+            ],
+          )
         ],
       ),
     );
