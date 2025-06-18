@@ -32,6 +32,7 @@ mixin _$CheckoutState {
       throw _privateConstructorUsedError; // This list holds the items for the current checkout session.
   List<CartItemEntity> get itemsToCheckout =>
       throw _privateConstructorUsedError;
+  String? get error => throw _privateConstructorUsedError;
 
   /// Create a copy of CheckoutState
   /// with the given fields replaced by the non-null parameter values.
@@ -60,6 +61,7 @@ abstract class $CheckoutStateCopyWith<$Res> {
     bool isLoading,
     bool isInitialized,
     List<CartItemEntity> itemsToCheckout,
+    String? error,
   });
 }
 
@@ -90,6 +92,7 @@ class _$CheckoutStateCopyWithImpl<$Res, $Val extends CheckoutState>
     Object? isLoading = null,
     Object? isInitialized = null,
     Object? itemsToCheckout = null,
+    Object? error = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -153,6 +156,11 @@ class _$CheckoutStateCopyWithImpl<$Res, $Val extends CheckoutState>
                     ? _value.itemsToCheckout
                     : itemsToCheckout // ignore: cast_nullable_to_non_nullable
                         as List<CartItemEntity>,
+            error:
+                freezed == error
+                    ? _value.error
+                    : error // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -181,6 +189,7 @@ abstract class _$$CheckoutStateImplCopyWith<$Res>
     bool isLoading,
     bool isInitialized,
     List<CartItemEntity> itemsToCheckout,
+    String? error,
   });
 }
 
@@ -210,6 +219,7 @@ class __$$CheckoutStateImplCopyWithImpl<$Res>
     Object? isLoading = null,
     Object? isInitialized = null,
     Object? itemsToCheckout = null,
+    Object? error = freezed,
   }) {
     return _then(
       _$CheckoutStateImpl(
@@ -273,6 +283,11 @@ class __$$CheckoutStateImplCopyWithImpl<$Res>
                 ? _value._itemsToCheckout
                 : itemsToCheckout // ignore: cast_nullable_to_non_nullable
                     as List<CartItemEntity>,
+        error:
+            freezed == error
+                ? _value.error
+                : error // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -294,6 +309,7 @@ class _$CheckoutStateImpl extends _CheckoutState {
     this.isLoading = false,
     this.isInitialized = false,
     final List<CartItemEntity> itemsToCheckout = const [],
+    this.error,
   }) : _itemsToCheckout = itemsToCheckout,
        super._();
 
@@ -339,8 +355,11 @@ class _$CheckoutStateImpl extends _CheckoutState {
   }
 
   @override
+  final String? error;
+
+  @override
   String toString() {
-    return 'CheckoutState(shippingAddress: $shippingAddress, billingAddress: $billingAddress, isBillingSameAsShipping: $isBillingSameAsShipping, selectedPaymentMethod: $selectedPaymentMethod, couponController: $couponController, subtotal: $subtotal, deliveryFee: $deliveryFee, discount: $discount, isCouponApplied: $isCouponApplied, isLoading: $isLoading, isInitialized: $isInitialized, itemsToCheckout: $itemsToCheckout)';
+    return 'CheckoutState(shippingAddress: $shippingAddress, billingAddress: $billingAddress, isBillingSameAsShipping: $isBillingSameAsShipping, selectedPaymentMethod: $selectedPaymentMethod, couponController: $couponController, subtotal: $subtotal, deliveryFee: $deliveryFee, discount: $discount, isCouponApplied: $isCouponApplied, isLoading: $isLoading, isInitialized: $isInitialized, itemsToCheckout: $itemsToCheckout, error: $error)';
   }
 
   @override
@@ -376,7 +395,8 @@ class _$CheckoutStateImpl extends _CheckoutState {
             const DeepCollectionEquality().equals(
               other._itemsToCheckout,
               _itemsToCheckout,
-            ));
+            ) &&
+            (identical(other.error, error) || other.error == error));
   }
 
   @override
@@ -394,6 +414,7 @@ class _$CheckoutStateImpl extends _CheckoutState {
     isLoading,
     isInitialized,
     const DeepCollectionEquality().hash(_itemsToCheckout),
+    error,
   );
 
   /// Create a copy of CheckoutState
@@ -419,6 +440,7 @@ abstract class _CheckoutState extends CheckoutState {
     final bool isLoading,
     final bool isInitialized,
     final List<CartItemEntity> itemsToCheckout,
+    final String? error,
   }) = _$CheckoutStateImpl;
   const _CheckoutState._() : super._();
 
@@ -446,6 +468,8 @@ abstract class _CheckoutState extends CheckoutState {
   bool get isInitialized; // This list holds the items for the current checkout session.
   @override
   List<CartItemEntity> get itemsToCheckout;
+  @override
+  String? get error;
 
   /// Create a copy of CheckoutState
   /// with the given fields replaced by the non-null parameter values.

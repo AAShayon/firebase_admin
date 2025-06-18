@@ -22,6 +22,7 @@ class CheckoutState with _$CheckoutState {
 
     // This list holds the items for the current checkout session.
     @Default([]) List<CartItemEntity> itemsToCheckout,
+    String? error,
   }) = _CheckoutState;
 
   const CheckoutState._();

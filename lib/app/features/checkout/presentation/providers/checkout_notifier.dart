@@ -9,6 +9,7 @@ import '../../../cart/presentation/providers/cart_providers.dart';
 import '../../../order/domain/entities/order_entity.dart';
 import '../../../order/presentation/providers/order_notifier_provider.dart';
 import '../../../promotions/domain/entities/promotion_entity.dart';
+import '../../../promotions/presentation/providers/promotion_providers.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 import '../../../user_profile/domain/entities/user_profile_entity.dart';
 import 'checkout_state.dart';
@@ -91,17 +92,63 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
     state = state.copyWith(selectedPaymentMethod: method);
   }
 
-  void applyCoupon() {
-    if (state.couponController.text.trim().toLowerCase() == 'firstorder') {
-      state = state.copyWith(discount: 5.0, isCouponApplied: true);
-    } else {
-      state = state.copyWith(discount: 0.0, isCouponApplied: false);
+  // --- THIS IS THE NEW, FUNCTIONAL applyCoupon METHOD ---
+  Future<void> applyCoupon() async {
+    final code = state.couponController.text.trim();
+    if (code.isEmpty) return;
+
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      state = state.copyWith(error: 'Please log in to apply coupons.');
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, error: null); // Start loading, clear previous error
+
+    try {
+      final validateUseCase = ref.read(validateCouponUseCaseProvider);
+      final validPromotion = await validateUseCase(code, currentUser.id);
+
+      if (validPromotion != null) {
+        _appliedPromotion = validPromotion; // Store the valid promotion
+        double discountAmount = 0.0;
+
+        // Calculate discount based on type
+        if (validPromotion.discountType == DiscountType.fixedAmount) {
+          discountAmount = validPromotion.discountValue;
+        } else { // Percentage
+          discountAmount = state.subtotal * (validPromotion.discountValue / 100);
+        }
+
+        state = state.copyWith(
+          discount: discountAmount,
+          isCouponApplied: true,
+          isLoading: false,
+        );
+      } else {
+        _appliedPromotion = null; // Clear any previously applied promotion
+        state = state.copyWith(
+          discount: 0.0,
+          isCouponApplied: false,
+          isLoading: false,
+          error: 'This coupon is invalid, expired, or has already been used.',
+        );
+      }
+    } catch (e) {
+      _appliedPromotion = null;
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
+
   void removeCoupon() {
+    _appliedPromotion = null; // Clear the stored promotion
     state.couponController.clear();
-    state = state.copyWith(discount: 0.0, isCouponApplied: false);
+    state = state.copyWith(
+      discount: 0.0,
+      isCouponApplied: false,
+      error: null, // Clear any previous errors
+    );
   }
 
   /// Places the order using the items currently in the state.
@@ -151,8 +198,14 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       // Heuristic: If the number of items ordered is the same as the number in the cart,
       // it was a cart checkout. This is safer than checking for buyNowItems being null,
       // as the state could change.
+      if (_appliedPromotion != null && _appliedPromotion!.couponCode != null) {
+        await ref.read(redeemCouponUseCaseProvider).call(_appliedPromotion!.id, currentUser.id);
+        // Reset the applied promotion after use
+        _appliedPromotion = null;
+      }
+
       final cartItemCount = ref.read(cartItemsStreamProvider(currentUser.id)).value?.length ?? -1;
-      if (itemsToOrder.length == cartItemCount && cartItemCount > 0) {
+      if (state.itemsToCheckout == null) {
         ref.read(cartNotifierProvider.notifier).clearCart(currentUser.id);
       }
 
