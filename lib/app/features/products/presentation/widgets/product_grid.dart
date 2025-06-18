@@ -22,8 +22,6 @@ class ProductGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final runAnimation = ref.watch(homeAnimationProvider);
-
     return GridView.builder(
       controller: scrollController,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -41,15 +39,22 @@ class ProductGrid extends ConsumerWidget {
         return ProductCard(
           product: product,
           isAdmin: isAdmin,
-          onTap: () => context.pushNamed(AppRoutes.productDetail, extra: product),
+          onTap: () => context.pushNamed(
+              AppRoutes.productDetail,
+              extra: product
+          ),
           onEdit: isAdmin
-              ? () => context.pushNamed(AppRoutes.addProduct, extra: product)
+              ? () => context.pushNamed(
+              AppRoutes.addProduct,
+              extra: product
+          )
               : null,
           onDelete: isAdmin
               ? () => _showDeleteDialog(context, ref, product)
               : null,
           onAddToCart: hasAvailableStock
               ? (key) {
+            final runAnimation = ref.read(homeAnimationProvider);
             if (runAnimation != null) {
               runAnimation(key, product);
             }
@@ -61,7 +66,10 @@ class ProductGrid extends ConsumerWidget {
   }
 
   void _showDeleteDialog(
-      BuildContext context, WidgetRef ref, ProductEntity product) {
+      BuildContext context,
+      WidgetRef ref,
+      ProductEntity product
+      ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -76,7 +84,8 @@ class ProductGrid extends ConsumerWidget {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              ref.read(productNotifierProvider.notifier).deleteProduct(product.id);
+              ref.read(productNotifierProvider.notifier)
+                  .deleteProduct(product.id);
               Navigator.of(context).pop();
             },
             child: const Text('Delete'),

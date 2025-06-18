@@ -205,7 +205,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       }
 
       final cartItemCount = ref.read(cartItemsStreamProvider(currentUser.id)).value?.length ?? -1;
-      if (state.itemsToCheckout == null) {
+      if (itemsToOrder.length == cartItemCount && cartItemCount > 0) {
         ref.read(cartNotifierProvider.notifier).clearCart(currentUser.id);
       }
 

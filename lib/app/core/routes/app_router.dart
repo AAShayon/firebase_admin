@@ -26,6 +26,7 @@ import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/products/presentation/pages/product_table.dart';
 import '../../features/promotions/domain/entities/promotion_entity.dart';
 import '../../features/promotions/presentation/pages/create_promotion_page.dart';
+import '../../features/promotions/presentation/pages/promotion_detail_page.dart';
 import '../../features/promotions/presentation/pages/promotions_management_page.dart';
 import '../../features/shared/domain/entities/product_entity.dart';
 import '../../features/user_profile/domain/entities/user_profile_entity.dart';
@@ -63,7 +64,7 @@ class AppRoutes {
   static const wishlist = 'wishlist';
   static const managePromotions = 'managePromotions';
   static const createPromotion = 'createPromotion';
-
+  static const promotionDetail = 'promotionDetail';
 
 
   // --- Route Paths ---
@@ -98,6 +99,7 @@ class AppRoutes {
   static const wishlistPath = '/wishlist';
   static const managePromotionsPath = '/manage-promotions';
   static const createPromotionPath = '/create-promotion';
+  static const promotionDetailPath = '/promotion-detail';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -442,6 +444,19 @@ final GoRouter appRouter = GoRouter(
           state: state,
           child: CreatePromotionPage(promotionToEdit: promotion),
           transitionType: AppRouteTransitionType.slideFromRight,
+        );
+      },
+    ),
+    GoRoute(
+      name: AppRoutes.promotionDetail,
+      path: AppRoutes.promotionDetailPath,
+      pageBuilder: (context, state) {
+        final promotion = state.extra as PromotionEntity;
+        return buildPageRoute(
+          context: context,
+          state: state,
+          child: PromotionDetailPage(promotion: promotion),
+          transitionType: AppRouteTransitionType.fade,
         );
       },
     ),
