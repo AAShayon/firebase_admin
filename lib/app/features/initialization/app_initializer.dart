@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/theme/app_theme.dart';
+import '../../core/helpers/keyboard_helper.dart';
 import '../../core/routes/app_router.dart';
 import '../settings/presentation/helpers/theme_mapper.dart';
 import '../settings/presentation/providers/settings_notifier_provider.dart';
@@ -16,8 +17,16 @@ class AdminDashboardAppInitializer extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsNotifierProvider);
 
     return settingsAsync.map(
-      initial: (_) => MaterialApp(home: SplashScreen()),
-      loading: (_) => MaterialApp(home: CustomLoadingScreen()),
+      initial: (_) => MaterialApp(
+        home: KeyboardManager(
+          child: SplashScreen(),
+        ),
+      ),
+      loading: (_) => MaterialApp(
+        home: KeyboardManager(
+          child: CustomLoadingScreen(),
+        ),
+      ),
       loaded: (state) {
         final themeMode = convertTheme(state.themeMode);
         return MaterialApp.router(
@@ -27,6 +36,9 @@ class AdminDashboardAppInitializer extends ConsumerWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           debugShowCheckedModeBanner: false,
+          builder: (context ,child){
+            return KeyboardManager(child: child!);
+          },
         );
       },
       error: (error) => MaterialApp(
