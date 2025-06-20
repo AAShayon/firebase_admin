@@ -45,7 +45,7 @@ class ProductGrid extends ConsumerWidget {
           onDelete: isAdmin ? () => _showDeleteDialog(context, ref, product) : null,
           onAddToCart: (key) {
             if (runAnimation != null) {
-              runAnimation(key, product);
+              runAnimation(key, product,promotion);
             }
           },
         );

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 // --- CORE & FEATURE IMPORTS ---
 import '../../../../core/routes/app_router.dart';
+import '../../../../core/utils/price_calculator.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
@@ -27,7 +28,7 @@ import '../../../shared/domain/entities/product_entity.dart';
 import '../widgets/category_pills.dart';
 
 // --- PAGE-SPECIFIC PROVIDERS ---
-typedef RunAnimationCallback = void Function(GlobalKey, ProductEntity);
+typedef RunAnimationCallback = void Function(GlobalKey, ProductEntity,PromotionEntity?);
 final homeAnimationProvider = StateProvider<RunAnimationCallback?>((ref) => null);
 final addingToCartProvider = StateProvider<String?>((ref) => null);
 
@@ -68,8 +69,8 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
 
   // --- LOGIC METHODS ---
 
-  void _initiateAddToCartAndAnimation(GlobalKey itemKey, ProductEntity product) {
-    _addToCart(product);
+  void _initiateAddToCartAndAnimation(GlobalKey itemKey, ProductEntity product,PromotionEntity? promotion) {
+    _addToCart(product,promotion);
     _runAnimation(itemKey, product);
   }
 
@@ -119,7 +120,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
     });
   }
 
-  Future<void> _addToCart(ProductEntity product) async {
+  Future<void> _addToCart(ProductEntity product,PromotionEntity? promotion) async {
     if (!mounted) return;
     ref.read(addingToCartProvider.notifier).state = product.id;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -133,12 +134,18 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
 
     try {
       final selectedVariant = product.variants.firstWhere((v) => v.quantity > 0, orElse: () => product.variants.first);
+      final finalPrice = calculateFinalPrice(
+        product: product,
+        variant: selectedVariant,
+        promotion: promotion,
+      );
+
       final cartItem = CartItemEntity(
         id: '', userId: currentUser.id, productId: product.id,
         productTitle: product.title,
         variantSize: selectedVariant.size,
         variantColorName: describeEnum(selectedVariant.color),
-        variantPrice: selectedVariant.price,
+        variantPrice: finalPrice,
         variantImageUrl: selectedVariant.imageUrls.isNotEmpty ? selectedVariant.imageUrls.first : null,
         quantity: 1,
       );

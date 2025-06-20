@@ -44,8 +44,9 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
     required ProductVariantEntity variant,
     required UserAddress defaultAddress,
     required int quantity,
+    required double finalUnitPrice,
   }) {
-    final subtotal = variant.price * quantity;
+    final subtotal = finalUnitPrice * quantity;
 
     final buyNowItem = CartItemEntity(
       id: '', userId: '', // These are temporary and not used in this context
@@ -53,7 +54,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       productTitle: product.title,
       variantSize: variant.size,
       variantColorName: describeEnum(variant.color),
-      variantPrice: variant.price,
+      variantPrice: finalUnitPrice,
       variantImageUrl: variant.imageUrls.isNotEmpty ? variant.imageUrls.first : null,
       quantity: quantity,
     );

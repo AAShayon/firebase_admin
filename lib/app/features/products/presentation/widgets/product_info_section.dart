@@ -4,11 +4,13 @@ import '../../../shared/domain/entities/product_entity.dart';
 class ProductInfoSection extends StatelessWidget {
   final ProductEntity product;
   final ProductVariantEntity selectedVariant;
+  final double finalPrice;
 
   const ProductInfoSection({
     super.key,
     required this.product,
     required this.selectedVariant,
+    required this.finalPrice,
   });
 
   @override
@@ -28,7 +30,7 @@ class ProductInfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '\$${selectedVariant.price.toStringAsFixed(2)}',
+            '\$${finalPrice.toStringAsFixed(2)}',
             style: textTheme.headlineSmall?.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,

@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_options.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,12 +8,14 @@ import 'package:go_router/go_router.dart';
 
 // Core and Feature imports
 import '../../../../core/routes/app_router.dart';
+import '../../../../core/utils/price_calculator.dart';
 import '../../../../core/utils/product_action_buttons.dart';
 import '../../../../core/utils/product_image_slider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../cart/domain/entities/cart_item_entity.dart';
 import '../../../cart/presentation/providers/cart_notifier_provider.dart';
 import '../../../checkout/presentation/providers/checkout_notifier_provider.dart';
+import '../../../promotions/presentation/providers/promotion_providers.dart';
 import '../../../shared/domain/entities/product_entity.dart';
 import '../../../user_profile/presentation/providers/user_profile_providers.dart';
 import '../../../wishlist/presentation/providers/wishlist_notifier_provider.dart';
@@ -22,7 +25,6 @@ import '../../../wishlist/presentation/providers/wishlist_providers.dart';
 import '../widgets/product_description_section.dart';
 import '../widgets/product_info_section.dart';
 import '../widgets/variant_selector.dart';
-
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final ProductEntity product;
@@ -71,28 +73,58 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     _quantity = 1;
   });
 
+  /// Calculates the final price based on the current state and active promotions.
+  double _getCurrentFinalPrice() {
+    final activePromos = ref.read(activePromotionsStreamProvider).valueOrNull ?? [];
+    final activePromo = activePromos.firstWhereOrNull((p) => p.isActive);
+
+    return calculateFinalPrice(
+      product: widget.product,
+      variant: _selectedVariant,
+      promotion: activePromo,
+    );
+  }
+
+  /// Called when the user MANUALLY swipes the image carousel.
   void _onImageSlide(int index, CarouselPageChangedReason reason) {
-    if (index < _variantsForSlider.length) {
-      final newVariant = _variantsForSlider[index];
-      if (newVariant != _selectedVariant) {
-        setState(() {
-          _selectedVariant = newVariant;
-          _resetCartState();
-        });
+    // ONLY update the state if the page change was caused by a user gesture.
+    // This prevents this method from fighting with `_onVariantSelected`.
+    if (reason == CarouselPageChangedReason.manual) {
+      if (index < _variantsForSlider.length) {
+        final newVariant = _variantsForSlider[index];
+        if (newVariant != _selectedVariant) {
+          setState(() {
+            _selectedVariant = newVariant;
+            _resetCartState();
+          });
+        }
       }
     }
   }
 
+  /// Called when the user taps a color or size variant.
   void _onVariantSelected(ProductVariantEntity newVariant) {
+    // Don't do anything if the same variant is tapped again.
+    if (newVariant == _selectedVariant) return;
+
     setState(() {
       _selectedVariant = newVariant;
       _resetCartState();
     });
 
-    int imageIndex = _allImages.indexWhere((url) => newVariant.imageUrls.contains(url));
-    if (imageIndex != -1) {
-      _carouselController.animateToPage(imageIndex);
-    }
+    // Animate the carousel AFTER the frame has been built to prevent rendering errors.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        int imageIndex = _allImages.indexWhere((url) => newVariant.imageUrls.contains(url));
+        if (imageIndex != -1) {
+          _carouselController.animateToPage(
+            imageIndex,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
   }
 
   void _handleAddToCart() {
@@ -107,12 +139,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
       return;
     }
 
+    final finalPrice = _getCurrentFinalPrice();
+
     ref.read(cartNotifierProvider.notifier).addToCart(CartItemEntity(
       id: '', userId: currentUser.id, productId: widget.product.id,
       productTitle: widget.product.title,
       variantSize: _selectedVariant.size,
       variantColorName:describeEnum(_selectedVariant.color),
-      variantPrice: _selectedVariant.price,
+      variantPrice: finalPrice,
       variantImageUrl: _selectedVariant.imageUrls.isNotEmpty ? _selectedVariant.imageUrls.first : null,
       quantity: _quantity,
     ));
@@ -125,30 +159,26 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   void _buyNow() async {
     final currentUser = ref.read(currentUserProvider);
-    if (currentUser == null) { /* ... handle guest ... */ return; }
+    if (currentUser == null) { return; }
+
+    final finalPrice = _getCurrentFinalPrice();
 
     try {
-      // --- PREPARE STATE BEFORE NAVIGATING ---
-
-      // Invalidate to ensure a fresh state
       ref.invalidate(checkoutNotifierProvider);
 
-      // Await profile to get address
       final profile = await ref.read(userProfileStreamProvider(currentUser.id).future);
-      if (!mounted || profile.addresses.isEmpty) { /* ... handle no address ... */ return; }
+      if (!mounted || profile.addresses.isEmpty) { return; }
 
       final defaultAddress = profile.addresses.firstWhere((a) => a.isDefault, orElse: () => profile.addresses.first);
 
-      // Initialize the notifier with the "Buy Now" item
       ref.read(checkoutNotifierProvider.notifier).initializeForBuyNow(
         product: widget.product,
         variant: _selectedVariant,
         quantity: _isCartActionInitiated ? _quantity : 1,
         defaultAddress: defaultAddress,
+        finalUnitPrice: finalPrice,
       );
 
-      // --- NAVIGATE LAST ---
-      // Now that the state is ready, navigate to the checkout page.
       context.pushNamed(AppRoutes.checkout);
 
     } catch (e) {
@@ -175,14 +205,17 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch providers to trigger UI rebuilds when data changes.
     final currentUser = ref.watch(currentUserProvider);
     final wishlistIdsAsync = ref.watch(wishlistIdsProvider(currentUser?.id ?? ''));
+    ref.watch(activePromotionsStreamProvider); // To react to promotion changes.
+
     final isInWishlist = wishlistIdsAsync.when(data: (ids) => ids.contains(widget.product.id), loading: () => false, error: (e, s) => false);
+    final finalPrice = _getCurrentFinalPrice();
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // --- WIDGET COMPOSITION IN ACTION ---
           ProductImageSlider(
             imageUrls: _allImages,
             controller: _carouselController,
@@ -207,13 +240,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ProductInfoSection(product: widget.product, selectedVariant: _selectedVariant),
-
+                  ProductInfoSection(
+                    product: widget.product,
+                    selectedVariant: _selectedVariant,
+                    finalPrice: finalPrice,
+                  ),
                   if (widget.product.variants.length > 1)
-                    VariantSelector(product: widget.product, selectedVariant: _selectedVariant, onVariantSelected: _onVariantSelected),
-
+                    VariantSelector(
+                        product: widget.product,
+                        selectedVariant: _selectedVariant,
+                        onVariantSelected: _onVariantSelected
+                    ),
                   ProductDescriptionSection(description: widget.product.description),
-
                   ProductActionButtons(
                     isInStock: _selectedVariant.quantity > 0,
                     onAddToCart: _handleAddToCart,
@@ -223,7 +261,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     onDecrement: _decrementQuantity,
                     onIncrement: _incrementQuantity,
                   ),
-                  const SizedBox(height: 40), // Spacing at the bottom
+                  const SizedBox(height: 40),
                 ],
               ),
             ),

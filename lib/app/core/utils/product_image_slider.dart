@@ -24,6 +24,7 @@ class ProductImageSlider extends StatelessWidget {
       expandedHeight: 300.0,
       pinned: true,
       floating: false,
+      backgroundColor: Colors.transparent,
       actions: [
         IconButton(
           icon: Icon(

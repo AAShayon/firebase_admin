@@ -55,7 +55,7 @@ class PromotionalProductsSection extends ConsumerWidget {
                   product: product,
                   onAddToCart: (key) {
                     if (runAnimation != null) {
-                      runAnimation(key, product);
+                      runAnimation(key, product,promotion);
                     }
                   },
                   promotion: promotion,
