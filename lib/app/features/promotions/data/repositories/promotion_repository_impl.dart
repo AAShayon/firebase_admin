@@ -24,6 +24,8 @@ class PromotionRepositoryImpl implements PromotionRepository {
       timesUsed: promotion.timesUsed,
       scope: promotion.scope,
       productIds: promotion.productIds,
+      target: promotion.target,
+      targetUserIds: promotion.targetUserIds,
     );
     return remoteDataSource.createPromotion(model.toJson());
   }
@@ -48,6 +50,8 @@ class PromotionRepositoryImpl implements PromotionRepository {
       timesUsed: promotion.timesUsed,
       scope: promotion.scope,
       productIds: promotion.productIds,
+      target: promotion.target,
+      targetUserIds: promotion.targetUserIds,
     );
     return remoteDataSource.updatePromotion(promotion.id, model.toJson());
   }

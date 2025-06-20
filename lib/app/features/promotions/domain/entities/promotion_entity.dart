@@ -1,5 +1,6 @@
 enum DiscountType { percentage, fixedAmount }
 enum PromotionScope { allProducts, specificProducts }
+enum PromotionTarget { all, specificUsers }
 
 class PromotionEntity {
   final String id;
@@ -13,6 +14,8 @@ class PromotionEntity {
   final String? couponCode;
   final int? usageLimit;
   final int timesUsed;
+  final PromotionTarget target;
+  final List<String> targetUserIds;
 
   // --- ADD THESE NEW PROPERTIES ---
   final PromotionScope scope;
@@ -33,6 +36,8 @@ class PromotionEntity {
     // --- ADD TO CONSTRUCTOR ---
     required this.scope,
     required this.productIds,
+    this.target = PromotionTarget.all,
+    this.targetUserIds = const [],
   });
 
   bool get isActive {

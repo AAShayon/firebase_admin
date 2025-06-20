@@ -16,7 +16,9 @@ class PromotionModel extends PromotionEntity {
     super.usageLimit,
     super.timesUsed,
     required super.scope,
-    required super.productIds
+    required super.productIds,
+    required super.target,
+    required super.targetUserIds,
   });
 
   factory PromotionModel.fromSnapshot(DocumentSnapshot doc) {
@@ -38,6 +40,8 @@ class PromotionModel extends PromotionEntity {
       timesUsed: data['timesUsed'] ?? 0,
       scope: _stringToScope(data['scope']),
       productIds: List<String>.from(data['productIds'] ?? []),
+      target: (data['target'] == 'specificUsers') ? PromotionTarget.specificUsers : PromotionTarget.all,
+      targetUserIds: List<String>.from(data['targetUserIds'] ?? []),
     );
   }
 
@@ -55,6 +59,8 @@ class PromotionModel extends PromotionEntity {
       'timesUsed': timesUsed,
       'scope': describeEnum(scope),
       'productIds': productIds,
+      'target': describeEnum(target),
+      'targetUserIds': targetUserIds,
     };
   }
 
