@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../home_page/presentation/pages/home_page.dart';
+import '../../../home_page/presentation/providers/home_page_providers.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../providers/cart_providers.dart';
 

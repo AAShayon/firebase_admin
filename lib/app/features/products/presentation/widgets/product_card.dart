@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../home_page/presentation/pages/home_page.dart';
+import '../../../home_page/presentation/providers/home_page_providers.dart';
 import '../../../home_page/presentation/widgets/admin_action_menu.dart';
 import '../../../promotions/domain/entities/promotion_entity.dart';
 import '../../../shared/domain/entities/product_entity.dart';
