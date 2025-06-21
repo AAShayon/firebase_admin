@@ -1,29 +1,44 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../promotions/domain/entities/promotion_entity.dart';
+import '../../../promotions/presentation/providers/promotion_providers.dart';
 import '../providers/checkout_notifier_provider.dart';
 
-/// A card that displays the breakdown of the order total, including subtotal,
-/// delivery fees, discounts, and provides an interface for applying coupons.
-///
-/// This widget is a [ConsumerWidget], so it rebuilds automatically whenever
-/// the [checkoutNotifierProvider] state changes.
 class CheckoutSummaryCard extends ConsumerWidget {
   const CheckoutSummaryCard({super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 1. WATCH the provider to get the entire, up-to-date state.
-    //    Any change to this state will cause this widget to rebuild.
+  /// A private method to check if any item in the cart has an automatic promotion.
+  /// Returns the found promotion, or null if none are found.
+  PromotionEntity? _findActiveProductPromotion(
+      WidgetRef ref,
+      List<PromotionEntity> promotions,
+      ) {
     final checkoutState = ref.watch(checkoutNotifierProvider);
 
-    // 2. READ the notifier to get a reference to its methods.
-    //    We use `ref.read` because we only want to call the methods in callbacks,
-    //    not rebuild the widget when the notifier instance itself changes.
-    final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
+    // --- THIS IS THE MODIFIED LOGIC ---
+    // Find the first promotion that is for specific products and matches an item in the cart.
+    // We NO LONGER check if `couponCode == null`.
+    final foundPromotion = promotions.firstWhereOrNull(
+          (promo) =>
+      // Rule 1: Must be a product-specific promotion.
+      promo.scope == PromotionScope.specificProducts &&
+          // Rule 2: Check if any cart item's ID is in this promotion's product list.
+          checkoutState.itemsToCheckout.any((item) => promo.productIds.contains(item.productId)),
+    );
 
+    return foundPromotion;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final checkoutState = ref.watch(checkoutNotifierProvider);
+    final checkoutNotifier = ref.read(checkoutNotifierProvider.notifier);
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+
+    final promotionsAsyncValue = ref.watch(activePromotionsStreamProvider);
 
     return Card(
       elevation: 2,
@@ -33,81 +48,102 @@ class CheckoutSummaryCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Order Summary',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
+            Text('Order Summary', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
 
-            // --- REACTIVE COUPON SECTION ---
-            TextFormField(
-              controller: checkoutState.couponController,
-              readOnly: checkoutState.isCouponApplied, // Disable input if coupon is applied
-              decoration: InputDecoration(
-                labelText: 'Coupon Code',
-                // Display the error message directly from the state if it exists
-                errorText: checkoutState.error,
-                hintText: 'Enter coupon code',
-                border: const OutlineInputBorder(),
-                // Show a loading indicator, a clear button, or an apply button based on the state
-                suffixIcon: checkoutState.isLoading
-                    ? const Padding(padding: EdgeInsets.all(12.0), child: CircularProgressIndicator(strokeWidth: 2))
-                    : checkoutState.isCouponApplied
-                    ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.red),
-                  onPressed: checkoutNotifier.removeCoupon,
-                  tooltip: 'Remove Coupon',
-                )
-                    : TextButton(
-                  onPressed: checkoutNotifier.applyCoupon,
-                  child: const Text('APPLY'),
-                ),
+            promotionsAsyncValue.when(
+              data: (promotions) {
+                // The check is now more robust.
+                final activeProductPromotion = _findActiveProductPromotion(ref, promotions);
+                final isCouponFieldDisabled = activeProductPromotion != null;
+
+                if (isCouponFieldDisabled) {
+                  return _buildPromotionMessage(context, "This order contains items with promotional pricing, so coupons cannot be applied.");
+                } else {
+                  return _buildCouponEntry(context, checkoutState, checkoutNotifier);
+                }
+              },
+              loading: () => _buildCouponEntry(
+                context,
+                checkoutState,
+                checkoutNotifier,
+                isCheckingPromotions: true,
               ),
+              error: (err, stack) => _buildCouponEntry(context, checkoutState, checkoutNotifier),
             ),
-            if (checkoutState.isCouponApplied && checkoutState.error == null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  'Coupon applied successfully!',
-                  style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold),
-                ),
-              ),
-            // --- END OF COUPON SECTION ---
 
             const Divider(height: 32),
 
-            // Price Details now read directly from the state
-            _buildSummaryRow(
-              context,
-              'Subtotal',
-              currencyFormat.format(checkoutState.subtotal),
-            ),
-            _buildSummaryRow(
-              context,
-              'Delivery Fee',
-              currencyFormat.format(checkoutState.deliveryFee),
-            ),
+            _buildSummaryRow(context, 'Subtotal', currencyFormat.format(checkoutState.subtotal)),
+            _buildSummaryRow(context, 'Delivery Fee', currencyFormat.format(checkoutState.deliveryFee)),
             if (checkoutState.discount > 0)
-              _buildSummaryRow(
-                context,
-                'Discount',
-                '- ${currencyFormat.format(checkoutState.discount)}',
-                color: Colors.green.shade700,
-              ),
+              _buildSummaryRow(context, 'Discount', '- ${currencyFormat.format(checkoutState.discount)}', color: Colors.green.shade700),
             const Divider(),
-            _buildSummaryRow(
-              context,
-              'Grand Total',
-              currencyFormat.format(checkoutState.grandTotal),
-              isTotal: true,
-            ),
+            _buildSummaryRow(context, 'Grand Total', currencyFormat.format(checkoutState.grandTotal), isTotal: true),
           ],
         ),
       ),
     );
   }
 
-  /// A private helper to build a consistent row for the summary card.
+  // Changed the message to be more generic
+  Widget _buildPromotionMessage(BuildContext context, String message) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Theme.of(context).colorScheme.primaryContainer),
+      ),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onPrimaryContainer,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCouponEntry(
+      BuildContext context,
+      checkoutState,
+      checkoutNotifier, {
+        bool isCheckingPromotions = false,
+      }) {
+    final bool isReadOnly = checkoutState.isCouponApplied || isCheckingPromotions;
+    final String hintText = isCheckingPromotions ? 'Checking for promotions...' : 'Enter coupon code';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: checkoutState.couponController,
+          readOnly: isReadOnly,
+          decoration: InputDecoration(
+            labelText: 'Coupon Code',
+            errorText: checkoutState.error,
+            hintText: hintText,
+            border: const OutlineInputBorder(),
+            suffixIcon: isCheckingPromotions
+                ? const Padding(padding: EdgeInsets.all(12.0), child: CircularProgressIndicator(strokeWidth: 2))
+                : checkoutState.isLoading
+                ? const Padding(padding: EdgeInsets.all(12.0), child: CircularProgressIndicator(strokeWidth: 2))
+                : checkoutState.isCouponApplied
+                ? IconButton(icon: const Icon(Icons.clear, color: Colors.red), onPressed: checkoutNotifier.removeCoupon, tooltip: 'Remove Coupon')
+                : TextButton(onPressed: checkoutNotifier.applyCoupon, child: const Text('APPLY')),
+          ),
+        ),
+        if (checkoutState.isCouponApplied && checkoutState.error == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text('Coupon applied successfully!', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold)),
+          ),
+      ],
+    );
+  }
+
   Widget _buildSummaryRow(BuildContext context, String title, String amount, {Color? color, bool isTotal = false}) {
     final textStyle = isTotal
         ? Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)

@@ -104,22 +104,55 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, error: null); // Start loading, clear previous error
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
       final validateUseCase = ref.read(validateCouponUseCaseProvider);
       final validPromotion = await validateUseCase(code, currentUser.id);
 
       if (validPromotion != null) {
-        _appliedPromotion = validPromotion; // Store the valid promotion
+        _appliedPromotion = validPromotion;
         double discountAmount = 0.0;
 
-        // Calculate discount based on type
-        if (validPromotion.discountType == DiscountType.fixedAmount) {
-          discountAmount = validPromotion.discountValue;
-        } else { // Percentage
-          discountAmount = state.subtotal * (validPromotion.discountValue / 100);
+        // --- NEW LOGIC TO HANDLE PROMOTION SCOPE ---
+        if (validPromotion.scope == PromotionScope.specificProducts) {
+          // 1. Calculate the subtotal of ONLY the eligible products.
+          final promotionalSubtotal = state.itemsToCheckout.fold<double>(0.0, (sum, item) {
+            if (validPromotion.productIds.contains(item.productId)) {
+              return sum + (item.variantPrice * item.quantity);
+            }
+            return sum;
+          });
+
+          // 2. IMPORTANT: Check if there are any eligible products in the cart.
+          if (promotionalSubtotal > 0) {
+            // 3. Apply discount ONLY on the promotional subtotal.
+            if (validPromotion.discountType == DiscountType.fixedAmount) {
+              discountAmount = validPromotion.discountValue;
+            } else { // Percentage
+              discountAmount = promotionalSubtotal * (validPromotion.discountValue / 100);
+            }
+          } else {
+            // 4. Handle error: The coupon is valid, but no eligible products are in the cart.
+            _appliedPromotion = null;
+            state = state.copyWith(
+              discount: 0.0,
+              isCouponApplied: false,
+              isLoading: false,
+              error: 'This coupon is not valid for the items in your cart.',
+            );
+            return; // Exit the function early.
+          }
+        } else {
+          // --- ORIGINAL LOGIC FOR "ALL PRODUCTS" SCOPE ---
+          // This code runs if the promotion applies to the whole cart.
+          if (validPromotion.discountType == DiscountType.fixedAmount) {
+            discountAmount = validPromotion.discountValue;
+          } else { // Percentage
+            discountAmount = state.subtotal * (validPromotion.discountValue / 100);
+          }
         }
+        // --- END OF NEW LOGIC ---
 
         state = state.copyWith(
           discount: discountAmount,
@@ -127,7 +160,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
           isLoading: false,
         );
       } else {
-        _appliedPromotion = null; // Clear any previously applied promotion
+        _appliedPromotion = null;
         state = state.copyWith(
           discount: 0.0,
           isCouponApplied: false,
