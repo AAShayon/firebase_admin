@@ -22,12 +22,14 @@ import '../../features/initialization/presentation/pages/splash_screen.dart';
 import '../../features/landing/presentation/landing.dart';
 import '../../features/order/presentation/pages/order_details_page.dart';
 import '../../features/order/presentation/pages/order_success_page.dart';
+import '../../features/products/presentation/pages/category_products_page.dart';
 import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/products/presentation/pages/product_table.dart';
 import '../../features/promotions/domain/entities/promotion_entity.dart';
 import '../../features/promotions/presentation/pages/create_promotion_page.dart';
 import '../../features/promotions/presentation/pages/promotion_detail_page.dart';
 import '../../features/promotions/presentation/pages/promotions_management_page.dart';
+import '../../features/shared/data/model/product_model.dart';
 import '../../features/shared/domain/entities/product_entity.dart';
 import '../../features/user_profile/domain/entities/user_profile_entity.dart';
 import '../../features/user_profile/presentation/pages/add_edit_address.dart';
@@ -50,6 +52,7 @@ class AppRoutes {
   static const orderSuccess = 'orderSuccess';
   static const orderDetails = 'orderDetails';
   static const addGalleryImage="addGalleryImage";
+  static const String categoryProducts = 'categoryProducts';
 
   static const customer = 'customer';
   static const notifications = 'notifications';
@@ -89,6 +92,7 @@ class AppRoutes {
   static const addGalleryImagePath = '/addGalleryImagePath';
   static const orderSuccessPath = '/order-success/:orderId';
   static const orderDetailsPath = '/order-details/:orderId';
+  static const String categoryProductsPath = '/categoryProductsPath';
 
 
   // CORRECTED: Define nested paths clearly and uniquely to avoid conflicts.
@@ -324,6 +328,16 @@ final GoRouter appRouter = GoRouter(
           },
         ),
       ],
+    ),
+    GoRoute(
+      name: AppRoutes.categoryProducts,
+      // Using a path is optional but good practice
+      path: AppRoutes.categoryProductsPath,
+      builder: (context, state) {
+        // Pass the category object using 'extra'
+        final category = state.extra as ProductCategory;
+        return CategoryProductsPage(category: category);
+      },
     ),
     GoRoute(
       name: AppRoutes.orderDetails,

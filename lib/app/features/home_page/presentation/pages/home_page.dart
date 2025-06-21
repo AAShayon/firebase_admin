@@ -230,14 +230,16 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
       },
       child: CustomScrollView(
         slivers: [
+
           _buildPromoBannerSliver(),
+
+          _buildPromoProductsSliver(),
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 8.0),
               child: CategoryPills(),
             ),
           ),
-          _buildPromoProductsSliver(),
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
